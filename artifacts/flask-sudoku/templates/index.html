@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Sudoku (3-SSC)</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="page-wrapper">
+    <header>
+      <h1>3D Sudoku <span class="subtitle">3-SSC</span></h1>
+      <p class="description">
+        Fill each 3×3 slice so that all 3-SSC constraints are satisfied.
+        Numbers&nbsp;1–9 only.
+      </p>
+    </header>
+
+    <div class="controls">
+      <button id="btn-new-game" class="btn btn-primary">New Game</button>
+      <button id="btn-check" class="btn btn-secondary">Check Solution</button>
+    </div>
+
+    <div id="message-bar" class="message-bar hidden"></div>
+
+    <!-- Three slices rendered side-by-side -->
+    <div class="slices-container" id="slices-container">
+      <div class="slice-wrapper">
+        <h2 class="slice-label">Slice <em>z</em> = 0</h2>
+        <div class="grid" id="grid-z0"></div>
+      </div>
+      <div class="slice-wrapper">
+        <h2 class="slice-label">Slice <em>z</em> = 1</h2>
+        <div class="grid" id="grid-z1"></div>
+      </div>
+      <div class="slice-wrapper">
+        <h2 class="slice-label">Slice <em>z</em> = 2</h2>
+        <div class="grid" id="grid-z2"></div>
+      </div>
+    </div>
+
+    <footer>
+      <p>Each input accepts a digit 1–9. Bold cells are fixed clues.</p>
+    </footer>
+  </div>
+
+  <script src="/static/game.js"></script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+/* =========================================================
+   3D Sudoku (3-SSC) — Stylesheet
+   ========================================================= */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:            #0f172a;
+  --surface:       #1e293b;
+  --surface-alt:   #273548;
+  --border:        #334155;
+  --accent:        #6366f1;
+  --accent-hover:  #818cf8;
+  --clue-bg:       #2d3f5e;
+  --clue-color:    #e2e8f0;
+  --input-bg:      #1e293b;
+  --input-color:   #94a3b8;
+  --input-focus:   #6366f1;
+  --text-primary:  #f1f5f9;
+  --text-muted:    #64748b;
+  --success:       #22c55e;
+  --error:         #ef4444;
+  --radius:        8px;
+  --cell-size:     58px;
+  --gap:           4px;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Layout ─────────────────────────────────────────────── */
+
+.page-wrapper {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.75rem;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+
+header {
+  text-align: center;
+}
+
+h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+
+h1 .subtitle {
+  color: var(--accent);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-left: 0.25rem;
+  vertical-align: middle;
+}
+
+.description {
+  margin-top: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* ── Controls ───────────────────────────────────────────── */
+
+.controls {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn {
+  padding: 0.6rem 1.6rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+
+.btn-secondary {
+  background: var(--surface-alt);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--border); }
+
+/* ── Message bar ────────────────────────────────────────── */
+
+.message-bar {
+  width: 100%;
+  max-width: 680px;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: center;
+  transition: opacity 0.25s;
+}
+
+.message-bar.hidden   { display: none; }
+.message-bar.success  { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
+.message-bar.error    { background: rgba(239,68,68,0.15);  color: var(--error);   border: 1px solid rgba(239,68,68,0.3); }
+.message-bar.info     { background: rgba(99,102,241,0.15); color: var(--accent-hover); border: 1px solid rgba(99,102,241,0.3); }
+
+/* ── Slices ─────────────────────────────────────────────── */
+
+.slices-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.5rem;
+  justify-content: center;
+}
+
+.slice-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.slice-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.slice-label em {
+  color: var(--accent);
+  font-style: normal;
+}
+
+/* ── Grid ───────────────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, var(--cell-size));
+  grid-template-rows:    repeat(3, var(--cell-size));
+  gap: var(--gap);
+  background: var(--border);
+  border: 2px solid var(--border);
+  border-radius: calc(var(--radius) + 2px);
+  padding: var(--gap);
+}
+
+/* ── Cells ──────────────────────────────────────────────── */
+
+.cell {
+  width:  var(--cell-size);
+  height: var(--cell-size);
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--input-bg);
+  color: var(--input-color);
+  font-size: 1.4rem;
+  text-align: center;
+  outline: 2px solid transparent;
+  transition: outline-color 0.15s, background 0.15s, color 0.15s;
+  caret-color: transparent;
+  -moz-appearance: textfield;
+}
+
+.cell::-webkit-outer-spin-button,
+.cell::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+.cell:focus {
+  outline-color: var(--input-focus);
+  background: var(--surface-alt);
+  color: var(--text-primary);
+}
+
+/* Clue cells — bold, read-only */
+.cell.clue {
+  background: var(--clue-bg);
+  color: var(--clue-color);
+  font-weight: 700;
+  cursor: default;
+}
+
+/* Conflict highlight */
+.cell.conflict {
+  outline-color: var(--error);
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--error);
+}
+
+/* ── Loading state ──────────────────────────────────────── */
+
+.grid.loading .cell {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
+
+footer {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  :root { --cell-size: 48px; }
+  h1 { font-size: 1.7rem; }
+  .slices-container { gap: 1.5rem; }
+}
