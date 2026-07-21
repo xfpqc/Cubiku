@@ -1,0 +1,71 @@
+import random
+import copy
+
+def is_valid(grid, x, y, z, num, n=3):
+    # Check z-slice (horizontal xy-plane)
+    for i in range(n):
+        for j in range(n):
+            if grid[z][i][j] == num: return False
+    # Check y-slice (vertical xz-plane)
+    for i in range(n):
+        for j in range(n):
+            if grid[i][y][j] == num: return False
+    # Check x-slice (vertical yz-plane)
+    for i in range(n):
+        for j in range(n):
+            if grid[i][j][x] == num: return False
+    return True
+
+def solve_and_count(grid, n=3, count=[0]):
+    """Solves grid and counts total valid solutions. Stops at 2 to save time."""
+    if count[0] > 1: return
+    
+    for z in range(n):
+        for y in range(n):
+            for x in range(n):
+                if grid[z][y][x] == 0:
+                    for num in range(1, (n**2) + 1):
+                        if is_valid(grid, x, y, z, num, n):
+                            grid[z][y][x] = num
+                            solve_and_count(grid, n, count)
+                            grid[z][y][x] = 0
+                    return
+    count[0] += 1
+
+def generate_solved_grid(grid, n=3):
+    """Generates one fully solved valid grid."""
+    cells = [(z, y, x) for z in range(n) for y in range(n) for x in range(n)]
+    
+    for z, y, x in cells:
+        if grid[z][y][x] == 0:
+            nums = list(range(1, (n**2) + 1))
+            random.shuffle(nums)
+            for num in nums:
+                if is_valid(grid, x, y, z, num, n):
+                    grid[z][y][x] = num
+                    if generate_solved_grid(grid, n):
+                        return True
+                    grid[z][y][x] = 0
+            return False
+    return True
+
+def generate_unique_puzzle(n=3):
+    """Creates a puzzle with exactly one valid mathematical solution."""
+    grid = [[[0 for _ in range(n)] for _ in range(n)] for _ in range(n)]
+    generate_solved_grid(grid, n)
+    
+    cells = [(z, y, x) for z in range(n) for y in range(n) for x in range(n)]
+    random.shuffle(cells)
+    
+    for z, y, x in cells:
+        backup = grid[z][y][x]
+        grid[z][y][x] = 0
+        
+        grid_copy = copy.deepcopy(grid)
+        solutions = [0]
+        solve_and_count(grid_copy, n, solutions)
+        
+        if solutions[0] != 1:
+            grid[z][y][x] = backup # Put it back, removing it broke uniqueness
+            
+    return grid
