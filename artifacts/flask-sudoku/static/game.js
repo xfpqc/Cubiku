@@ -1,17 +1,22 @@
 /**
  * 3D Sudoku (3-SSC) — Frontend Logic
  *
- * Grid state: state[z][row][col]  (all indices 0-2)
- * Value 0 means empty.
+ * Cells are <div> elements — no native keyboard is ever triggered.
+ * A custom keypad handles all input; physical keys still work on desktop.
+ *
+ * Grid state: state[z][row][col]  (indices 0-2, value 0 = empty)
  */
 
 // ── State ──────────────────────────────────────────────────────────────────
 
 /** Current cell values: 3×3×3 array, 0 = empty */
-let state  = emptyGrid();
+let state = emptyGrid();
 
-/** Positions that are fixed clues; Set of "z,row,col" strings */
+/** Positions that are fixed clues — Set of "z,row,col" strings */
 let clueSet = new Set();
+
+/** Currently selected cell coords, or null */
+let selected = null;   // { z, row, col }
 
 // ── DOM helpers ────────────────────────────────────────────────────────────
 
@@ -31,12 +36,60 @@ function getCell(z, row, col) {
 
 function showMessage(text, type = 'info') {
   const bar = document.getElementById('message-bar');
-  bar.textContent  = text;
-  bar.className    = `message-bar ${type}`;
+  bar.textContent = text;
+  bar.className   = `message-bar ${type}`;
 }
 
 function hideMessage() {
   document.getElementById('message-bar').className = 'message-bar hidden';
+}
+
+// ── Selection ──────────────────────────────────────────────────────────────
+
+function selectCell(z, row, col) {
+  // Deselect previous
+  if (selected) {
+    const prev = getCell(selected.z, selected.row, selected.col);
+    prev?.classList.remove('selected');
+  }
+
+  // Clue cells cannot be selected
+  if (clueSet.has(`${z},${row},${col}`)) {
+    selected = null;
+    return;
+  }
+
+  selected = { z, row, col };
+  const el = getCell(z, row, col);
+  el?.classList.add('selected');
+  el?.focus();
+}
+
+function clearSelection() {
+  if (selected) {
+    getCell(selected.z, selected.row, selected.col)?.classList.remove('selected');
+  }
+  selected = null;
+}
+
+// ── Keypad input ───────────────────────────────────────────────────────────
+
+function applyValue(value) {
+  // value: 1-9 to set, 0 to clear
+  if (!selected) return;
+
+  const { z, row, col } = selected;
+  if (clueSet.has(`${z},${row},${col}`)) return;
+
+  state[z][row][col] = value;
+
+  const el = getCell(z, row, col);
+  if (el) {
+    el.textContent = value > 0 ? String(value) : '';
+    el.classList.remove('conflict');
+  }
+
+  hideMessage();
 }
 
 // ── Grid rendering ─────────────────────────────────────────────────────────
@@ -48,39 +101,42 @@ function buildGrids() {
 
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
-        const input = document.createElement('input');
-        input.type        = 'text';
-        input.inputMode   = 'numeric';
-        input.maxLength   = 1;
-        input.id          = cellId(z, row, col);
-        input.className   = 'cell';
-        input.dataset.z   = z;
-        input.dataset.row = row;
-        input.dataset.col = col;
-        input.setAttribute('aria-label', `Slice z=${z} row ${row + 1} col ${col + 1}`);
+        const cell = document.createElement('div');
+        cell.id          = cellId(z, row, col);
+        cell.className   = 'cell';
+        cell.tabIndex    = 0;
+        cell.role        = 'gridcell';
+        cell.dataset.z   = z;
+        cell.dataset.row = row;
+        cell.dataset.col = col;
+        cell.setAttribute('aria-label', `Slice z=${z} row ${row + 1} col ${col + 1}`);
 
-        input.addEventListener('keydown', onCellKeydown);
-        input.addEventListener('input',   onCellInput);
+        cell.addEventListener('click',   onCellClick);
+        cell.addEventListener('keydown', onCellKeydown);
 
-        container.appendChild(input);
+        container.appendChild(cell);
       }
     }
   }
 }
 
 function renderState() {
+  // Clear any lingering selection when state is fully reset
+  clearSelection();
+
   for (let z = 0; z < 3; z++) {
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
-        const input  = getCell(z, row, col);
+        const el     = getCell(z, row, col);
         const isClue = clueSet.has(`${z},${row},${col}`);
         const val    = state[z][row][col];
 
-        input.value       = val > 0 ? String(val) : '';
-        input.readOnly    = isClue;
-        input.disabled    = false;
-        input.classList.toggle('clue', isClue);
-        input.classList.remove('conflict');
+        el.textContent = val > 0 ? String(val) : '';
+        el.classList.toggle('clue', isClue);
+        el.classList.remove('conflict', 'selected');
+
+        // Clues are not focusable or tappable
+        el.tabIndex = isClue ? -1 : 0;
       }
     }
   }
@@ -90,46 +146,39 @@ function setLoading(on) {
   document.querySelectorAll('.grid').forEach(g => g.classList.toggle('loading', on));
   document.getElementById('btn-new-game').disabled = on;
   document.getElementById('btn-check').disabled    = on;
+  document.querySelectorAll('.key-btn').forEach(b => b.disabled = on);
 }
 
-// ── Input handling ─────────────────────────────────────────────────────────
+// ── Cell event handlers ────────────────────────────────────────────────────
+
+function onCellClick(e) {
+  const el  = e.currentTarget;
+  const z   = Number(el.dataset.z);
+  const row = Number(el.dataset.row);
+  const col = Number(el.dataset.col);
+
+  // Toggle: tap the already-selected cell to deselect
+  if (selected && selected.z === z && selected.row === row && selected.col === col) {
+    clearSelection();
+  } else {
+    selectCell(z, row, col);
+  }
+}
 
 function onCellKeydown(e) {
-  const allowed = new Set([
-    'Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-  ]);
-  // Allow 1-9
-  if (/^[1-9]$/.test(e.key)) return;
-  // Allow control keys
-  if (allowed.has(e.key) || e.metaKey || e.ctrlKey) return;
-  e.preventDefault();
-}
+  const el  = e.currentTarget;
+  const z   = Number(el.dataset.z);
+  const row = Number(el.dataset.row);
+  const col = Number(el.dataset.col);
 
-function onCellInput(e) {
-  const input = e.target;
-  const z     = Number(input.dataset.z);
-  const row   = Number(input.dataset.row);
-  const col   = Number(input.dataset.col);
+  // Enter / Space — select the focused cell
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    selectCell(z, row, col);
+    return;
+  }
 
-  // Keep only the last valid character
-  const cleaned = input.value.replace(/[^1-9]/g, '').slice(-1);
-  input.value   = cleaned;
-
-  state[z][row][col] = cleaned ? Number(cleaned) : 0;
-  input.classList.remove('conflict');
-  hideMessage();
-}
-
-// ── Navigation between cells with arrow keys ───────────────────────────────
-
-document.addEventListener('keydown', e => {
-  const active = document.activeElement;
-  if (!active || !active.classList.contains('cell')) return;
-
-  const z   = Number(active.dataset.z);
-  const row = Number(active.dataset.row);
-  const col = Number(active.dataset.col);
-
+  // Arrow keys — move focus between cells
   const moves = {
     ArrowRight: [z, row, (col + 1) % 3],
     ArrowLeft:  [z, row, (col + 2) % 3],
@@ -140,7 +189,69 @@ document.addEventListener('keydown', e => {
   if (moves[e.key]) {
     e.preventDefault();
     const [nz, nr, nc] = moves[e.key];
-    getCell(nz, nr, nc)?.focus();
+    const nextEl = getCell(nz, nr, nc);
+    nextEl?.focus();
+    // Keep current selection active; only focusing changes
+    return;
+  }
+
+  // 1-9 — type directly into the selected cell (desktop convenience)
+  if (/^[1-9]$/.test(e.key)) {
+    selectCell(z, row, col);
+    applyValue(Number(e.key));
+    return;
+  }
+
+  // Backspace / Delete — clear the focused cell
+  if (e.key === 'Backspace' || e.key === 'Delete') {
+    selectCell(z, row, col);
+    applyValue(0);
+  }
+}
+
+// ── Keypad ─────────────────────────────────────────────────────────────────
+
+function initKeypad() {
+  document.querySelectorAll('.key-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      applyValue(Number(btn.dataset.value));
+    });
+  });
+}
+
+// ── Global physical keyboard (works anywhere on the page) ──────────────────
+
+document.addEventListener('keydown', e => {
+  if (!selected) return;
+
+  if (/^[1-9]$/.test(e.key)) {
+    applyValue(Number(e.key));
+    return;
+  }
+
+  if (e.key === 'Backspace' || e.key === 'Delete') {
+    applyValue(0);
+    return;
+  }
+
+  if (e.key === 'Escape') {
+    clearSelection();
+    return;
+  }
+
+  // Arrow keys navigate while keeping selection
+  const { z, row, col } = selected;
+  const moves = {
+    ArrowRight: [z, row, (col + 1) % 3],
+    ArrowLeft:  [z, row, (col + 2) % 3],
+    ArrowDown:  [z, (row + 1) % 3, col],
+    ArrowUp:    [z, (row + 2) % 3, col],
+  };
+
+  if (moves[e.key]) {
+    e.preventDefault();
+    const [nz, nr, nc] = moves[e.key];
+    selectCell(nz, nr, nc);
   }
 });
 
@@ -155,11 +266,9 @@ async function newGame() {
     if (!res.ok) throw new Error(`Server error ${res.status}`);
     const data = await res.json();
 
-    // Reset local state
     state   = emptyGrid();
     clueSet = new Set();
 
-    // Apply clues: each entry is [z, row, col, value]
     for (const [z, row, col, value] of data.clues) {
       state[z][row][col] = value;
       clueSet.add(`${z},${row},${col}`);
@@ -178,11 +287,8 @@ async function newGame() {
 
 async function checkSolution() {
   hideMessage();
-
-  // Clear previous conflict highlights
   document.querySelectorAll('.cell.conflict').forEach(c => c.classList.remove('conflict'));
 
-  // Build the grid to send (0 for empty)
   const grid = state.map(slice => slice.map(row => [...row]));
 
   setLoading(true);
@@ -197,10 +303,10 @@ async function checkSolution() {
 
     if (data.valid) {
       showMessage(data.message, 'success');
+      clearSelection();
     } else {
       showMessage(data.message, 'error');
 
-      // Highlight any cells flagged as conflicting by the server
       if (Array.isArray(data.conflicts)) {
         for (const [z, row, col] of data.conflicts) {
           getCell(z, row, col)?.classList.add('conflict');
@@ -219,11 +325,11 @@ async function checkSolution() {
 function init() {
   buildGrids();
   renderState();
+  initKeypad();
 
   document.getElementById('btn-new-game').addEventListener('click', newGame);
   document.getElementById('btn-check').addEventListener('click', checkSolution);
 
-  // Load a puzzle automatically on first visit
   newGame();
 }
 

@@ -15,11 +15,12 @@
   --border:        #334155;
   --accent:        #6366f1;
   --accent-hover:  #818cf8;
+  --accent-glow:   rgba(99, 102, 241, 0.45);
   --clue-bg:       #2d3f5e;
   --clue-color:    #e2e8f0;
-  --input-bg:      #1e293b;
-  --input-color:   #94a3b8;
-  --input-focus:   #6366f1;
+  --cell-bg:       #1e293b;
+  --cell-color:    #94a3b8;
+  --cell-selected: #1e2d48;
   --text-primary:  #f1f5f9;
   --text-muted:    #64748b;
   --success:       #22c55e;
@@ -40,6 +41,8 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* prevent double-tap zoom on the whole page */
+  touch-action: manipulation;
 }
 
 /* ── Layout ─────────────────────────────────────────────── */
@@ -57,9 +60,7 @@ body {
 
 /* ── Header ─────────────────────────────────────────────── */
 
-header {
-  text-align: center;
-}
+header { text-align: center; }
 
 h1 {
   font-size: 2.2rem;
@@ -97,6 +98,7 @@ h1 .subtitle {
   border-radius: var(--radius);
   cursor: pointer;
   transition: background 0.15s, transform 0.1s;
+  touch-action: manipulation;
 }
 
 .btn:active { transform: scale(0.97); }
@@ -124,13 +126,12 @@ h1 .subtitle {
   font-size: 0.95rem;
   font-weight: 500;
   text-align: center;
-  transition: opacity 0.25s;
 }
 
 .message-bar.hidden   { display: none; }
-.message-bar.success  { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
-.message-bar.error    { background: rgba(239,68,68,0.15);  color: var(--error);   border: 1px solid rgba(239,68,68,0.3); }
-.message-bar.info     { background: rgba(99,102,241,0.15); color: var(--accent-hover); border: 1px solid rgba(99,102,241,0.3); }
+.message-bar.success  { background: rgba(34,197,94,0.15);  color: var(--success);       border: 1px solid rgba(34,197,94,0.3); }
+.message-bar.error    { background: rgba(239,68,68,0.15);  color: var(--error);         border: 1px solid rgba(239,68,68,0.3); }
+.message-bar.info     { background: rgba(99,102,241,0.15); color: var(--accent-hover);  border: 1px solid rgba(99,102,241,0.3); }
 
 /* ── Slices ─────────────────────────────────────────────── */
 
@@ -173,33 +174,44 @@ h1 .subtitle {
   padding: var(--gap);
 }
 
-/* ── Cells ──────────────────────────────────────────────── */
+/* ── Cells (now <div> elements) ─────────────────────────── */
 
 .cell {
   width:  var(--cell-size);
   height: var(--cell-size);
-  border: none;
   border-radius: calc(var(--radius) - 2px);
-  background: var(--input-bg);
-  color: var(--input-color);
+  background: var(--cell-bg);
+  color: var(--cell-color);
   font-size: 1.4rem;
-  text-align: center;
+  font-family: inherit;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
   outline: 2px solid transparent;
-  transition: outline-color 0.15s, background 0.15s, color 0.15s;
-  caret-color: transparent;
-  -moz-appearance: textfield;
+  outline-offset: -2px;
+  transition: outline-color 0.12s, background 0.12s, color 0.12s, box-shadow 0.12s;
+  touch-action: manipulation;
+  /* keyboard focus */
+  tabindex: 0;
 }
 
-.cell::-webkit-outer-spin-button,
-.cell::-webkit-inner-spin-button { -webkit-appearance: none; }
+/* Keyboard / programmatic focus ring */
+.cell:focus-visible {
+  outline-color: var(--accent);
+}
 
-.cell:focus {
-  outline-color: var(--input-focus);
-  background: var(--surface-alt);
+/* Selected cell — glowing indigo ring */
+.cell.selected {
+  outline-color: var(--accent);
+  background: var(--cell-selected);
   color: var(--text-primary);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-/* Clue cells — bold, read-only */
+/* Clue cells — bold, not interactive */
 .cell.clue {
   background: var(--clue-bg);
   color: var(--clue-color);
@@ -212,13 +224,73 @@ h1 .subtitle {
   outline-color: var(--error);
   background: rgba(239, 68, 68, 0.12);
   color: var(--error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
 }
 
-/* ── Loading state ──────────────────────────────────────── */
-
+/* Loading state */
 .grid.loading .cell {
   opacity: 0.35;
   pointer-events: none;
+}
+
+/* ── Keypad ──────────────────────────────────────────────── */
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  padding: 1rem;
+}
+
+.key-btn {
+  height: 52px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, transform 0.08s, box-shadow 0.12s;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.key-btn:hover {
+  background: #3a4d66;
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.key-btn:active {
+  transform: scale(0.93);
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Clear / X button */
+.key-clear {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--error);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.key-clear:hover {
+  background: rgba(239, 68, 68, 0.22);
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+}
+
+.key-clear:active {
+  background: var(--error);
+  color: #fff;
 }
 
 /* ── Footer ─────────────────────────────────────────────── */
@@ -243,12 +315,9 @@ footer {
     max-width: 340px;
   }
 
-  /* Touch-friendly cells */
   .cell {
-    touch-action: manipulation;
-    font-size: 16px;   /* prevents iOS/Android auto-zoom on focus */
-    width:  max(var(--cell-size), 44px);
-    height: max(var(--cell-size), 44px);
+    min-width:  44px;
+    min-height: 44px;
   }
 }
 
@@ -260,13 +329,11 @@ footer {
   h1 { font-size: 1.6rem; }
 
   .controls { flex-wrap: wrap; justify-content: center; }
-
-  .btn { flex: 1 1 120px; text-align: center; }
+  .btn      { flex: 1 1 120px; text-align: center; }
 
   .slice-wrapper { max-width: 100%; }
 
   .grid {
-    /* fill available width, keep cells square */
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows:    repeat(3, 1fr);
     width: min(100%, 280px);
@@ -276,7 +343,16 @@ footer {
     width:  100%;
     height: auto;
     aspect-ratio: 1;
-    min-width:  44px;
-    min-height: 44px;
+    font-size: 1.2rem;
+  }
+
+  .keypad {
+    max-width: 100%;
+    padding: 0.75rem;
+  }
+
+  .key-btn {
+    height: 48px;
+    font-size: 1.15rem;
   }
 }
