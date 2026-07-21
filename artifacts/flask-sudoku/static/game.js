@@ -63,13 +63,34 @@ function selectCell(z, row, col) {
   const el = getCell(z, row, col);
   el?.classList.add('selected');
   el?.focus();
+
+  // Light up the depth pillar — same (x, y) in the other two slices
+  applyDepthHighlight(row, col);
 }
 
 function clearSelection() {
   if (selected) {
     getCell(selected.z, selected.row, selected.col)?.classList.remove('selected');
   }
+  document.querySelectorAll('.cell.depth-highlight')
+    .forEach(el => el.classList.remove('depth-highlight'));
   selected = null;
+}
+
+// ── Depth highlight — same (x, y) pillar across all three slices ───────────
+
+function applyDepthHighlight(row, col) {
+  // Clear any existing highlights first
+  document.querySelectorAll('.cell.depth-highlight')
+    .forEach(el => el.classList.remove('depth-highlight'));
+
+  // Mark the same (row, col) position in every z-slice except the selected one
+  for (let z = 0; z < 3; z++) {
+    const el = getCell(z, row, col);
+    if (el && !el.classList.contains('selected')) {
+      el.classList.add('depth-highlight');
+    }
+  }
 }
 
 // ── Keypad input ───────────────────────────────────────────────────────────
@@ -109,6 +130,9 @@ function buildGrids() {
         cell.dataset.z   = z;
         cell.dataset.row = row;
         cell.dataset.col = col;
+        // x = column index, y = row index — used by depth-highlight logic
+        cell.dataset.x   = col;
+        cell.dataset.y   = row;
         cell.setAttribute('aria-label', `Slice z=${z} row ${row + 1} col ${col + 1}`);
 
         cell.addEventListener('click',   onCellClick);
