@@ -151,7 +151,7 @@ async function newGame() {
   hideMessage();
 
   try {
-    const res  = await fetch('/api/new-game');
+    const res  = await fetch('/game/new-game');
     if (!res.ok) throw new Error(`Server error ${res.status}`);
     const data = await res.json();
 
@@ -187,7 +187,7 @@ async function checkSolution() {
 
   setLoading(true);
   try {
-    const res  = await fetch('/api/check-solution', {
+    const res  = await fetch('/game/check-solution', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ grid }),

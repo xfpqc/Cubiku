@@ -185,13 +185,13 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/api/new-game")
+@app.route("/game/new-game")
 def new_game():
     grid = generate_unique_puzzle()
     return jsonify(grid_to_response(grid))
 
 
-@app.route("/api/check-solution", methods=["POST"])
+@app.route("/game/check-solution", methods=["POST"])
 def check_solution():
     data = request.get_json(force=True)
     grid = data.get("grid")
