@@ -229,10 +229,54 @@ footer {
   text-align: center;
 }
 
-/* ── Responsive ─────────────────────────────────────────── */
+/* ── Responsive — tablet & mobile (≤ 900px) ─────────────── */
 
-@media (max-width: 600px) {
+@media (max-width: 900px) {
+  .slices-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .slice-wrapper {
+    width: 100%;
+    max-width: 340px;
+  }
+
+  /* Touch-friendly cells */
+  .cell {
+    touch-action: manipulation;
+    font-size: 16px;   /* prevents iOS/Android auto-zoom on focus */
+    width:  max(var(--cell-size), 44px);
+    height: max(var(--cell-size), 44px);
+  }
+}
+
+/* ── Responsive — small phones (≤ 480px) ───────────────── */
+
+@media (max-width: 480px) {
   :root { --cell-size: 48px; }
-  h1 { font-size: 1.7rem; }
-  .slices-container { gap: 1.5rem; }
+
+  h1 { font-size: 1.6rem; }
+
+  .controls { flex-wrap: wrap; justify-content: center; }
+
+  .btn { flex: 1 1 120px; text-align: center; }
+
+  .slice-wrapper { max-width: 100%; }
+
+  .grid {
+    /* fill available width, keep cells square */
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows:    repeat(3, 1fr);
+    width: min(100%, 280px);
+  }
+
+  .cell {
+    width:  100%;
+    height: auto;
+    aspect-ratio: 1;
+    min-width:  44px;
+    min-height: 44px;
+  }
 }
