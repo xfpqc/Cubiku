@@ -1,10 +1,10 @@
 modules = ["nodejs-24", "python-base-3.13"]
-run = "python main.py"
+run = "npm run start"
 
 [deployment]
 router = "application"
 deploymentTarget = "autoscale"
-runCommand = "python main.py"
+#runCommand = "python main.py"
 
 [deployment.postBuild]
 args = ["pnpm", "store", "prune"]
