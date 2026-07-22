@@ -1,10 +1,15 @@
 /**
  * 3D Sudoku (3-SSC) — Frontend Logic
  *
- * Cells are <div> elements — no native keyboard is ever triggered.
- * A custom keypad handles all input; physical keys still work on desktop.
+ * Cells are <input> elements — tapping one opens the native mobile keyboard.
+ * Physical keyboard still works on desktop.
  *
  * Grid state: state[z][row][col]  (indices 0-2, value 0 = empty)
+ *
+ * Highlight system (crosshair):
+ *   .active-cell         — the cell the user just tapped
+ *   .constraint-highlight — every other cell that shares the same row OR
+ *                           the same column, mirrored across all three slices
  */
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -44,73 +49,60 @@ function hideMessage() {
   document.getElementById('message-bar').className = 'message-bar hidden';
 }
 
+// ── Crosshair highlight ────────────────────────────────────────────────────
+
+/**
+ * Clear all crosshair classes from every cell.
+ */
+function clearHighlights() {
+  document.querySelectorAll('.cell.active-cell, .cell.constraint-highlight')
+    .forEach(el => el.classList.remove('active-cell', 'constraint-highlight'));
+}
+
+/**
+ * Apply the crosshair for the cell at (selZ, selRow, selCol).
+ *
+ * Rules (mirrored across all three z-slices):
+ *   - Every cell in row selRow → .constraint-highlight
+ *   - Every cell in col selCol → .constraint-highlight
+ *   - The tapped cell itself   → .active-cell  (overrides constraint-highlight)
+ */
+function applyCrosshair(selZ, selRow, selCol) {
+  for (let z = 0; z < 3; z++) {
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        if (r !== selRow && c !== selCol) continue;   // not on either arm
+        const el = getCell(z, r, c);
+        if (!el) continue;
+
+        if (z === selZ && r === selRow && c === selCol) {
+          el.classList.add('active-cell');
+        } else {
+          el.classList.add('constraint-highlight');
+        }
+      }
+    }
+  }
+}
+
 // ── Selection ──────────────────────────────────────────────────────────────
 
 function selectCell(z, row, col) {
-  // Deselect previous
-  if (selected) {
-    const prev = getCell(selected.z, selected.row, selected.col);
-    prev?.classList.remove('selected');
-  }
+  clearHighlights();
 
-  // Clue cells cannot be selected
+  // Clue cells: cannot be selected, no crosshair
   if (clueSet.has(`${z},${row},${col}`)) {
     selected = null;
     return;
   }
 
   selected = { z, row, col };
-  const el = getCell(z, row, col);
-  el?.classList.add('selected');
-  el?.focus();
-
-  // Light up the depth pillar — same (x, y) in the other two slices
-  applyDepthHighlight(row, col);
+  applyCrosshair(z, row, col);
 }
 
 function clearSelection() {
-  if (selected) {
-    getCell(selected.z, selected.row, selected.col)?.classList.remove('selected');
-  }
-  document.querySelectorAll('.cell.depth-highlight')
-    .forEach(el => el.classList.remove('depth-highlight'));
+  clearHighlights();
   selected = null;
-}
-
-// ── Depth highlight — same (x, y) pillar across all three slices ───────────
-
-function applyDepthHighlight(row, col) {
-  // Clear any existing highlights first
-  document.querySelectorAll('.cell.depth-highlight')
-    .forEach(el => el.classList.remove('depth-highlight'));
-
-  // Mark the same (row, col) position in every z-slice except the selected one
-  for (let z = 0; z < 3; z++) {
-    const el = getCell(z, row, col);
-    if (el && !el.classList.contains('selected')) {
-      el.classList.add('depth-highlight');
-    }
-  }
-}
-
-// ── Keypad input ───────────────────────────────────────────────────────────
-
-function applyValue(value) {
-  // value: 1-9 to set, 0 to clear
-  if (!selected) return;
-
-  const { z, row, col } = selected;
-  if (clueSet.has(`${z},${row},${col}`)) return;
-
-  state[z][row][col] = value;
-
-  const el = getCell(z, row, col);
-  if (el) {
-    el.textContent = value > 0 ? String(value) : '';
-    el.classList.remove('conflict');
-  }
-
-  hideMessage();
 }
 
 // ── Grid rendering ─────────────────────────────────────────────────────────
@@ -122,20 +114,24 @@ function buildGrids() {
 
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
-        const cell = document.createElement('div');
+        const cell = document.createElement('input');
+        cell.type        = 'text';
+        cell.inputMode   = 'numeric';
+        cell.maxLength   = 1;
         cell.id          = cellId(z, row, col);
         cell.className   = 'cell';
-        cell.tabIndex    = 0;
-        cell.role        = 'gridcell';
         cell.dataset.z   = z;
         cell.dataset.row = row;
         cell.dataset.col = col;
-        // x = column index, y = row index — used by depth-highlight logic
-        cell.dataset.x   = col;
-        cell.dataset.y   = row;
+        cell.dataset.x   = col;   // column index (used for crosshair)
+        cell.dataset.y   = row;   // row index    (used for crosshair)
         cell.setAttribute('aria-label', `Slice z=${z} row ${row + 1} col ${col + 1}`);
+        cell.setAttribute('autocomplete', 'off');
+        cell.setAttribute('autocorrect', 'off');
+        cell.setAttribute('spellcheck', 'false');
 
-        cell.addEventListener('click',   onCellClick);
+        cell.addEventListener('focus',   onCellFocus);
+        cell.addEventListener('input',   onCellInput);
         cell.addEventListener('keydown', onCellKeydown);
 
         container.appendChild(cell);
@@ -145,7 +141,6 @@ function buildGrids() {
 }
 
 function renderState() {
-  // Clear any lingering selection when state is fully reset
   clearSelection();
 
   for (let z = 0; z < 3; z++) {
@@ -155,12 +150,11 @@ function renderState() {
         const isClue = clueSet.has(`${z},${row},${col}`);
         const val    = state[z][row][col];
 
-        el.textContent = val > 0 ? String(val) : '';
-        el.classList.toggle('clue', isClue);
-        el.classList.remove('conflict', 'selected');
-
-        // Clues are not focusable or tappable
+        el.value    = val > 0 ? String(val) : '';
+        el.readOnly = isClue;
         el.tabIndex = isClue ? -1 : 0;
+        el.classList.toggle('clue', isClue);
+        el.classList.remove('conflict', 'active-cell', 'constraint-highlight');
       }
     }
   }
@@ -170,23 +164,39 @@ function setLoading(on) {
   document.querySelectorAll('.grid').forEach(g => g.classList.toggle('loading', on));
   document.getElementById('btn-new-game').disabled = on;
   document.getElementById('btn-check').disabled    = on;
-  document.querySelectorAll('.key-btn').forEach(b => b.disabled = on);
 }
 
 // ── Cell event handlers ────────────────────────────────────────────────────
 
-function onCellClick(e) {
+function onCellFocus(e) {
   const el  = e.currentTarget;
   const z   = Number(el.dataset.z);
   const row = Number(el.dataset.row);
   const col = Number(el.dataset.col);
 
-  // Toggle: tap the already-selected cell to deselect
-  if (selected && selected.z === z && selected.row === row && selected.col === col) {
-    clearSelection();
-  } else {
-    selectCell(z, row, col);
-  }
+  selectCell(z, row, col);
+
+  // Select all text so the next keystroke replaces the existing digit
+  el.select();
+}
+
+function onCellInput(e) {
+  const el  = e.currentTarget;
+  const z   = Number(el.dataset.z);
+  const row = Number(el.dataset.row);
+  const col = Number(el.dataset.col);
+
+  if (clueSet.has(`${z},${row},${col}`)) return;
+
+  // Keep only the last valid digit (1–9); strip everything else
+  const digit = el.value.replace(/[^1-9]/g, '').slice(-1);
+  el.value = digit;
+
+  const value = digit ? Number(digit) : 0;
+  state[z][row][col] = value;
+
+  el.classList.remove('conflict');
+  hideMessage();
 }
 
 function onCellKeydown(e) {
@@ -195,76 +205,26 @@ function onCellKeydown(e) {
   const row = Number(el.dataset.row);
   const col = Number(el.dataset.col);
 
-  // Enter / Space — select the focused cell
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    selectCell(z, row, col);
-    return;
-  }
-
-  // Arrow keys — move focus between cells
-  const moves = {
-    ArrowRight: [z, row, (col + 1) % 3],
-    ArrowLeft:  [z, row, (col + 2) % 3],
-    ArrowDown:  [z, (row + 1) % 3, col],
-    ArrowUp:    [z, (row + 2) % 3, col],
-  };
-
-  if (moves[e.key]) {
-    e.preventDefault();
-    const [nz, nr, nc] = moves[e.key];
-    const nextEl = getCell(nz, nr, nc);
-    nextEl?.focus();
-    // Keep current selection active; only focusing changes
-    return;
-  }
-
-  // 1-9 — type directly into the selected cell (desktop convenience)
-  if (/^[1-9]$/.test(e.key)) {
-    selectCell(z, row, col);
-    applyValue(Number(e.key));
-    return;
-  }
-
-  // Backspace / Delete — clear the focused cell
+  // Backspace / Delete — clear the cell
   if (e.key === 'Backspace' || e.key === 'Delete') {
-    selectCell(z, row, col);
-    applyValue(0);
-  }
-}
-
-// ── Keypad ─────────────────────────────────────────────────────────────────
-
-function initKeypad() {
-  document.querySelectorAll('.key-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      applyValue(Number(btn.dataset.value));
-    });
-  });
-}
-
-// ── Global physical keyboard (works anywhere on the page) ──────────────────
-
-document.addEventListener('keydown', e => {
-  if (!selected) return;
-
-  if (/^[1-9]$/.test(e.key)) {
-    applyValue(Number(e.key));
+    if (!clueSet.has(`${z},${row},${col}`)) {
+      e.preventDefault();
+      el.value = '';
+      state[z][row][col] = 0;
+      el.classList.remove('conflict');
+      hideMessage();
+    }
     return;
   }
 
-  if (e.key === 'Backspace' || e.key === 'Delete') {
-    applyValue(0);
-    return;
-  }
-
+  // Escape — deselect
   if (e.key === 'Escape') {
     clearSelection();
+    el.blur();
     return;
   }
 
-  // Arrow keys navigate while keeping selection
-  const { z, row, col } = selected;
+  // Arrow keys — move focus to the adjacent cell within the same slice
   const moves = {
     ArrowRight: [z, row, (col + 1) % 3],
     ArrowLeft:  [z, row, (col + 2) % 3],
@@ -275,9 +235,9 @@ document.addEventListener('keydown', e => {
   if (moves[e.key]) {
     e.preventDefault();
     const [nz, nr, nc] = moves[e.key];
-    selectCell(nz, nr, nc);
+    getCell(nz, nr, nc)?.focus();
   }
-});
+}
 
 // ── New Game ───────────────────────────────────────────────────────────────
 
@@ -349,7 +309,6 @@ async function checkSolution() {
 function init() {
   buildGrids();
   renderState();
-  initKeypad();
 
   document.getElementById('btn-new-game').addEventListener('click', newGame);
   document.getElementById('btn-check').addEventListener('click', checkSolution);

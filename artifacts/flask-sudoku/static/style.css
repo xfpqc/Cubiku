@@ -9,28 +9,35 @@
 }
 
 :root {
-  --bg:             #0f172a;
-  --surface:        #1e293b;
-  --surface-alt:    #273548;
-  --border:         #334155;
-  --accent:         #6366f1;
-  --accent-hover:   #818cf8;
-  --accent-glow:    rgba(99, 102, 241, 0.45);
-  --depth-bg:       rgba(99, 102, 241, 0.10);
-  --depth-ring:     rgba(99, 102, 241, 0.32);
-  --clue-bg:        #2d3f5e;
-  --clue-color:     #e2e8f0;
-  --clue-depth-bg:  #354f72;
-  --cell-bg:        #1e293b;
-  --cell-color:     #94a3b8;
-  --cell-selected:  #1e2d48;
-  --text-primary:   #f1f5f9;
-  --text-muted:     #64748b;
-  --success:        #22c55e;
-  --error:          #ef4444;
-  --radius:         8px;
-  /* slice gap — intentionally narrow to read as thick sudoku borders */
-  --slice-gap:      0.35rem;
+  --bg:               #0f172a;
+  --surface:          #1e293b;
+  --surface-alt:      #273548;
+  --border:           #334155;
+  --accent:           #6366f1;
+  --accent-hover:     #818cf8;
+  --accent-glow:      rgba(99, 102, 241, 0.45);
+
+  /* Crosshair: row/col arm cells */
+  --ch-bg:            rgba(99, 102, 241, 0.10);
+  --ch-ring:          rgba(99, 102, 241, 0.28);
+
+  /* Crosshair: the active (tapped) cell */
+  --active-bg:        #1e2d48;
+  --active-ring:      var(--accent);
+  --active-glow:      var(--accent-glow);
+
+  --clue-bg:          #2d3f5e;
+  --clue-color:       #e2e8f0;
+  --cell-bg:          #1e293b;
+  --cell-color:       #94a3b8;
+  --text-primary:     #f1f5f9;
+  --text-muted:       #64748b;
+  --success:          #22c55e;
+  --error:            #ef4444;
+  --radius:           8px;
+
+  /* Tight gap between the three slices — reads as a thick Sudoku border */
+  --slice-gap:        0.35rem;
 }
 
 html, body { height: 100%; }
@@ -51,7 +58,6 @@ body {
   width: 100%;
   max-width: 960px;
   margin: 0 auto;
-  /* tighter horizontal padding so all 9 columns breathe on phones */
   padding: 1.5rem 0.5rem 3rem;
   display: flex;
   flex-direction: column;
@@ -132,21 +138,21 @@ h1 .subtitle {
 .message-bar.error   { background: rgba(239,68,68,0.15);  color: var(--error);        border: 1px solid rgba(239,68,68,0.3); }
 .message-bar.info    { background: rgba(99,102,241,0.15); color: var(--accent-hover); border: 1px solid rgba(99,102,241,0.3); }
 
-/* ── Slices — ALWAYS horizontal, fluid ───────────────────── */
+/* ── Slices — always horizontal, fluid ───────────────────── */
 
 .slices-container {
   display: flex;
-  flex-direction: row;      /* never stacked — user wants horizontal at all sizes */
+  flex-direction: row;    /* never stacked */
   flex-wrap: nowrap;
-  gap: var(--slice-gap);    /* narrow gap reads as thick sudoku border */
+  gap: var(--slice-gap);  /* narrow gap = thick Sudoku-style divider */
   width: 100%;
-  max-width: 640px;         /* comfortable cap on large screens */
+  max-width: 640px;
   justify-content: center;
   align-items: flex-start;
 }
 
 .slice-wrapper {
-  flex: 1 1 0;              /* three equal columns, fluid */
+  flex: 1 1 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -179,75 +185,78 @@ h1 .subtitle {
   border-radius: calc(var(--radius) + 2px);
   padding: clamp(2px, 0.6vw, 4px);
   width: 100%;
-  /* square grid: height tracks width automatically */
   aspect-ratio: 1;
 }
 
-/* ── Cells — fluid squares ───────────────────────────────── */
+/* ── Cells (<input> elements) ────────────────────────────── */
 
 .cell {
-  /* fill the grid column/row */
+  /* fill the grid cell, stay square */
   width: 100%;
   height: 100%;
   aspect-ratio: 1;
+
+  /* appearance */
   border-radius: calc(var(--radius) - 2px);
   background: var(--cell-bg);
   color: var(--cell-color);
-  /* text scales with viewport so it stays readable as cells shrink */
+  border: 2px solid transparent;
+
+  /* text */
   font-size: clamp(0.72rem, 3.2vw, 1.4rem);
   font-family: inherit;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  text-align: center;
+
+  /* interactions */
   cursor: pointer;
-  user-select: none;
-  outline: 2px solid transparent;
-  outline-offset: -2px;
-  transition: outline-color 0.12s, background 0.12s, color 0.12s, box-shadow 0.12s;
+  caret-color: transparent;   /* hide the text cursor inside the box */
+  outline: none;
+  transition: background 0.12s, border-color 0.12s, color 0.12s, box-shadow 0.12s;
   touch-action: manipulation;
+
+  /* suppress browser input chrome */
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-/* Keyboard focus */
-.cell:focus-visible {
-  outline-color: var(--accent);
-}
-
-/* ── Depth highlight — same (x, y) in the other slices ───── */
-
-.cell.depth-highlight {
-  background: var(--depth-bg);
-  outline-color: var(--depth-ring);
-}
-
-/* Clue cells that share the pillar */
-.cell.clue.depth-highlight {
-  background: var(--clue-depth-bg);
-  outline-color: var(--depth-ring);
-}
-
-/* ── Selected cell — bright indigo ring ──────────────────── */
-
-.cell.selected {
-  outline-color: var(--accent);
-  background: var(--cell-selected);
-  color: var(--text-primary);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-}
-
-/* ── Clue cells ──────────────────────────────────────────── */
-
+/* Clue cells — bold, not interactive */
 .cell.clue {
   background: var(--clue-bg);
   color: var(--clue-color);
   font-weight: 700;
   cursor: default;
+  pointer-events: none;
 }
 
-/* ── Conflict highlight ──────────────────────────────────── */
+/* ── Crosshair — constraint arm ──────────────────────────── */
+
+.cell.constraint-highlight {
+  background: var(--ch-bg);
+  border-color: var(--ch-ring);
+}
+
+/* Clue cells on the arm get a slightly lighter tint so they stay legible */
+.cell.clue.constraint-highlight {
+  background: #354f72;
+  border-color: var(--ch-ring);
+  pointer-events: none;
+}
+
+/* ── Crosshair — active (tapped) cell ────────────────────── */
+
+.cell.active-cell {
+  background: var(--active-bg);
+  border-color: var(--active-ring);
+  color: var(--text-primary);
+  box-shadow: 0 0 0 3px var(--active-glow);
+  caret-color: var(--accent);   /* show cursor while typing */
+}
+
+/* ── Conflict highlight (after Check Solution) ───────────── */
 
 .cell.conflict {
-  outline-color: var(--error);
+  border-color: var(--error);
   background: rgba(239, 68, 68, 0.12);
   color: var(--error);
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
@@ -258,65 +267,6 @@ h1 .subtitle {
 .grid.loading .cell {
   opacity: 0.35;
   pointer-events: none;
-}
-
-/* ── Keypad ──────────────────────────────────────────────── */
-
-.keypad {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0.45rem;
-  width: 100%;
-  max-width: 400px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) + 4px);
-  padding: 0.85rem;
-}
-
-.key-btn {
-  height: clamp(44px, 11vw, 52px);
-  font-size: clamp(1rem, 3.5vw, 1.3rem);
-  font-weight: 600;
-  font-family: inherit;
-  color: var(--text-primary);
-  background: var(--surface-alt);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.12s, transform 0.08s, box-shadow 0.12s;
-  touch-action: manipulation;
-  user-select: none;
-}
-
-.key-btn:hover {
-  background: #3a4d66;
-  box-shadow: 0 0 0 2px var(--accent-glow);
-}
-
-.key-btn:active {
-  transform: scale(0.93);
-  background: var(--accent);
-  color: #fff;
-}
-
-.key-clear {
-  background: rgba(239, 68, 68, 0.12);
-  color: var(--error);
-  border-color: rgba(239, 68, 68, 0.3);
-}
-
-.key-clear:hover {
-  background: rgba(239, 68, 68, 0.22);
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
-}
-
-.key-clear:active {
-  background: var(--error);
-  color: #fff;
 }
 
 /* ── Footer ─────────────────────────────────────────────── */

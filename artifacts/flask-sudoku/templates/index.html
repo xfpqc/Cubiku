@@ -23,7 +23,7 @@
 
     <div id="message-bar" class="message-bar hidden"></div>
 
-    <!-- Three slices rendered side-by-side (stacked on mobile) -->
+    <!-- Three slices always side-by-side -->
     <div class="slices-container" id="slices-container">
       <div class="slice-wrapper">
         <h2 class="slice-label">Slice <em>z</em> = 0</h2>
@@ -39,22 +39,8 @@
       </div>
     </div>
 
-    <!-- Custom number pad — prevents native mobile keyboard -->
-    <div class="keypad" id="keypad" aria-label="Number pad">
-      <button class="key-btn" data-value="1">1</button>
-      <button class="key-btn" data-value="2">2</button>
-      <button class="key-btn" data-value="3">3</button>
-      <button class="key-btn" data-value="4">4</button>
-      <button class="key-btn" data-value="5">5</button>
-      <button class="key-btn" data-value="6">6</button>
-      <button class="key-btn" data-value="7">7</button>
-      <button class="key-btn" data-value="8">8</button>
-      <button class="key-btn" data-value="9">9</button>
-      <button class="key-btn key-clear" data-value="0" aria-label="Clear cell">✕</button>
-    </div>
-
     <footer>
-      <p>Tap a cell to select it, then tap a number to fill it in. Bold cells are fixed clues.</p>
+      <p>Tap a cell and type a number (1–9). Bold cells are fixed clues.</p>
     </footer>
   </div>
 
