@@ -19,7 +19,7 @@
 
   --accent:       #A8DADC;       /* pastel cyan — active cell, CTA    */
   --accent-text:  #121212;       /* text inside cyan circle           */
-  --ch-bg:        rgba(168, 218, 220, 0.08); /* crosshair arm tint   */
+  --ch-bg:        rgba(168, 218, 220, 0.04); /* crosshair arm tint   */
 
   --text-primary: #E0E0E0;
   --text-muted:   #4A4A4A;
@@ -171,7 +171,8 @@ h1 {
   grid-template-rows:    repeat(3, 1fr);
   gap:        2px;                /* gap colour = grid-line, forms thin rules */
   background: var(--grid-line);   /* shows through gaps as lines */
-  border-radius: 4px;             /* tiny rounding to soften hard edge */
+  border:     1px solid var(--grid-line); /* outer frame, same colour as lines — no doubling */
+  border-radius: 4px;             /* polished outer corners */
   padding:    0;                  /* no outer padding — pure flush look */
   width:      100%;
   aspect-ratio: 1;
