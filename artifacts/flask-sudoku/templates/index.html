@@ -3,44 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>3D Sudoku (3-SSC)</title>
+  <title>Cubiku</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <div class="page-wrapper">
     <header>
-      <h1>3D Sudoku <span class="subtitle">3-SSC</span></h1>
-      <p class="description">
-        Fill each 3×3 slice so that all 3-SSC constraints are satisfied.
-        Numbers&nbsp;1–9 only.
-      </p>
+      <h1>Cubiku</h1>
+      <p class="description">3-dimensional Sudoku · three slices · one solution</p>
     </header>
 
     <div class="controls">
       <button id="btn-new-game" class="btn btn-primary">New Game</button>
-      <button id="btn-check" class="btn btn-secondary">Check Solution</button>
+      <button id="btn-check"    class="btn btn-secondary">Check</button>
     </div>
 
     <div id="message-bar" class="message-bar hidden"></div>
 
-    <!-- Three slices always side-by-side -->
     <div class="slices-container" id="slices-container">
       <div class="slice-wrapper">
-        <h2 class="slice-label">Slice <em>z</em> = 0</h2>
+        <p class="slice-label">z = 0</p>
         <div class="grid" id="grid-z0"></div>
       </div>
       <div class="slice-wrapper">
-        <h2 class="slice-label">Slice <em>z</em> = 1</h2>
+        <p class="slice-label">z = 1</p>
         <div class="grid" id="grid-z1"></div>
       </div>
       <div class="slice-wrapper">
-        <h2 class="slice-label">Slice <em>z</em> = 2</h2>
+        <p class="slice-label">z = 2</p>
         <div class="grid" id="grid-z2"></div>
       </div>
     </div>
 
     <footer>
-      <p>Tap a cell and type a number (1–9). Bold cells are fixed clues.</p>
+      <p>Tap a cell · type 1–9 · bold numbers are clues</p>
     </footer>
   </div>
 
