@@ -10,22 +10,25 @@
 
 :root {
   /* ── Palette ─────────────────────────────────────────── */
-  --bg:           #121212;       /* deep charcoal page bg             */
-  --grid-line:    #2A2A2A;       /* ultra-thin separator lines        */
-  --slice-divider:#3A3A3A;       /* slightly more visible slice gap   */
+  --bg:           #121212;
+  --grid-line:    #2A2A2A;
 
-  --clue-color:   #FFFFFF;       /* pre-filled clue: pure white, bold */
-  --user-color:   #B0B0B0;       /* user-typed: softer gray           */
+  --clue-color:   #FFFFFF;
+  --user-color:   #B0B0B0;
 
-  --accent:       #A8DADC;       /* pastel cyan — active cell, CTA    */
-  --accent-text:  #121212;       /* text inside cyan circle           */
-  --ch-bg:        rgba(168, 218, 220, 0.04); /* crosshair arm tint   */
+  --accent:       #A8DADC;
+  --accent-text:  #121212;
+
+  /* Crosshair arm — 3 % opacity of the same cyan, barely-there */
+  --ch-bg:        rgba(168, 218, 220, 0.03);
 
   --text-primary: #E0E0E0;
   --text-muted:   #4A4A4A;
 
   --success-color:#6FCFA3;
   --error-color:  #E07070;
+  --flash-color:  #FF6F61;
+
   --radius:       6px;
 }
 
@@ -52,7 +55,7 @@ body {
   display:    flex;
   flex-direction: column;
   align-items: center;
-  gap:        1.75rem;
+  gap:        1.5rem;
 }
 
 /* ── Header ─────────────────────────────────────────────── */
@@ -67,17 +70,41 @@ h1 {
 }
 
 .description {
-  margin-top: 0.35rem;
-  color:      var(--text-muted);
-  font-size:  clamp(0.72rem, 2.2vw, 0.85rem);
+  margin-top:  0.35rem;
+  color:       var(--text-muted);
+  font-size:   clamp(0.72rem, 2.2vw, 0.85rem);
   font-weight: 300;
   letter-spacing: 0.3px;
+}
+
+/* ── Timer bar ───────────────────────────────────────────── */
+
+.timer-bar {
+  display:     flex;
+  align-items: center;
+  gap:         0.6rem;
+}
+
+#timer-display {
+  font-size:      clamp(1rem, 3.5vw, 1.25rem);
+  font-weight:    300;
+  letter-spacing: 3px;
+  color:          var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  min-width:      3.8ch;  /* prevent layout shift as digits change */
+  text-align:     center;
+}
+
+/* Zen mode: hide the timer digits (button stays visible) */
+.timer-bar.zen #timer-display {
+  visibility: hidden;
 }
 
 /* ── Controls ───────────────────────────────────────────── */
 
 .controls {
   display:         flex;
+  align-items:     center;
   flex-wrap:       wrap;
   gap:             0.6rem;
   justify-content: center;
@@ -90,7 +117,7 @@ h1 {
   font-weight:   500;
   letter-spacing: 0.4px;
   border:        none;
-  border-radius: 100px;   /* pill shape */
+  border-radius: 100px;
   cursor:        pointer;
   transition:    opacity 0.15s, transform 0.1s;
   touch-action:  manipulation;
@@ -103,7 +130,7 @@ h1 {
   background: var(--accent);
   color:      var(--accent-text);
 }
-.btn-primary:hover  { opacity: 0.88; }
+.btn-primary:hover { opacity: 0.88; }
 
 .btn-secondary {
   background: transparent;
@@ -113,6 +140,38 @@ h1 {
 .btn-secondary:hover {
   border-color: #444;
   color:        var(--text-primary);
+}
+
+/* Shared icon-button style — used by Undo and Zen toggle */
+.btn-icon {
+  width:        38px;
+  height:       38px;
+  display:      flex;
+  align-items:  center;
+  justify-content: center;
+  background:   transparent;
+  border:       1px solid var(--grid-line);
+  border-radius: 50%;
+  color:        var(--text-muted);
+  cursor:       pointer;
+  transition:   border-color 0.15s, color 0.15s, transform 0.1s;
+  touch-action: manipulation;
+  flex-shrink:  0;
+  padding:      0;
+}
+
+.btn-icon:hover {
+  border-color: #555;
+  color:        var(--text-primary);
+}
+
+.btn-icon:active { transform: scale(0.93); }
+
+/* Undo disabled when history is empty */
+#btn-undo:disabled {
+  opacity: 0.25;
+  cursor:  default;
+  pointer-events: none;
 }
 
 /* ── Message bar ────────────────────────────────────────── */
@@ -136,10 +195,8 @@ h1 {
 
 .slices-container {
   display:         flex;
-  flex-direction:  row;       /* never stacked */
+  flex-direction:  row;
   flex-wrap:       nowrap;
-  /* thicker gap between slices than the 2px internal grid lines,
-     visually reads as the "thick border" between 3×3 blocks */
   gap:             10px;
   width:           100%;
   max-width:       600px;
@@ -169,50 +226,43 @@ h1 {
   display:    grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows:    repeat(3, 1fr);
-  gap:        2px;                /* gap colour = grid-line, forms thin rules */
-  background: var(--grid-line);   /* shows through gaps as lines */
-  border:     1px solid var(--grid-line); /* outer frame, same colour as lines — no doubling */
-  border-radius: 4px;             /* polished outer corners */
-  padding:    0;                  /* no outer padding — pure flush look */
+  gap:        2px;
+  background: var(--grid-line);
+  border:     1px solid var(--grid-line);
+  border-radius: 4px;
+  padding:    0;
   width:      100%;
   aspect-ratio: 1;
-  overflow:   hidden;             /* clip cells to the rounded corner */
+  overflow:   hidden;
 }
 
 /* ── Cells (<input>) ─────────────────────────────────────── */
 
 .cell {
-  /* size */
   width:         100%;
   height:        100%;
   aspect-ratio:  1;
-
-  /* blank canvas — no chrome at all */
   background:    var(--bg);
   border:        none;
   outline:       none;
   box-shadow:    none;
-
-  /* typography */
   font-family:   inherit;
   font-size:     clamp(0.78rem, 3.4vw, 1.35rem);
   font-weight:   400;
   color:         var(--user-color);
   text-align:    center;
-
-  /* behaviour */
   cursor:        pointer;
   caret-color:   transparent;
-  transition:    background 0.1s, color 0.1s;
+  /* color transition enables the flash-conflict fade-out */
+  transition:    background 0.1s, color 0.6s;
   touch-action:  manipulation;
   -webkit-appearance: none;
   appearance:    none;
 }
 
-/* Remove inner highlight on WebKit/mobile tap */
 .cell:focus { outline: none; }
 
-/* Clue cells — pure white, bold, not interactive */
+/* Clue cells — white, bold, not interactive */
 .cell.clue {
   color:          var(--clue-color);
   font-weight:    700;
@@ -220,32 +270,30 @@ h1 {
   pointer-events: none;
 }
 
-/* ── Crosshair arms (.constraint-highlight) ──────────────── */
+/* ── Crosshair arms ──────────────────────────────────────── */
 
 .cell.constraint-highlight {
+  /* 3% cyan — just enough to trace the arm without intruding */
   background: var(--ch-bg);
-  /* no border, no ring — purely the faint tint */
 }
 
-/* ── Active cell (.active-cell) — circular cyan highlight ─── */
-/*
- * The cell is square. We draw a cyan circle using a radial-gradient
- * centred in the cell (radius ≈ 42% of the cell size) so the circle
- * sits comfortably inside with a little breathing room.
- */
+/* ── Active cell — circular cyan highlight ───────────────── */
+
 .cell.active-cell {
   background: radial-gradient(
     circle,
     var(--accent) 0%,
     var(--accent) 42%,
-    transparent  43%
+    transparent   43%
   );
   color:       var(--accent-text);
   font-weight: 600;
   caret-color: var(--accent-text);
+  /* speed up any lingering color transition so the circle pops instantly */
+  transition:  background 0.05s, color 0.05s;
 }
 
-/* Active cell that is also on a constraint arm — keep the circle sharp */
+/* Active cell sitting on a constraint arm */
 .cell.active-cell.constraint-highlight {
   background: radial-gradient(
     circle,
@@ -255,16 +303,23 @@ h1 {
   );
 }
 
-/* ── Conflict highlight (after Check Solution) ───────────── */
+/* ── Conflict flash (1-second red warning) ───────────────── */
+
+.cell.flash-conflict {
+  color:      var(--flash-color) !important;
+  /* instant to red; the transition on .cell handles the 0.6s fade-back
+     once the class is removed */
+  transition: color 0s;
+}
+
+/* ── Permanent conflict highlight (after Check Solution) ──── */
 
 .cell.conflict {
-  background: rgba(224, 112, 112, 0.13);
+  background: rgba(224, 112, 112, 0.10);
   color:      var(--error-color);
 }
 
-.cell.clue.conflict {
-  color: var(--error-color);
-}
+.cell.clue.conflict { color: var(--error-color); }
 
 /* ── Loading state ───────────────────────────────────────── */
 
