@@ -19,8 +19,8 @@
   --accent:       #A8DADC;
   --accent-text:  #121212;
 
-  /* Crosshair arm — 3 % opacity of the same cyan, barely-there */
-  --ch-bg:        rgba(168, 218, 220, 0.03);
+  /* Crosshair arm — micro white wash, no hue shift */
+  --ch-bg:        rgba(255, 255, 255, 0.015);
 
   --text-primary: #E0E0E0;
   --text-muted:   #4A4A4A;
@@ -262,12 +262,12 @@ h1 {
 
 .cell:focus { outline: none; }
 
-/* Clue cells — white, bold, not interactive */
+/* Clue cells — white, bold, tappable for crosshair but not editable */
 .cell.clue {
-  color:          var(--clue-color);
-  font-weight:    700;
-  cursor:         default;
-  pointer-events: none;
+  color:       var(--clue-color);
+  font-weight: 700;
+  cursor:      default;
+  /* pointer-events left on so tapping shows the crosshair */
 }
 
 /* ── Crosshair arms ──────────────────────────────────────── */

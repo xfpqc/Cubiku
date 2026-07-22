@@ -144,8 +144,8 @@ function applyCrosshair(selZ, selRow, selCol) {
 
 function selectCell(z, row, col) {
   clearHighlights();
-  if (clueSet.has(`${z},${row},${col}`)) { selected = null; return; }
-  selected = { z, row, col };
+  // Clues show the crosshair but cannot be edited — selected stays null for them
+  selected = clueSet.has(`${z},${row},${col}`) ? null : { z, row, col };
   applyCrosshair(z, row, col);
 }
 
@@ -409,6 +409,13 @@ function init() {
   document.getElementById('btn-check').addEventListener('click', checkSolution);
   document.getElementById('btn-undo').addEventListener('click', undoMove);
   document.getElementById('btn-zen').addEventListener('click', toggleZen);
+
+  // Tap / click anywhere outside the grids → clear crosshair
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#slices-container')) {
+      clearSelection();
+    }
+  });
 
   newGame();
 }
