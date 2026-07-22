@@ -4,6 +4,7 @@ run = "python main.py"
 [deployment]
 router = "application"
 deploymentTarget = "autoscale"
+runCommand = "python main.py"
 
 [deployment.postBuild]
 args = ["pnpm", "store", "prune"]
