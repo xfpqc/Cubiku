@@ -1,0 +1,467 @@
+/* =========================================================
+   Cubiku — Midnight Slate & Customizable Themes stylesheet
+   ========================================================= */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+:root {
+  --bg:           #121212;
+  --grid-line:    #2A2A2A;
+  --accent-text:  #121212;
+  --user-color:   #B0B0B0;
+
+  --text-primary: #E0E0E0;
+  --text-muted:   #4A4A4A;
+
+  --success-color:#6FCFA3;
+  --error-color:  #E07070;
+  --flash-color:  #FF6F61;
+
+  --radius:       6px;
+}
+
+/* ── Theme Definitions ──────────────────────────────────── */
+
+body[data-theme="gold"] {
+  --accent:       #E4C59E; /* Muted Gold / Amber */
+  --ch-bg:        rgba(228, 197, 158, 0.03);
+  --num-hl:       rgba(228, 197, 158, 0.15);
+}
+
+body[data-theme="cyan"] {
+  --accent:       #A8DADC; /* Soft Cyan */
+  --ch-bg:        rgba(168, 218, 220, 0.03);
+  --num-hl:       rgba(168, 218, 220, 0.15);
+}
+
+body[data-theme="mint"] {
+  --accent:       #A3E4D7; /* Emerald Mint */
+  --ch-bg:        rgba(163, 228, 215, 0.03);
+  --num-hl:       rgba(163, 228, 215, 0.15);
+}
+
+body[data-theme="rose"] {
+  --accent:       #F5B7B1; /* Rose Quartz */
+  --ch-bg:        rgba(245, 183, 177, 0.03);
+  --num-hl:       rgba(245, 183, 177, 0.15);
+}
+
+body[data-theme="lavender"] {
+  --accent:       #D7BDE2; /* Lavender Dusk */
+  --ch-bg:        rgba(215, 189, 226, 0.03);
+  --num-hl:       rgba(215, 189, 226, 0.15);
+}
+
+:root {
+  --clue-color:   var(--accent);
+}
+
+html, body { height: 100%; }
+
+body {
+  background:  var(--bg);
+  color:       var(--text-primary);
+  font-family: 'Poppins', system-ui, sans-serif;
+  min-height:  100vh;
+  display:     flex;
+  flex-direction: column;
+  touch-action: manipulation;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Page wrapper ────────────────────────────────────────── */
+
+.page-wrapper {
+  width:       100%;
+  max-width:   960px;
+  margin:      0 auto;
+  padding:     2rem 0.5rem 3.5rem;
+  display:     flex;
+  flex-direction: column;
+  align-items: center;
+  gap:         1.5rem;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+
+header { text-align: center; }
+
+h1 {
+  font-size:     clamp(2.4rem, 8vw, 3rem);
+  font-weight:   700;
+  letter-spacing: -1px;
+  color:         var(--text-primary);
+}
+
+@media (max-width: 599px) {
+  h1 {
+    font-size: 2.75rem; /* Noticeably larger and well-proportioned on mobile */
+  }
+}
+
+.description {
+  margin-top:  0.35rem;
+  color:       var(--text-muted);
+  font-size:   clamp(0.72rem, 2.2vw, 0.85rem);
+  font-weight: 300;
+  letter-spacing: 0.3px;
+}
+
+/* ── Top Action Bar ──────────────────────────────────────── */
+
+.top-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+@media (max-width: 599px) {
+  .top-action-bar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+/* ── Timer bar ───────────────────────────────────────────── */
+
+.timer-bar {
+  display:     flex;
+  align-items: center;
+  gap:         0.6rem;
+}
+
+#timer-display {
+  font-size:     clamp(1rem, 3.5vw, 1.25rem);
+  font-weight:   300;
+  letter-spacing: 3px;
+  color:         var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  min-width:     3.8ch;
+  text-align:     center;
+}
+
+.timer-bar.zen #timer-display {
+  visibility: hidden;
+}
+
+/* ── Controls ───────────────────────────────────────────── */
+
+.controls {
+  display:         flex;
+  align-items:     center;
+  flex-wrap:       wrap;
+  gap:             0.75rem;
+  justify-content: center;
+}
+
+.btn {
+  height:          40px;
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  padding:         0 1.5rem;
+  font-family:     inherit;
+  font-size:       0.85rem;
+  font-weight:     500;
+  letter-spacing:  0.4px;
+  border:          none;
+  border-radius:   100px;
+  cursor:          pointer;
+  transition:      opacity 0.15s, transform 0.1s;
+  touch-action:    manipulation;
+  white-space:     nowrap;
+}
+
+.btn:active { transform: scale(0.96); }
+
+.btn-primary {
+  background: var(--accent);
+  color:      var(--accent-text);
+}
+.btn-primary:hover { opacity: 0.88; }
+
+.btn-icon {
+  width:         40px;
+  height:        40px;
+  display:       inline-flex;
+  align-items:   center;
+  justify-content: center;
+  background:    transparent;
+  border:        1px solid var(--grid-line);
+  border-radius: 50%;
+  color:         var(--text-muted);
+  cursor:        pointer;
+  transition:    border-color 0.15s, color 0.15s, transform 0.1s;
+  touch-action:  manipulation;
+  flex-shrink:   0;
+  padding:       0;
+}
+
+.btn-icon:hover {
+  border-color: #555;
+  color:        var(--text-primary);
+}
+
+.btn-icon:active { transform: scale(0.93); }
+
+#btn-undo:disabled {
+  opacity: 0.2;
+  cursor:  default;
+  pointer-events: none;
+  border-color: var(--grid-line);
+}
+
+/* ── Settings Panel ──────────────────────────────────────── */
+
+.settings-panel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--grid-line);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 320px;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.setting-item select {
+  background: var(--bg);
+  color: var(--text-primary);
+  border: 1px solid var(--grid-line);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+/* ── Message bar ────────────────────────────────────────── */
+
+.message-bar {
+  width:       100%;
+  padding:     0.4rem 1rem;
+  border-radius: var(--radius);
+  font-size:   clamp(0.8rem, 2.3vw, 0.9rem);
+  font-weight: 500;
+  text-align:  center;
+  letter-spacing: 0.2px;
+  background:  transparent;
+  border:      none !important;
+}
+
+.message-bar.hidden  { display: none; }
+.message-bar.success { color: var(--success-color); }
+.message-bar.error   { color: var(--error-color); }
+.message-bar.info    { color: var(--accent); }
+
+/* ── Slices ──────────────────────────────────────────────── */
+
+.slices-container {
+  display:         flex;
+  flex-direction:  row;
+  flex-wrap:       nowrap;
+  gap:             12px;
+  width:           100%;
+  max-width:       600px;
+  justify-content: center;
+  align-items:     flex-start;
+}
+
+.slice-wrapper {
+  flex:        1 1 0;
+  min-width:   0;
+  display:     flex;
+  flex-direction: column;
+  align-items: center;
+  gap:         0.3rem;
+}
+
+.slice-label {
+  font-size:    clamp(0.6rem, 1.9vw, 0.78rem);
+  font-weight:  300;
+  color:         var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+/* ── Grid ────────────────────────────────────────────────── */
+
+.grid {
+  display:    grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows:    repeat(3, 1fr);
+  gap:        2px;
+  background: var(--grid-line);
+  border:     3px solid #444;
+  border-radius: 6px;
+  padding:    0;
+  width:      100%;
+  aspect-ratio: 1;
+  overflow:   hidden;
+}
+
+/* ── Cells (<input>) ─────────────────────────────────────── */
+
+.cell {
+  width:         100%;
+  height:        100%;
+  aspect-ratio:  1;
+  background:    var(--bg);
+  border:        none;
+  outline:       none;
+  box-shadow:    none;
+  font-family:   inherit;
+  font-size:     clamp(0.78rem, 3.4vw, 1.35rem);
+  font-weight:   400;
+  color:         var(--user-color);
+  text-align:    center;
+  cursor:        pointer;
+  caret-color:   transparent;
+  transition:    background 0.1s, color 0.6s;
+  touch-action:  manipulation;
+  -webkit-appearance: none;
+  appearance:    none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cell:focus { outline: none; }
+
+.cell.clue {
+  color:       var(--clue-color);
+  font-weight: 700;
+  cursor:      default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cell.constraint-highlight {
+  background: var(--ch-bg);
+}
+
+.cell.number-highlight {
+  background: var(--num-hl) !important;
+}
+
+.cell.active-cell {
+  background: radial-gradient(
+    circle,
+    var(--accent) 0%,
+    var(--accent) 42%,
+    transparent   43%
+  );
+  color:       var(--accent-text);
+  font-weight: 600;
+  caret-color: var(--accent-text);
+  transition:  background 0.05s, color 0.05s;
+}
+
+.cell.active-cell.constraint-highlight {
+  background: radial-gradient(
+    circle,
+    var(--accent) 0%,
+    var(--accent) 42%,
+    var(--ch-bg)  43%
+  );
+}
+
+.cell.flash-conflict {
+  color:      var(--flash-color) !important;
+  transition: color 0s;
+}
+
+.cell.conflict {
+  background: rgba(224, 112, 112, 0.10);
+  color:      var(--error-color);
+}
+
+.cell.clue.conflict { color: var(--error-color); }
+
+.grid.loading .cell {
+  opacity:        0.3;
+  pointer-events: none;
+}
+
+/* ── Onscreen Keyboard ───────────────────────────────────── */
+
+.keyboard-container {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+/* Mobile: Perfectly proportioned, sleek keys that don't look oversized */
+@media (max-width: 599px) {
+  .keyboard-container {
+    max-width: 330px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .key-btn {
+    flex: 0 0 calc(20% - 6px);
+    height: 44px;
+    font-size: 1.25rem;
+  }
+}
+
+/* Laptop / Desktop: 1 single row scaled to ~6 cells width (~420px) */
+@media (min-width: 600px) {
+  .keyboard-container {
+    max-width: 420px;
+    flex-wrap: nowrap;
+  }
+  .key-btn {
+    flex: 1 1 0;
+    height: 48px;
+    font-size: 1.4rem;
+  }
+}
+
+.key-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--grid-line);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  touch-action: manipulation;
+  padding: 0;
+}
+
+.key-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #555;
+}
+
+.key-btn:active {
+  transform: scale(0.95);
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
+
+footer {
+  color:          var(--text-muted);
+  font-size:      clamp(0.68rem, 2vw, 0.78rem);
+  font-weight:    300;
+  text-align:     center;
+  letter-spacing: 0.3px;
+}
