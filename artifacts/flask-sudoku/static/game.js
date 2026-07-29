@@ -151,10 +151,8 @@ function applyCrosshair(selZ, selRow, selCol) {
 function selectCell(z, row, col) {
   clearHighlights();
   selected = clueSet.has(`${z},${row},${col}`) ? null : { z, row, col };
-  if (selected) {
-    applyCrosshair(z, row, col);
-    updateNumberHighlights();
-  }
+  applyCrosshair(z, row, col);
+  updateNumberHighlights();
 }
 
 function clearSelection() {
@@ -189,7 +187,6 @@ function updateKeyboardUI() {
     } else {
       b.classList.remove('active');
     }
-    // Clean up old inline styles just in case they were cached
     b.style.transform = '';
     b.style.fontWeight = '';
     b.style.border = '';
@@ -378,14 +375,13 @@ function onCellFocus(e) {
 }
 
 function onCellPointerDown(e) {
-  e.preventDefault(); // Prevents virtual keyboard popup and text selection
+  e.preventDefault(); 
   
   const el = e.currentTarget;
   const z = Number(el.dataset.z);
   const row = Number(el.dataset.row);
   const col = Number(el.dataset.col);
   
-  // Pro-Tip: Tapping a clue highlights that number globally!
   if (clueSet.has(`${z},${row},${col}`)) {
     activeNumber = String(state[z][row][col]);
     updateKeyboardUI();
@@ -395,10 +391,7 @@ function onCellPointerDown(e) {
   }
 
   if (activeNumber !== null) {
-    // Keypad First Method: A number is selected, place it in the cell
     fillCell(z, row, col, activeNumber);
-    
-    // Always keep the cell selected, crosshairs active, and number highlights visible simultaneously
     selectCell(z, row, col);
     updateNumberHighlights();
 
@@ -408,9 +401,7 @@ function onCellPointerDown(e) {
       updateNumberHighlights();
     }
   } else {
-    // Cell First Method: No number selected, select the cell
     selectCell(z, row, col);
-    updateNumberHighlights();
     el.focus();
   }
 }
@@ -469,13 +460,11 @@ function handleKeyboardTap(valStr) {
   if (btn && btn.classList.contains('depleted')) return;
 
   if (selected !== null) {
-    // Cell First Method: A cell was already active, fill it!
     const { z, row, col } = selected;
     fillCell(z, row, col, valStr);
     selectCell(z, row, col); 
     updateNumberHighlights();
   } else {
-    // Keypad First Method: Select the number on the keypad
     if (activeNumber === valStr) {
       activeNumber = null;
     } else {
@@ -566,7 +555,6 @@ function init() {
   const btnZen = document.getElementById('btn-zen');
   if (btnZen) btnZen.addEventListener('click', toggleZen);
   
-  // Rules Modal Event Listeners
   const btnInfo = document.getElementById('btn-info');
   if (btnInfo) btnInfo.addEventListener('click', toggleRules);
 
@@ -604,7 +592,6 @@ function init() {
     });
   }
 
-  // Sticky Keys Settings Listener
   const toggleSticky = document.getElementById('toggle-sticky-keys');
   if (toggleSticky) {
     toggleSticky.addEventListener('change', (e) => {
