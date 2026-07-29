@@ -9,49 +9,106 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
-<body>
+<body data-theme="gold">
   <div class="page-wrapper">
 
     <header>
       <h1>Cubiku</h1>
-      <p class="description">3-dimensional Sudoku · three slices · one solution</p>
+      <p class="description">3-dimensional Sudoku</p>
     </header>
 
-    <!-- Passive timer -->
-    <div class="timer-bar" id="timer-bar">
-      <span id="timer-display">00:00</span>
-      <button id="btn-zen" class="btn-icon" aria-label="Toggle Zen Mode" title="Zen Mode — hide timer">
-        <!-- eye open -->
-        <svg id="icon-eye-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="1.5"
-             stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
-          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-          <circle cx="12" cy="12" r="3"/>
-        </svg>
-        <!-- eye closed (hidden until zen mode is on) -->
-        <svg id="icon-eye-closed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="1.5"
-             stroke-linecap="round" stroke-linejoin="round" width="16" height="16"
-             style="display:none">
-          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-          <line x1="1" y1="1" x2="23" y2="23"/>
-        </svg>
-      </button>
+    <!-- Top Action Bar -->
+    <div class="top-action-bar">
+      <!-- Passive timer -->
+      <div class="timer-bar" id="timer-bar">
+        <span id="timer-display">00:00</span>
+        <button id="btn-zen" class="btn-icon" aria-label="Toggle Zen Mode" title="Zen Mode — hide timer">
+          <!-- eye open -->
+          <svg id="icon-eye-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <!-- eye closed -->
+          <svg id="icon-eye-closed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" width="16" height="16"
+               style="display:none">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="controls">
+        <button id="btn-new-game" class="btn btn-primary">New Game</button>
+        <button id="btn-undo"     class="btn-icon" aria-label="Undo last move" title="Undo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <path d="M3 7v6h6"/>
+            <path d="M3 13C5 7 10.5 4 16 5.5a9 9 0 1 1-7 12.5"/>
+          </svg>
+        </button>
+        
+        <!-- Info / How to Play button -->
+        <button id="btn-info" class="btn-icon" aria-label="How to play" title="How to play">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" 
+               fill="none" stroke="currentColor" stroke-width="1.5" 
+               stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </button>
+
+        <!-- Settings gear icon -->
+        <button id="btn-settings" class="btn-icon" aria-label="Settings" title="Settings">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" 
+               fill="none" stroke="currentColor" stroke-width="1.5" 
+               stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
     </div>
 
-    <div class="controls">
-      <button id="btn-new-game" class="btn btn-primary">New Game</button>
-      <button id="btn-undo"     class="btn-icon" aria-label="Undo last move" title="Undo">
-        <!-- rotate-left / undo arrow -->
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="1.5"
-             stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-          <path d="M3 7v6h6"/>
-          <path d="M3 13C5 7 10.5 4 16 5.5a9 9 0 1 1-7 12.5"/>
-        </svg>
-      </button>
-      <button id="btn-check" class="btn btn-secondary">Check</button>
+    <!-- Settings Panel -->
+    <div id="settings-panel" class="settings-panel" style="display: none;">
+      <div class="setting-item">
+        <label for="difficulty-select">Difficulty:</label>
+        <select id="difficulty-select">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <div class="setting-item">
+        <label for="theme-select">Theme Accent:</label>
+        <select id="theme-select">
+          <option value="gold" selected>Muted Gold</option>
+          <option value="cyan">Soft Cyan</option>
+          <option value="mint">Emerald Mint</option>
+          <option value="rose">Rose Quartz</option>
+          <option value="lavender">Lavender Dusk</option>
+        </select>
+      </div>
+      <div class="setting-item">
+        <label>
+          <input type="checkbox" id="toggle-keyboard" checked>
+          Show Onscreen Keyboard
+        </label>
+      </div>
+      <!-- New Sticky Keys Toggle -->
+      <div class="setting-item">
+        <label>
+          <input type="checkbox" id="toggle-sticky-keys">
+          Enable Sticky Keys
+        </label>
+      </div>
     </div>
 
     <div id="message-bar" class="message-bar hidden"></div>
@@ -71,11 +128,54 @@
       </div>
     </div>
 
+    <!-- Onscreen Keyboard -->
+    <div id="onscreen-keyboard" class="keyboard-container">
+      <button class="key-btn" data-val="1">1</button>
+      <button class="key-btn" data-val="2">2</button>
+      <button class="key-btn" data-val="3">3</button>
+      <button class="key-btn" data-val="4">4</button>
+      <button class="key-btn" data-val="5">5</button>
+      <button class="key-btn" data-val="6">6</button>
+      <button class="key-btn" data-val="7">7</button>
+      <button class="key-btn" data-val="8">8</button>
+      <button class="key-btn" data-val="9">9</button>
+    </div>
+
     <footer>
-      <p>Tap a cell · type 1–9 · bold numbers are clues</p>
+      <!-- Updated footer text to reflect bidirectional input -->
+      <p>Tap a cell or a number to start · bold numbers are clues</p> 
     </footer>
 
   </div>
+
+  <!-- Rules Modal -->
+  <div id="rules-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>How to Play Cubiku</h2>
+        <button id="btn-close-rules" class="btn-icon" aria-label="Close rules">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Cubiku is a 3-dimensional Sudoku puzzle. Instead of a flat 9x9 grid, you are solving a 3x3x3 cube, which has been sliced into three flat boards (z=0, z=1, and z=2).</p>
+        
+        <h3>The Goal</h3>
+        <p>Fill every empty cell with a number from <strong>1 to 9</strong>.</p>
+        
+        <h3>The 3 Rules of the Cube</h3>
+        <p>To win, every number (1-9) must appear exactly once in every 3x3 cross-section of the cube:</p>
+        <ul class="rules-list">
+          <li><strong>1. The Visible Slices (Z-Planes):</strong> Each of the three 3x3 boards on your screen must contain the numbers 1-9 exactly once.</li>
+          <li><strong>2. The Rows (Y-Planes):</strong> If you take Row 1 from <em>z=0</em>, Row 1 from <em>z=1</em>, and Row 1 from <em>z=2</em>, those 9 cells form a flat plane cutting through the cube. They must contain 1-9 exactly once.</li>
+          <li><strong>3. The Columns (X-Planes):</strong> Similarly, Column 1 from <em>z=0</em>, Column 1 from <em>z=1</em>, and Column 1 from <em>z=2</em> form a plane. They must contain 1-9 exactly once.</li>
+        </ul>
+
+        <div class="pro-tip">
+          <strong>Pro Tip:</strong> Tap a clue number on the board to instantly highlight every instance of it. You can tap a keypad number first and then cells, or tap a cell first and then the keypad!
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="/static/game.js"></script>
 </body>
 </html>

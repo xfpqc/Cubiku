@@ -1,26 +1,21 @@
 /* =========================================================
-   Cubiku — Midnight Slate dark-mode stylesheet
+   Cubiku — Midnight Slate & Customizable Themes stylesheet
    ========================================================= */
 
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 :root {
-  /* ── Palette ─────────────────────────────────────────── */
   --bg:           #121212;
   --grid-line:    #2A2A2A;
-
-  --clue-color:   #FFFFFF;
-  --user-color:   #B0B0B0;
-
-  --accent:       #A8DADC;
   --accent-text:  #121212;
-
-  /* Crosshair arm — micro white wash, no hue shift */
-  --ch-bg:        rgba(255, 255, 255, 0.015);
+  --user-color:   #B0B0B0;
 
   --text-primary: #E0E0E0;
   --text-muted:   #4A4A4A;
@@ -30,6 +25,42 @@
   --flash-color:  #FF6F61;
 
   --radius:       6px;
+}
+
+/* ── Theme Definitions ──────────────────────────────────── */
+
+body[data-theme="gold"] {
+  --accent:       #E4C59E; /* Muted Gold / Amber */
+  --ch-bg:        rgba(228, 197, 158, 0.03);
+  --num-hl:       rgba(228, 197, 158, 0.15);
+}
+
+body[data-theme="cyan"] {
+  --accent:       #A8DADC; /* Soft Cyan */
+  --ch-bg:        rgba(168, 218, 220, 0.03);
+  --num-hl:       rgba(168, 218, 220, 0.15);
+}
+
+body[data-theme="mint"] {
+  --accent:       #A3E4D7; /* Emerald Mint */
+  --ch-bg:        rgba(163, 228, 215, 0.03);
+  --num-hl:       rgba(163, 228, 215, 0.15);
+}
+
+body[data-theme="rose"] {
+  --accent:       #F5B7B1; /* Rose Quartz */
+  --ch-bg:        rgba(245, 183, 177, 0.03);
+  --num-hl:       rgba(245, 183, 177, 0.15);
+}
+
+body[data-theme="lavender"] {
+  --accent:       #D7BDE2; /* Lavender Dusk */
+  --ch-bg:        rgba(215, 189, 226, 0.03);
+  --num-hl:       rgba(215, 189, 226, 0.15);
+}
+
+:root {
+  --clue-color:   var(--accent);
 }
 
 html, body { height: 100%; }
@@ -48,14 +79,14 @@ body {
 /* ── Page wrapper ────────────────────────────────────────── */
 
 .page-wrapper {
-  width:      100%;
-  max-width:  960px;
-  margin:     0 auto;
-  padding:    2rem 0.5rem 3.5rem;
-  display:    flex;
+  width:       100%;
+  max-width:   960px;
+  margin:      0 auto;
+  padding:     2rem 0.5rem 3.5rem;
+  display:     flex;
   flex-direction: column;
   align-items: center;
-  gap:        1.5rem;
+  gap:         1.5rem;
 }
 
 /* ── Header ─────────────────────────────────────────────── */
@@ -63,10 +94,16 @@ body {
 header { text-align: center; }
 
 h1 {
-  font-size:      clamp(2rem, 7vw, 3rem);
-  font-weight:    700;
+  font-size:     clamp(2.4rem, 8vw, 3rem);
+  font-weight:   700;
   letter-spacing: -1px;
-  color:          var(--text-primary);
+  color:         var(--text-primary);
+}
+
+@media (max-width: 599px) {
+  h1 {
+    font-size: 2.75rem; 
+  }
 }
 
 .description {
@@ -75,6 +112,22 @@ h1 {
   font-size:   clamp(0.72rem, 2.2vw, 0.85rem);
   font-weight: 300;
   letter-spacing: 0.3px;
+}
+
+/* ── Top Action Bar ──────────────────────────────────────── */
+
+.top-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+@media (max-width: 599px) {
+  .top-action-bar {
+    flex-direction: column;
+    gap: 1rem;
+  }
 }
 
 /* ── Timer bar ───────────────────────────────────────────── */
@@ -86,16 +139,15 @@ h1 {
 }
 
 #timer-display {
-  font-size:      clamp(1rem, 3.5vw, 1.25rem);
-  font-weight:    300;
+  font-size:     clamp(1rem, 3.5vw, 1.25rem);
+  font-weight:   300;
   letter-spacing: 3px;
-  color:          var(--text-muted);
+  color:         var(--text-muted);
   font-variant-numeric: tabular-nums;
-  min-width:      3.8ch;  /* prevent layout shift as digits change */
+  min-width:     3.8ch;
   text-align:     center;
 }
 
-/* Zen mode: hide the timer digits (button stays visible) */
 .timer-bar.zen #timer-display {
   visibility: hidden;
 }
@@ -106,22 +158,26 @@ h1 {
   display:         flex;
   align-items:     center;
   flex-wrap:       wrap;
-  gap:             0.6rem;
+  gap:             0.75rem;
   justify-content: center;
 }
 
 .btn {
-  padding:       0.5rem 1.6rem;
-  font-family:   inherit;
-  font-size:     clamp(0.78rem, 2.3vw, 0.88rem);
-  font-weight:   500;
-  letter-spacing: 0.4px;
-  border:        none;
-  border-radius: 100px;
-  cursor:        pointer;
-  transition:    opacity 0.15s, transform 0.1s;
-  touch-action:  manipulation;
-  white-space:   nowrap;
+  height:          40px;
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  padding:         0 1.5rem;
+  font-family:     inherit;
+  font-size:       0.85rem;
+  font-weight:     500;
+  letter-spacing:  0.4px;
+  border:          none;
+  border-radius:   100px;
+  cursor:          pointer;
+  transition:      opacity 0.15s, transform 0.1s;
+  touch-action:    manipulation;
+  white-space:     nowrap;
 }
 
 .btn:active { transform: scale(0.96); }
@@ -132,32 +188,21 @@ h1 {
 }
 .btn-primary:hover { opacity: 0.88; }
 
-.btn-secondary {
-  background: transparent;
-  color:      var(--text-muted);
-  border:     1px solid var(--grid-line);
-}
-.btn-secondary:hover {
-  border-color: #444;
-  color:        var(--text-primary);
-}
-
-/* Shared icon-button style — used by Undo and Zen toggle */
 .btn-icon {
-  width:        38px;
-  height:       38px;
-  display:      flex;
-  align-items:  center;
+  width:         40px;
+  height:        40px;
+  display:       inline-flex;
+  align-items:   center;
   justify-content: center;
-  background:   transparent;
-  border:       1px solid var(--grid-line);
+  background:    transparent;
+  border:        1px solid var(--grid-line);
   border-radius: 50%;
-  color:        var(--text-muted);
-  cursor:       pointer;
-  transition:   border-color 0.15s, color 0.15s, transform 0.1s;
-  touch-action: manipulation;
-  flex-shrink:  0;
-  padding:      0;
+  color:         var(--text-muted);
+  cursor:        pointer;
+  transition:    border-color 0.15s, color 0.15s, transform 0.1s;
+  touch-action:  manipulation;
+  flex-shrink:   0;
+  padding:       0;
 }
 
 .btn-icon:hover {
@@ -167,37 +212,78 @@ h1 {
 
 .btn-icon:active { transform: scale(0.93); }
 
-/* Undo disabled when history is empty */
 #btn-undo:disabled {
-  opacity: 0.25;
+  opacity: 0.2;
   cursor:  default;
   pointer-events: none;
+  border-color: var(--grid-line);
 }
 
-/* ── Message bar ────────────────────────────────────────── */
+/* ── Settings Panel ──────────────────────────────────────── */
+
+.settings-panel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--grid-line);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 320px;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.setting-item select {
+  background: var(--bg);
+  color: var(--text-primary);
+  border: 1px solid var(--grid-line);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+/* ── Message bar (Fixed Layout Jumping) ─────────────────── */
 
 .message-bar {
   width:       100%;
-  padding:     0.55rem 1rem;
+  padding:     0.4rem 1rem;
+  min-height:  34px; /* Fix 1: Reserves space so the game grid doesn't jump */
+  display:     flex;
+  align-items: center;
+  justify-content: center;
   border-radius: var(--radius);
-  font-size:   clamp(0.78rem, 2.3vw, 0.88rem);
-  font-weight: 400;
+  font-size:   clamp(0.8rem, 2.3vw, 0.9rem);
+  font-weight: 500;
   text-align:  center;
   letter-spacing: 0.2px;
+  background:  transparent;
+  border:      none !important;
 }
 
-.message-bar.hidden  { display: none; }
-.message-bar.success { background: rgba(111,207,163,0.10); color: var(--success-color); border: 1px solid rgba(111,207,163,0.20); }
-.message-bar.error   { background: rgba(224,112,112,0.10); color: var(--error-color);   border: 1px solid rgba(224,112,112,0.20); }
-.message-bar.info    { background: rgba(168,218,220,0.08); color: var(--accent);        border: 1px solid rgba(168,218,220,0.15); }
+/* Fix 1: Uses visibility instead of display:none to prevent layout shift */
+.message-bar.hidden  { 
+  visibility: hidden; 
+  opacity: 0;
+}
+.message-bar.success { color: var(--success-color); opacity: 1; }
+.message-bar.error   { color: var(--error-color); opacity: 1; }
+.message-bar.info    { color: var(--accent); opacity: 1; }
 
-/* ── Slices — always horizontal, fluid ───────────────────── */
+/* ── Slices ──────────────────────────────────────────────── */
 
 .slices-container {
   display:         flex;
   flex-direction:  row;
   flex-wrap:       nowrap;
-  gap:             10px;
+  gap:             12px;
   width:           100%;
   max-width:       600px;
   justify-content: center;
@@ -205,9 +291,9 @@ h1 {
 }
 
 .slice-wrapper {
-  flex:       1 1 0;
-  min-width:  0;
-  display:    flex;
+  flex:        1 1 0;
+  min-width:   0;
+  display:     flex;
   flex-direction: column;
   align-items: center;
   gap:         0.3rem;
@@ -216,11 +302,11 @@ h1 {
 .slice-label {
   font-size:    clamp(0.6rem, 1.9vw, 0.78rem);
   font-weight:  300;
-  color:        var(--text-muted);
+  color:         var(--text-muted);
   letter-spacing: 0.5px;
 }
 
-/* ── Grid — borderless look via gap + bg colour ──────────── */
+/* ── Grid ────────────────────────────────────────────────── */
 
 .grid {
   display:    grid;
@@ -228,12 +314,14 @@ h1 {
   grid-template-rows:    repeat(3, 1fr);
   gap:        2px;
   background: var(--grid-line);
-  border:     1px solid var(--grid-line);
-  border-radius: 4px;
+  border:     3px solid #444;
+  border-radius: 6px;
   padding:    0;
   width:      100%;
   aspect-ratio: 1;
   overflow:   hidden;
+  user-select: none; /* Fix 3 */
+  -webkit-user-select: none;
 }
 
 /* ── Cells (<input>) ─────────────────────────────────────── */
@@ -253,31 +341,33 @@ h1 {
   text-align:    center;
   cursor:        pointer;
   caret-color:   transparent;
-  /* color transition enables the flash-conflict fade-out */
   transition:    background 0.1s, color 0.6s;
   touch-action:  manipulation;
   -webkit-appearance: none;
   appearance:    none;
+  
+  /* Fix 3: Forcibly stop long-press text selection menus */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .cell:focus { outline: none; }
 
-/* Clue cells — white, bold, tappable for crosshair but not editable */
 .cell.clue {
-  color:       var(--clue-color);
+  color:       var(--clue-color); /* Fix 5: Theme color applied to clues */
   font-weight: 700;
   cursor:      default;
-  /* pointer-events left on so tapping shows the crosshair */
 }
 
-/* ── Crosshair arms ──────────────────────────────────────── */
-
 .cell.constraint-highlight {
-  /* 3% cyan — just enough to trace the arm without intruding */
   background: var(--ch-bg);
 }
 
-/* ── Active cell — circular cyan highlight ───────────────── */
+.cell.number-highlight {
+  background: var(--num-hl) !important;
+}
 
 .cell.active-cell {
   background: radial-gradient(
@@ -289,11 +379,9 @@ h1 {
   color:       var(--accent-text);
   font-weight: 600;
   caret-color: var(--accent-text);
-  /* speed up any lingering color transition so the circle pops instantly */
   transition:  background 0.05s, color 0.05s;
 }
 
-/* Active cell sitting on a constraint arm */
 .cell.active-cell.constraint-highlight {
   background: radial-gradient(
     circle,
@@ -303,16 +391,10 @@ h1 {
   );
 }
 
-/* ── Conflict flash (1-second red warning) ───────────────── */
-
 .cell.flash-conflict {
   color:      var(--flash-color) !important;
-  /* instant to red; the transition on .cell handles the 0.6s fade-back
-     once the class is removed */
   transition: color 0s;
 }
-
-/* ── Permanent conflict highlight (after Check Solution) ──── */
 
 .cell.conflict {
   background: rgba(224, 112, 112, 0.10);
@@ -321,11 +403,80 @@ h1 {
 
 .cell.clue.conflict { color: var(--error-color); }
 
-/* ── Loading state ───────────────────────────────────────── */
-
 .grid.loading .cell {
   opacity:        0.3;
   pointer-events: none;
+}
+
+/* ── Onscreen Keyboard ───────────────────────────────────── */
+
+.keyboard-container {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+@media (max-width: 599px) {
+  .keyboard-container {
+    max-width: 330px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .key-btn {
+    flex: 0 0 calc(20% - 6px);
+    height: 44px;
+    font-size: 1.25rem;
+  }
+}
+
+@media (min-width: 600px) {
+  .keyboard-container {
+    max-width: 420px;
+    flex-wrap: nowrap;
+  }
+  .key-btn {
+    flex: 1 1 0;
+    height: 48px;
+    font-size: 1.4rem;
+  }
+}
+
+.key-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--grid-line);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s, border-color 0.15s;
+  touch-action: manipulation;
+  padding: 0;
+
+  /* Fix 3: Forcibly stop text selection on keypad */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.key-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #555;
+}
+
+.key-btn:active {
+  transform: scale(0.95);
+}
+
+/* Fix 5: The active theme styling for selected keys */
+.key-btn.active {
+  background-color: var(--accent);
+  color: var(--bg); 
+  border-color: var(--accent);
 }
 
 /* ── Footer ─────────────────────────────────────────────── */
@@ -336,4 +487,109 @@ footer {
   font-weight:    300;
   text-align:     center;
   letter-spacing: 0.3px;
+}
+
+/* ── Modal Overlay (Fix 6) ──────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+  padding: 1rem;
+}
+
+.modal-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal-content {
+  background: var(--bg);
+  border: 1px solid var(--grid-line);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  transform: translateY(0);
+  transition: transform 0.2s ease;
+}
+
+.modal-overlay.hidden .modal-content {
+  transform: translateY(20px);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--grid-line);
+}
+
+.modal-header h2 {
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+#btn-close-rules {
+  font-size: 1.5rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+#btn-close-rules:hover {
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 1.5rem;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.modal-body h3 {
+  font-size: 1rem;
+  color: var(--accent);
+  margin: 1.5rem 0 0.5rem;
+}
+
+.rules-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rules-list li {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  border-left: 3px solid var(--accent);
+}
+
+.pro-tip {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--ch-bg);
+  border-radius: var(--radius);
+  font-style: italic;
+  color: var(--text-muted);
 }

@@ -1,36 +1,27 @@
 /**
  * Cubiku — 3D Sudoku frontend
- *
- * Cells are <input> elements so the native mobile keyboard appears on tap.
- * Physical keyboard works on desktop.
- *
- * Grid state: state[z][row][col]  (indices 0-2, value 0 = empty)
- *
- * Highlight classes:
- *   .active-cell          — the cell currently tapped (cyan circle)
- *   .constraint-highlight — entire row + col across all 3 slices (ghost tint)
- *   .flash-conflict       — 1-second red flash on cells that clash with a new entry
  */
 
-// ── State ──────────────────────────────────────────────────────────────────
+let state    = emptyGrid();   
+let clueSet  = new Set();     
+let selected = null;          
 
-let state    = emptyGrid();   // 3×3×3 array, 0 = empty
-let clueSet  = new Set();     // "z,row,col" strings for fixed clues
-let selected = null;          // { z, row, col } | null
+let activeNumber = null;
+let currentDifficulty = "medium"; 
+let currentTheme = "gold";
+let stickyKeysEnabled = false; // Set to true to make keypad numbers stay active after placing
 
-// ── Move history (undo stack) ──────────────────────────────────────────────
-
-// Each entry: { z, row, col, before, after }
 let moveHistory = [];
 
 function pushHistory(z, row, col, before, after) {
-  if (before === after) return;   // no real change; skip
+  if (before === after) return;   
   moveHistory.push({ z, row, col, before, after });
   updateUndoButton();
 }
 
 function updateUndoButton() {
-  document.getElementById('btn-undo').disabled = moveHistory.length === 0;
+  const undoBtn = document.getElementById('btn-undo');
+  if (undoBtn) undoBtn.disabled = moveHistory.length === 0;
 }
 
 function undoMove() {
@@ -45,11 +36,13 @@ function undoMove() {
     el.classList.remove('conflict', 'flash-conflict');
   }
 
-  updateUndoButton();
-  hideMessage();
-}
+  document.querySelectorAll('.cell.conflict').forEach(c => c.classList.remove('conflict'));
 
-// ── Timer ──────────────────────────────────────────────────────────────────
+  updateUndoButton();
+  hideMessage();       
+  updateDepletion();   
+  updateNumberHighlights();
+}
 
 let timerSeconds  = 0;
 let timerInterval = null;
@@ -72,25 +65,45 @@ function stopTimer() {
 }
 
 function updateTimerDisplay() {
+  const display = document.getElementById('timer-display');
+  if (!display) return;
   const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
   const s = String(timerSeconds % 60).padStart(2, '0');
-  document.getElementById('timer-display').textContent = `${m}:${s}`;
+  display.textContent = `${m}:${s}`;
 }
-
-// ── Zen Mode ───────────────────────────────────────────────────────────────
 
 let zenMode = false;
 
 function toggleZen() {
   zenMode = !zenMode;
-  document.getElementById('timer-bar').classList.toggle('zen', zenMode);
-  document.getElementById('icon-eye-open').style.display  = zenMode ? 'none'  : '';
-  document.getElementById('icon-eye-closed').style.display = zenMode ? ''     : 'none';
-  document.getElementById('btn-zen').title =
-    zenMode ? 'Zen Mode — show timer' : 'Zen Mode — hide timer';
+  const timerBar = document.getElementById('timer-bar');
+  if (timerBar) timerBar.classList.toggle('zen', zenMode);
+  
+  const eyeOpen = document.getElementById('icon-eye-open');
+  const eyeClosed = document.getElementById('icon-eye-closed');
+  if (eyeOpen) eyeOpen.style.display = zenMode ? 'none' : '';
+  if (eyeClosed) eyeClosed.style.display = zenMode ? '' : 'none';
+  
+  const btnZen = document.getElementById('btn-zen');
+  if (btnZen) {
+    btnZen.title = zenMode ? 'Zen Mode — show timer' : 'Zen Mode — hide timer';
+  }
 }
 
-// ── DOM helpers ────────────────────────────────────────────────────────────
+function toggleSettings() {
+  const panel = document.getElementById('settings-panel');
+  if (panel) {
+    panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'block' : 'none';
+  }
+}
+
+// Rules Modal Toggle
+function toggleRules() {
+  const modal = document.getElementById('rules-modal');
+  if (modal) {
+    modal.classList.toggle('hidden');
+  }
+}
 
 function emptyGrid() {
   return Array.from({ length: 3 }, () =>
@@ -103,26 +116,21 @@ function getCell(z, row, col) { return document.getElementById(cellId(z, row, co
 
 function showMessage(text, type = 'info') {
   const bar = document.getElementById('message-bar');
+  if (!bar) return;
   bar.textContent = text;
   bar.className   = `message-bar ${type}`;
 }
 
 function hideMessage() {
-  document.getElementById('message-bar').className = 'message-bar hidden';
+  const bar = document.getElementById('message-bar');
+  if (bar) bar.className = 'message-bar hidden';
 }
-
-// ── Crosshair highlight ────────────────────────────────────────────────────
 
 function clearHighlights() {
   document.querySelectorAll('.cell.active-cell, .cell.constraint-highlight')
     .forEach(el => el.classList.remove('active-cell', 'constraint-highlight'));
 }
 
-/**
- * Highlight the full row and full column of the tapped cell, mirrored
- * across all three z-slices. The tapped cell itself gets .active-cell;
- * every other cell on either arm gets .constraint-highlight.
- */
 function applyCrosshair(selZ, selRow, selCol) {
   for (let z = 0; z < 3; z++) {
     for (let r = 0; r < 3; r++) {
@@ -140,11 +148,8 @@ function applyCrosshair(selZ, selRow, selCol) {
   }
 }
 
-// ── Selection ──────────────────────────────────────────────────────────────
-
 function selectCell(z, row, col) {
   clearHighlights();
-  // Clues show the crosshair but cannot be edited — selected stays null for them
   selected = clueSet.has(`${z},${row},${col}`) ? null : { z, row, col };
   applyCrosshair(z, row, col);
 }
@@ -154,82 +159,61 @@ function clearSelection() {
   selected = null;
 }
 
-// ── Conflict flash ─────────────────────────────────────────────────────────
-
-/**
- * After placing `value` at (z, row, col), check whether it clashes with
- * any existing cell in the same row (within the slice), same column
- * (within the slice), or the same depth pillar (same row+col, all z).
- * Clashing cells briefly flash red for 1 second.
- */
-function flashConflicts(z, row, col, value) {
-  if (!value) return;
-
-  const clashEls = [];
-
-  // Same row, same slice
-  for (let c = 0; c < 3; c++) {
-    if (c !== col && state[z][row][c] === value) {
-      const el = getCell(z, row, c);
-      if (el) clashEls.push(el);
+function updateNumberHighlights() {
+  document.querySelectorAll('.cell').forEach(el => el.classList.remove('number-highlight'));
+  if (activeNumber === null) return;
+  const targetVal = Number(activeNumber);
+  for (let z = 0; z < 3; z++) {
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        if (state[z][r][c] === targetVal) {
+          const el = getCell(z, r, c);
+          if (el) el.classList.add('number-highlight');
+        }
+      }
     }
   }
-
-  // Same column, same slice
-  for (let r = 0; r < 3; r++) {
-    if (r !== row && state[z][r][col] === value) {
-      const el = getCell(z, r, col);
-      if (el) clashEls.push(el);
-    }
-  }
-
-  // Depth pillar — same (row, col) in the other two slices
-  for (let oz = 0; oz < 3; oz++) {
-    if (oz !== z && state[oz][row][col] === value) {
-      const el = getCell(oz, row, col);
-      if (el) clashEls.push(el);
-    }
-  }
-
-  if (clashEls.length === 0) return;
-
-  clashEls.forEach(el => {
-    el.classList.remove('flash-conflict');         // reset if already flashing
-    // Force a reflow so the class removal registers before re-adding
-    void el.offsetWidth;
-    el.classList.add('flash-conflict');
-    setTimeout(() => el.classList.remove('flash-conflict'), 1000);
-  });
 }
 
-// ── Grid rendering ─────────────────────────────────────────────────────────
+// Applies the new active CSS class to the keypad
+function updateKeyboardUI() {
+  document.querySelectorAll('.key-btn').forEach(b => {
+    if (b.dataset.val === activeNumber) {
+      b.classList.add('active');
+    } else {
+      b.classList.remove('active');
+    }
+    // Clean up old inline styles just in case they were cached
+    b.style.transform = '';
+    b.style.fontWeight = '';
+    b.style.border = '';
+  });
+}
 
 function buildGrids() {
   for (let z = 0; z < 3; z++) {
     const container = document.getElementById(`grid-z${z}`);
+    if (!container) continue;
     container.innerHTML = '';
 
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
         const cell = document.createElement('input');
         cell.type        = 'text';
-        cell.inputMode   = 'numeric';
+        cell.inputMode   = 'none'; /* Suppresses native mobile OS virtual keyboard */
         cell.maxLength   = 1;
         cell.id          = cellId(z, row, col);
         cell.className   = 'cell';
         cell.dataset.z   = z;
         cell.dataset.row = row;
         cell.dataset.col = col;
-        cell.dataset.x   = col;
-        cell.dataset.y   = row;
         cell.setAttribute('aria-label', `Slice z=${z} row ${row + 1} col ${col + 1}`);
         cell.setAttribute('autocomplete', 'off');
-        cell.setAttribute('autocorrect',  'off');
-        cell.setAttribute('spellcheck',   'false');
-
-        cell.addEventListener('focus',   onCellFocus);
-        cell.addEventListener('input',   onCellInput);
+        
+        cell.addEventListener('focus', onCellFocus);
+        cell.addEventListener('input', onCellInput);
         cell.addEventListener('keydown', onCellKeydown);
+        cell.addEventListener('pointerdown', onCellPointerDown);
 
         container.appendChild(cell);
       }
@@ -246,6 +230,7 @@ function renderState() {
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
         const el     = getCell(z, row, col);
+        if (!el) continue;
         const isClue = clueSet.has(`${z},${row},${col}`);
         const val    = state[z][row][col];
 
@@ -257,70 +242,203 @@ function renderState() {
       }
     }
   }
+  updateNumberHighlights();
 }
 
 function setLoading(on) {
   document.querySelectorAll('.grid').forEach(g => g.classList.toggle('loading', on));
-  document.getElementById('btn-new-game').disabled = on;
-  document.getElementById('btn-check').disabled    = on;
+  const newGameBtn = document.getElementById('btn-new-game');
+  if (newGameBtn) newGameBtn.disabled = on;
 }
 
-// ── Cell event handlers ────────────────────────────────────────────────────
-
-function onCellFocus(e) {
-  const el  = e.currentTarget;
-  selectCell(Number(el.dataset.z), Number(el.dataset.row), Number(el.dataset.col));
-  el.select();
-}
-
-function onCellInput(e) {
-  const el  = e.currentTarget;
-  const z   = Number(el.dataset.z);
-  const row = Number(el.dataset.row);
-  const col = Number(el.dataset.col);
-
-  if (clueSet.has(`${z},${row},${col}`)) return;
-
-  const digit  = el.value.replace(/[^1-9]/g, '').slice(-1);
-  el.value     = digit;
-
+function fillCell(z, row, col, digitStr) {
+  const el = getCell(z, row, col);
+  if (!el) return;
   const before = state[z][row][col];
-  const after  = digit ? Number(digit) : 0;
+  const after = digitStr ? Number(digitStr) : 0;
 
+  if (before === after) return;
+
+  el.value = digitStr ? String(digitStr) : '';
   state[z][row][col] = after;
   pushHistory(z, row, col, before, after);
 
   el.classList.remove('conflict', 'flash-conflict');
   hideMessage();
 
-  // Immediately check for visible clashes and flash them
-  flashConflicts(z, row, col, after);
+  if (after > 0) {
+    flashConflicts(z, row, col, after);
+  }
+
+  updateDepletion();
+  updateNumberHighlights();
+  checkAutoComplete();
 }
 
-function onCellKeydown(e) {
-  const el  = e.currentTarget;
-  const z   = Number(el.dataset.z);
+function updateDepletion() {
+  const counts = Array(10).fill(0);
+  for (let z = 0; z < 3; z++) {
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        const val = state[z][r][c];
+        if (val > 0) counts[val]++;
+      }
+    }
+  }
+
+  let activeWasDepleted = false;
+
+  document.querySelectorAll('.key-btn').forEach(btn => {
+    const val = Number(btn.dataset.val);
+    if (counts[val] >= 3) {
+      btn.style.opacity = '0.3';
+      btn.style.textDecoration = 'line-through';
+      btn.classList.add('depleted');
+      btn.classList.remove('active');
+
+      if (activeNumber === String(val)) {
+        activeNumber = null;
+        activeWasDepleted = true;
+      }
+    } else {
+      btn.style.opacity = '1';
+      btn.style.textDecoration = 'none';
+      btn.classList.remove('depleted');
+    }
+  });
+
+  if (activeWasDepleted) {
+    updateKeyboardUI();
+    clearSelection();
+    if (document.activeElement && document.activeElement.classList.contains('cell')) {
+      document.activeElement.blur();
+    }
+    updateNumberHighlights();
+  }
+}
+
+function checkAutoComplete() {
+  let emptyCount = 0;
+  for (let z = 0; z < 3; z++) {
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        if (state[z][r][c] === 0) emptyCount++;
+      }
+    }
+  }
+  
+  if (emptyCount === 0) {
+    checkSolution(); 
+  }
+}
+
+function flashConflicts(z, row, col, value) {
+  if (!value) return;
+  const clashEls = [];
+
+  for (let c = 0; c < 3; c++) {
+    if (c !== col && state[z][row][c] === value) clashEls.push(getCell(z, row, c));
+  }
+  for (let r = 0; r < 3; r++) {
+    if (r !== row && state[z][r][col] === value) clashEls.push(getCell(z, row, col));
+  }
+  for (let oz = 0; oz < 3; oz++) {
+    if (oz !== z && state[oz][row][col] === value) clashEls.push(getCell(oz, row, col));
+  }
+
+  clashEls.forEach(el => {
+    if(!el) return;
+    el.classList.remove('flash-conflict');
+    void el.offsetWidth;
+    el.classList.add('flash-conflict');
+    setTimeout(() => el.classList.remove('flash-conflict'), 1000);
+  });
+}
+
+function onCellFocus(e) {
+  const el = e.currentTarget;
+  const z = Number(el.dataset.z);
   const row = Number(el.dataset.row);
   const col = Number(el.dataset.col);
 
-  // Backspace / Delete
+  if (clueSet.has(`${z},${row},${col}`)) {
+    el.blur();
+    return;
+  }
+
+  if (activeNumber === null && !selected) {
+    selectCell(z, row, col);
+  }
+}
+
+function onCellPointerDown(e) {
+  e.preventDefault(); // Prevents virtual keyboard popup and text selection
+  
+  const el = e.currentTarget;
+  const z = Number(el.dataset.z);
+  const row = Number(el.dataset.row);
+  const col = Number(el.dataset.col);
+  
+  // Pro-Tip: Tapping a clue highlights that number globally!
+  if (clueSet.has(`${z},${row},${col}`)) {
+    activeNumber = String(state[z][row][col]);
+    updateKeyboardUI();
+    updateNumberHighlights();
+    clearSelection();
+    return;
+  }
+
+  if (activeNumber !== null) {
+    // Keypad First Method: A number is selected, place it in the cell
+    fillCell(z, row, col, activeNumber);
+    
+    if (!stickyKeysEnabled) {
+      activeNumber = null;
+      updateKeyboardUI();
+      updateNumberHighlights();
+    } else {
+      selectCell(z, row, col); 
+    }
+  } else {
+    // Cell First Method: No number selected, select the cell
+    selectCell(z, row, col);
+    el.focus();
+  }
+}
+
+function onCellInput(e) {
+  const el = e.currentTarget;
+  const z = Number(el.dataset.z);
+  const row = Number(el.dataset.row);
+  const col = Number(el.dataset.col);
+
+  if (clueSet.has(`${z},${row},${col}`)) return;
+
+  const digit = el.value.replace(/[^1-9]/g, '').slice(-1);
+  fillCell(z, row, col, digit);
+  
+  if (activeNumber === null) {
+    clearSelection();
+    el.blur();
+  }
+}
+
+function onCellKeydown(e) {
+  const el = e.currentTarget;
+  const z = Number(el.dataset.z);
+  const row = Number(el.dataset.row);
+  const col = Number(el.dataset.col);
+
   if (e.key === 'Backspace' || e.key === 'Delete') {
     if (!clueSet.has(`${z},${row},${col}`)) {
       e.preventDefault();
-      const before = state[z][row][col];
-      el.value = '';
-      state[z][row][col] = 0;
-      pushHistory(z, row, col, before, 0);
-      el.classList.remove('conflict', 'flash-conflict');
-      hideMessage();
+      fillCell(z, row, col, '');
     }
     return;
   }
 
-  // Escape
   if (e.key === 'Escape') { clearSelection(); el.blur(); return; }
 
-  // Arrow keys — move within the same slice
   const moves = {
     ArrowRight: [z, row, (col + 1) % 3],
     ArrowLeft:  [z, row, (col + 2) % 3],
@@ -334,7 +452,25 @@ function onCellKeydown(e) {
   }
 }
 
-// ── New Game ───────────────────────────────────────────────────────────────
+function handleKeyboardTap(valStr) {
+  const btn = document.querySelector(`.key-btn[data-val="${valStr}"]`);
+  if (btn && btn.classList.contains('depleted')) return;
+
+  if (selected !== null) {
+    // Cell First Method: A cell was already active, fill it!
+    fillCell(selected.z, selected.row, selected.col, valStr);
+    clearSelection();
+  } else {
+    // Keypad First Method: Select the number on the keypad
+    if (activeNumber === valStr) {
+      activeNumber = null;
+    } else {
+      activeNumber = valStr;
+    }
+    updateKeyboardUI();
+    updateNumberHighlights();
+  }
+}
 
 async function newGame() {
   setLoading(true);
@@ -342,11 +478,11 @@ async function newGame() {
   stopTimer();
 
   try {
-    const res  = await fetch('/game/new-game');
+    const res = await fetch(`/game/new-game?difficulty=${currentDifficulty}`);
     if (!res.ok) throw new Error(`Server error ${res.status}`);
     const data = await res.json();
 
-    state   = emptyGrid();
+    state = emptyGrid();
     clueSet = new Set();
 
     for (const [z, row, col, value] of data.clues) {
@@ -355,6 +491,7 @@ async function newGame() {
     }
 
     renderState();
+    updateDepletion(); 
     startTimer();
     showMessage('New puzzle loaded. Good luck!', 'info');
   } catch (err) {
@@ -364,18 +501,16 @@ async function newGame() {
   }
 }
 
-// ── Check Solution ─────────────────────────────────────────────────────────
-
 async function checkSolution() {
   hideMessage();
   document.querySelectorAll('.cell.conflict').forEach(c => c.classList.remove('conflict'));
 
   setLoading(true);
   try {
-    const res  = await fetch('/game/check-solution', {
-      method:  'POST',
+    const res = await fetch('/game/check-solution', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ grid: state.map(sl => sl.map(r => [...r])) }),
+      body: JSON.stringify({ grid: state.map(sl => sl.map(r => [...r])) }),
     });
     if (!res.ok) throw new Error(`Server error ${res.status}`);
     const data = await res.json();
@@ -399,20 +534,73 @@ async function checkSolution() {
   }
 }
 
-// ── Initialise ─────────────────────────────────────────────────────────────
-
 function init() {
   buildGrids();
-  renderState();
+  
+  const btnNew = document.getElementById('btn-new-game');
+  if (btnNew) btnNew.addEventListener('click', newGame);
 
-  document.getElementById('btn-new-game').addEventListener('click', newGame);
-  document.getElementById('btn-check').addEventListener('click', checkSolution);
-  document.getElementById('btn-undo').addEventListener('click', undoMove);
-  document.getElementById('btn-zen').addEventListener('click', toggleZen);
+  const btnSettings = document.getElementById('btn-settings');
+  if (btnSettings) btnSettings.addEventListener('click', toggleSettings);
 
-  // Tap / click anywhere outside the grids → clear crosshair
+  const btnUndo = document.getElementById('btn-undo');
+  if (btnUndo) btnUndo.addEventListener('click', undoMove);
+
+  const btnZen = document.getElementById('btn-zen');
+  if (btnZen) btnZen.addEventListener('click', toggleZen);
+  
+  // Rules Modal Event Listeners
+  const btnInfo = document.getElementById('btn-info');
+  if (btnInfo) btnInfo.addEventListener('click', toggleRules);
+
+  const btnCloseRules = document.getElementById('btn-close-rules');
+  if (btnCloseRules) btnCloseRules.addEventListener('click', toggleRules);
+
+  const rulesModal = document.getElementById('rules-modal');
+  if (rulesModal) {
+    rulesModal.addEventListener('click', (e) => {
+      if (e.target === rulesModal) toggleRules();
+    });
+  }
+  
+  const diffSelect = document.getElementById('difficulty-select');
+  if (diffSelect) {
+    diffSelect.addEventListener('change', (e) => {
+      currentDifficulty = e.target.value;
+    });
+  }
+
+  const themeSelect = document.getElementById('theme-select');
+  if (themeSelect) {
+    themeSelect.addEventListener('change', (e) => {
+      currentTheme = e.target.value;
+      document.body.setAttribute('data-theme', currentTheme);
+      updateNumberHighlights();
+    });
+  }
+  
+  const toggleKey = document.getElementById('toggle-keyboard');
+  if (toggleKey) {
+    toggleKey.addEventListener('change', (e) => {
+      const kb = document.getElementById('onscreen-keyboard');
+      if (kb) kb.style.display = e.target.checked ? 'flex' : 'none';
+    });
+  }
+
+  // Sticky Keys Settings Listener
+  const toggleSticky = document.getElementById('toggle-sticky-keys');
+  if (toggleSticky) {
+    toggleSticky.addEventListener('change', (e) => {
+      stickyKeysEnabled = e.target.checked;
+    });
+  }
+
+  document.querySelectorAll('.key-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => handleKeyboardTap(e.target.dataset.val));
+  });
+
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('#slices-container')) {
+    if (!e.target.closest('#slices-container') && !e.target.closest('.keyboard-container') && !e.target.closest('.top-action-bar')) {
       clearSelection();
     }
   });
