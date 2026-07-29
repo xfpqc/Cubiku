@@ -8,7 +8,7 @@ let selected = null;
 
 let activeNumber = null;
 let currentDifficulty = "medium"; 
-let currentTheme = "gold";
+let currentTheme = "cyan"; // Set default theme to cyan
 let stickyKeysEnabled = false; // Set to true to make keypad numbers stay active after placing
 
 let moveHistory = [];
