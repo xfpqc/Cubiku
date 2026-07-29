@@ -394,14 +394,22 @@ function onCellPointerDown(e) {
 
   if (activeNumber !== null) {
     fillCell(z, row, col, activeNumber);
-    selectCell(z, row, col);
-    updateNumberHighlights();
+    
+    // If the number was depleted during fillCell, updateDepletion already cleared the selection
+    if (activeNumber === null) {
+      return;
+    }
 
     if (!stickyKeysEnabled) {
+      // If sticky keys is OFF, reset the active number and clear selection after placing
       activeNumber = null;
       updateKeyboardUI();
-      updateNumberHighlights();
+      clearSelection();
+    } else {
+      // If sticky keys is ON, keep selection active for continuous tapping
+      selectCell(z, row, col);
     }
+    updateNumberHighlights();
   } else {
     selectCell(z, row, col);
     el.focus();
@@ -462,11 +470,13 @@ function handleKeyboardTap(valStr) {
   if (btn && btn.classList.contains('depleted')) return;
 
   if (selected !== null) {
+    // Cell First Method: Tapping keypad enters the number and CLEARS selection immediately
     const { z, row, col } = selected;
     fillCell(z, row, col, valStr);
-    selectCell(z, row, col); 
+    clearSelection(); 
     updateNumberHighlights();
   } else {
+    // Keypad First Method
     if (activeNumber === valStr) {
       activeNumber = null;
     } else {
@@ -474,9 +484,6 @@ function handleKeyboardTap(valStr) {
     }
     updateKeyboardUI();
     updateNumberHighlights();
-    if (selected !== null) {
-      applyCrosshair(selected.z, selected.row, selected.col);
-    }
   }
 }
 
