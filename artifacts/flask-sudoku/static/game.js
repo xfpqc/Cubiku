@@ -386,7 +386,9 @@ function onCellPointerDown(e) {
     activeNumber = String(state[z][row][col]);
     updateKeyboardUI();
     updateNumberHighlights();
-    clearSelection();
+    clearHighlights();
+    applyCrosshair(z, row, col);
+    selected = null;
     return;
   }
 
