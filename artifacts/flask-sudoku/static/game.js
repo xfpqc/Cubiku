@@ -479,9 +479,8 @@ function onCellKeydown(e) {
 function handleKeyboardTap(valStr) {
   if (!valStr) return; // Prevent crashes if utility buttons share this click listener
 
-  if (inspectedNumber !== null) {
-    inspectedNumber = null;
-  }
+  clearHighlights();
+  inspectedNumber = null;
 
   const btn = document.querySelector(`.key-btn[data-val="${valStr}"]`);
   if (btn && btn.classList.contains('depleted')) return;
