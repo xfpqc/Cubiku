@@ -203,7 +203,7 @@ function buildGrids() {
       for (let col = 0; col < 3; col++) {
         const cell = document.createElement('input');
         cell.type        = 'text';
-        cell.inputMode   = 'none'; /* Default: suppresses native mobile OS virtual keyboard */
+        cell.inputMode   = 'none'; /* Suppresses native mobile OS virtual keyboard */
         cell.maxLength   = 1;
         cell.id          = cellId(z, row, col);
         cell.className   = 'cell';
@@ -589,27 +589,6 @@ function init() {
       currentTheme = e.target.value;
       document.body.setAttribute('data-theme', currentTheme);
       updateNumberHighlights();
-    });
-  }
-  
-  const toggleKey = document.getElementById('toggle-keyboard');
-  if (toggleKey) {
-    // 1. Sync on load just in case the checkbox starts off
-    setTimeout(() => {
-      const isChecked = toggleKey.checked;
-      document.querySelectorAll('.cell').forEach(cell => {
-        cell.inputMode = isChecked ? 'none' : 'numeric';
-      });
-    }, 50);
-
-    // 2. Sync whenever toggled
-    toggleKey.addEventListener('change', (e) => {
-      const kb = document.getElementById('onscreen-keyboard');
-      if (kb) kb.style.display = e.target.checked ? 'flex' : 'none';
-      
-      document.querySelectorAll('.cell').forEach(cell => {
-        cell.inputMode = e.target.checked ? 'none' : 'numeric';
-      });
     });
   }
 
