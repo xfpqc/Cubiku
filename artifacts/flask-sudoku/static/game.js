@@ -7,12 +7,126 @@ let clueSet  = new Set();
 let selected = null;          
 
 let activeNumber = null;
-let inspectedNumber = null; // Tracks number highlighting when clicking a clue (read-only inspection)
+let inspectedNumber = null;
 let currentDifficulty = "medium"; 
 let currentTheme = "cyan";
-let stickyKeysEnabled = false; // Set to true to make keypad numbers stay active after placing
+let stickyKeysEnabled = false; 
 
 let moveHistory = [];
+
+// --- Stats & Settings State ---
+let stats = {
+  bestTimes: { easy: null, medium: null, hard: null },
+  gamesWon: 0
+};
+
+function savePreferences() {
+  localStorage.setItem('cubiku_prefs', JSON.stringify({
+    theme: currentTheme,
+    sticky: stickyKeysEnabled
+  }));
+}
+
+function loadPreferences() {
+  const savedPrefs = localStorage.getItem('cubiku_prefs');
+  if (savedPrefs) {
+    try {
+      const prefs = JSON.parse(savedPrefs);
+      currentTheme = prefs.theme || "cyan";
+      stickyKeysEnabled = !!prefs.sticky;
+      
+      document.body.setAttribute('data-theme', currentTheme);
+      const themeSelect = document.getElementById('theme-select');
+      if (themeSelect) themeSelect.value = currentTheme;
+      
+      const stickyToggle = document.getElementById('toggle-sticky-keys');
+      if (stickyToggle) stickyToggle.checked = stickyKeysEnabled;
+    } catch(e) {}
+  }
+}
+
+function saveStats() {
+  localStorage.setItem('cubiku_stats', JSON.stringify(stats));
+  updateStatsUI();
+}
+
+function loadStats() {
+  const savedStats = localStorage.getItem('cubiku_stats');
+  if (savedStats) {
+    try {
+      const parsed = JSON.parse(savedStats);
+      if (parsed.bestTimes) stats.bestTimes = parsed.bestTimes;
+      if (parsed.gamesWon !== undefined) stats.gamesWon = parsed.gamesWon;
+    } catch(e) {}
+  }
+  updateStatsUI();
+}
+
+function updateStatsUI() {
+  const elWon = document.getElementById('stat-games-won');
+  const elBest = document.getElementById('stat-best-time');
+  const elDiff = document.getElementById('stat-diff-label');
+
+  if (elWon) elWon.textContent = stats.gamesWon;
+  if (elDiff) elDiff.textContent = currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1);
+  
+  if (elBest) {
+    const best = stats.bestTimes[currentDifficulty];
+    if (best === null) {
+      elBest.textContent = "--:--";
+    } else {
+      const m = String(Math.floor(best / 60)).padStart(2, '0');
+      const s = String(best % 60).padStart(2, '0');
+      elBest.textContent = `${m}:${s}`;
+    }
+  }
+}
+
+// --- Auto-Save Game State ---
+function saveGame() {
+  if (clueSet.size === 0) return; // Don't save empty boards
+
+  const saveData = {
+    state,
+    clues: Array.from(clueSet),
+    moveHistory,
+    difficulty: currentDifficulty,
+    timer: timerSeconds
+  };
+  localStorage.setItem('cubiku_save', JSON.stringify(saveData));
+}
+
+function clearSave() {
+  localStorage.removeItem('cubiku_save');
+}
+
+function loadGame() {
+  const saved = localStorage.getItem('cubiku_save');
+  if (!saved) return false;
+  
+  try {
+    const data = JSON.parse(saved);
+    state = data.state;
+    clueSet = new Set(data.clues);
+    moveHistory = data.moveHistory;
+    currentDifficulty = data.difficulty;
+    timerSeconds = data.timer;
+    
+    const diffSelect = document.getElementById('difficulty-select');
+    if (diffSelect) diffSelect.value = currentDifficulty;
+    updateStatsUI(); 
+    
+    renderState();
+    updateDepletion();
+    startTimer(); // Will continue from saved timerSeconds
+    showMessage('Game resumed.', 'info');
+    return true;
+  } catch (e) {
+    console.error("Save file corrupted, starting fresh.");
+    clearSave();
+    return false;
+  }
+}
 
 function pushHistory(z, row, col, before, after) {
   if (before === after) return;    
@@ -43,6 +157,7 @@ function undoMove() {
   hideMessage();       
   updateDepletion();   
   updateNumberHighlights();
+  saveGame(); 
 }
 
 let timerSeconds  = 0;
@@ -50,11 +165,13 @@ let timerInterval = null;
 
 function startTimer() {
   stopTimer();
-  timerSeconds = 0;
+  // We DO NOT reset timerSeconds here because startTimer is used for loading saves too.
+  // newGame() manually resets timerSeconds to 0 before calling startTimer().
   updateTimerDisplay();
   timerInterval = setInterval(() => {
     timerSeconds++;
     updateTimerDisplay();
+    saveGame(); // Auto-saves the timer progression every second
   }, 1000);
 }
 
@@ -98,7 +215,6 @@ function toggleSettings() {
   }
 }
 
-// Rules Modal Toggle
 function toggleRules() {
   const modal = document.getElementById('rules-modal');
   if (modal) {
@@ -151,7 +267,7 @@ function applyCrosshair(selZ, selRow, selCol) {
 
 function selectCell(z, row, col) {
   clearHighlights();
-  inspectedNumber = null; // Clear clue inspection when selecting a regular cell
+  inspectedNumber = null;
   selected = clueSet.has(`${z},${row},${col}`) ? null : { z, row, col };
   applyCrosshair(z, row, col);
   updateNumberHighlights();
@@ -184,7 +300,6 @@ function updateNumberHighlights() {
   }
 }
 
-// Applies the new active CSS class to the keypad
 function updateKeyboardUI() {
   document.querySelectorAll('.key-btn').forEach(b => {
     if (b.dataset.val === activeNumber) {
@@ -208,7 +323,7 @@ function buildGrids() {
       for (let col = 0; col < 3; col++) {
         const cell = document.createElement('input');
         cell.type        = 'text';
-        cell.inputMode   = 'none'; /* Suppresses native mobile OS virtual keyboard */
+        cell.inputMode   = 'none';
         cell.maxLength   = 1;
         cell.id          = cellId(z, row, col);
         cell.className   = 'cell';
@@ -231,7 +346,6 @@ function buildGrids() {
 
 function renderState() {
   clearSelection();
-  moveHistory = [];
   updateUndoButton();
 
   for (let z = 0; z < 3; z++) {
@@ -280,6 +394,7 @@ function fillCell(z, row, col, digitStr) {
 
   updateDepletion();
   updateNumberHighlights();
+  saveGame(); 
   checkAutoComplete();
 }
 
@@ -297,7 +412,7 @@ function updateDepletion() {
   let activeWasDepleted = false;
 
   document.querySelectorAll('.key-btn').forEach(btn => {
-    if (!btn.dataset.val) return; // Skip non-number buttons like Undo
+    if (!btn.dataset.val) return; 
     
     const val = Number(btn.dataset.val);
     if (counts[val] >= 3) {
@@ -389,7 +504,6 @@ function onCellPointerDown(e) {
   const row = Number(el.dataset.row);
   const col = Number(el.dataset.col);
   
-  // If we were inspecting a clue, clear inspection when tapping any cell
   if (inspectedNumber !== null) {
     inspectedNumber = null;
     clearHighlights();
@@ -397,7 +511,7 @@ function onCellPointerDown(e) {
 
   if (clueSet.has(`${z},${row},${col}`)) {
     inspectedNumber = String(state[z][row][col]);
-    activeNumber = null; // Do NOT arm the keyboard/drawing tool!
+    activeNumber = null; 
     updateKeyboardUI();
     updateNumberHighlights();
     clearHighlights();
@@ -409,9 +523,7 @@ function onCellPointerDown(e) {
   if (activeNumber !== null) {
     fillCell(z, row, col, activeNumber);
     
-    if (activeNumber === null) {
-      return;
-    }
+    if (activeNumber === null) return;
 
     if (!stickyKeysEnabled) {
       activeNumber = null;
@@ -477,7 +589,7 @@ function onCellKeydown(e) {
 }
 
 function handleKeyboardTap(valStr) {
-  if (!valStr) return; // Prevent crashes if utility buttons share this click listener
+  if (!valStr) return; 
 
   clearHighlights();
   inspectedNumber = null;
@@ -505,6 +617,7 @@ async function newGame() {
   setLoading(true);
   hideMessage();
   stopTimer();
+  clearSave(); // Wipe out any saved game
 
   try {
     const res = await fetch(`/game/new-game?difficulty=${currentDifficulty}`);
@@ -513,6 +626,8 @@ async function newGame() {
 
     state = emptyGrid();
     clueSet = new Set();
+    moveHistory = [];
+    timerSeconds = 0; // Reset timer for new game
 
     for (const [z, row, col, value] of data.clues) {
       state[z][row][col] = value;
@@ -522,6 +637,7 @@ async function newGame() {
     renderState();
     updateDepletion(); 
     startTimer();
+    saveGame(); // Save initial state of the new puzzle immediately
     showMessage('New puzzle loaded. Good luck!', 'info');
   } catch (err) {
     showMessage(`Failed to load puzzle: ${err.message}`, 'error');
@@ -548,6 +664,16 @@ async function checkSolution() {
       stopTimer();
       showMessage(data.message, 'success');
       clearSelection();
+      clearSave(); // Puzzle beaten! Erase save so refresh doesn't reload it
+      
+      // Update Stats
+      stats.gamesWon++;
+      const currentBest = stats.bestTimes[currentDifficulty];
+      if (currentBest === null || timerSeconds < currentBest) {
+        stats.bestTimes[currentDifficulty] = timerSeconds;
+      }
+      saveStats();
+
     } else {
       showMessage(data.message, 'error');
       if (Array.isArray(data.conflicts)) {
@@ -565,6 +691,9 @@ async function checkSolution() {
 
 function init() {
   buildGrids();
+  
+  loadPreferences();
+  loadStats();
   
   const btnNew = document.getElementById('btn-new-game');
   if (btnNew) btnNew.addEventListener('click', newGame);
@@ -595,6 +724,9 @@ function init() {
   if (diffSelect) {
     diffSelect.addEventListener('change', (e) => {
       currentDifficulty = e.target.value;
+      updateStatsUI();
+      // Notice we do NOT save preferences or auto-save here. 
+      // Difficulty change only takes effect when clicking "New Game".
     });
   }
 
@@ -604,6 +736,7 @@ function init() {
       currentTheme = e.target.value;
       document.body.setAttribute('data-theme', currentTheme);
       updateNumberHighlights();
+      savePreferences();
     });
   }
 
@@ -611,6 +744,7 @@ function init() {
   if (toggleSticky) {
     toggleSticky.addEventListener('change', (e) => {
       stickyKeysEnabled = e.target.checked;
+      savePreferences();
     });
   }
 
@@ -624,7 +758,10 @@ function init() {
     }
   });
 
-  newGame();
+  // Attempt to load save, if none exists, fetch a new game
+  if (!loadGame()) {
+    newGame();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);
