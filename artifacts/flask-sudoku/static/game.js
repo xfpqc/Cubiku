@@ -2,7 +2,7 @@
  * Cubiku — 3D Sudoku frontend
  */
 
-let state    = emptyGrid();   
+let state    = emptyGrid();    
 let clueSet  = new Set();     
 let selected = null;          
 
@@ -14,7 +14,7 @@ let stickyKeysEnabled = false; // Set to true to make keypad numbers stay active
 let moveHistory = [];
 
 function pushHistory(z, row, col, before, after) {
-  if (before === after) return;   
+  if (before === after) return;    
   moveHistory.push({ z, row, col, before, after });
   updateUndoButton();
 }
@@ -151,7 +151,9 @@ function applyCrosshair(selZ, selRow, selCol) {
 function selectCell(z, row, col) {
   clearHighlights();
   selected = clueSet.has(`${z},${row},${col}`) ? null : { z, row, col };
-  applyCrosshair(z, row, col);
+  if (selected) {
+    applyCrosshair(z, row, col);
+  }
 }
 
 function clearSelection() {
@@ -392,12 +394,13 @@ function onCellPointerDown(e) {
     // Keypad First Method: A number is selected, place it in the cell
     fillCell(z, row, col, activeNumber);
     
+    // Always keep the cell selected and highlighted regardless of sticky keys
+    selectCell(z, row, col);
+
     if (!stickyKeysEnabled) {
       activeNumber = null;
       updateKeyboardUI();
       updateNumberHighlights();
-    } else {
-      selectCell(z, row, col); 
     }
   } else {
     // Cell First Method: No number selected, select the cell
@@ -458,8 +461,9 @@ function handleKeyboardTap(valStr) {
 
   if (selected !== null) {
     // Cell First Method: A cell was already active, fill it!
-    fillCell(selected.z, selected.row, selected.col, valStr);
-    clearSelection();
+    const { z, row, col } = selected;
+    fillCell(z, row, col, valStr);
+    selectCell(z, row, col); // Maintain selection and highlights
   } else {
     // Keypad First Method: Select the number on the keypad
     if (activeNumber === valStr) {
