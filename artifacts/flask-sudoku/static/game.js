@@ -203,7 +203,7 @@ function buildGrids() {
       for (let col = 0; col < 3; col++) {
         const cell = document.createElement('input');
         cell.type        = 'text';
-        cell.inputMode   = 'none'; /* Suppresses native mobile OS virtual keyboard */
+        cell.inputMode   = 'none'; /* Default: suppresses native mobile OS virtual keyboard */
         cell.maxLength   = 1;
         cell.id          = cellId(z, row, col);
         cell.className   = 'cell';
@@ -292,6 +292,8 @@ function updateDepletion() {
   let activeWasDepleted = false;
 
   document.querySelectorAll('.key-btn').forEach(btn => {
+    if (!btn.dataset.val) return; // Skip non-number buttons like Undo
+    
     const val = Number(btn.dataset.val);
     if (counts[val] >= 3) {
       btn.style.opacity = '0.3';
@@ -395,18 +397,15 @@ function onCellPointerDown(e) {
   if (activeNumber !== null) {
     fillCell(z, row, col, activeNumber);
     
-    // If the number was depleted during fillCell, updateDepletion already cleared the selection
     if (activeNumber === null) {
       return;
     }
 
     if (!stickyKeysEnabled) {
-      // If sticky keys is OFF, reset the active number and clear selection after placing
       activeNumber = null;
       updateKeyboardUI();
       clearSelection();
     } else {
-      // If sticky keys is ON, keep selection active for continuous tapping
       selectCell(z, row, col);
     }
     updateNumberHighlights();
@@ -466,17 +465,17 @@ function onCellKeydown(e) {
 }
 
 function handleKeyboardTap(valStr) {
+  if (!valStr) return; // Prevent crashes if utility buttons share this click listener
+
   const btn = document.querySelector(`.key-btn[data-val="${valStr}"]`);
   if (btn && btn.classList.contains('depleted')) return;
 
   if (selected !== null) {
-    // Cell First Method: Tapping keypad enters the number and CLEARS selection immediately
     const { z, row, col } = selected;
     fillCell(z, row, col, valStr);
     clearSelection(); 
     updateNumberHighlights();
   } else {
-    // Keypad First Method
     if (activeNumber === valStr) {
       activeNumber = null;
     } else {
@@ -595,9 +594,22 @@ function init() {
   
   const toggleKey = document.getElementById('toggle-keyboard');
   if (toggleKey) {
+    // 1. Sync on load just in case the checkbox starts off
+    setTimeout(() => {
+      const isChecked = toggleKey.checked;
+      document.querySelectorAll('.cell').forEach(cell => {
+        cell.inputMode = isChecked ? 'none' : 'numeric';
+      });
+    }, 50);
+
+    // 2. Sync whenever toggled
     toggleKey.addEventListener('change', (e) => {
       const kb = document.getElementById('onscreen-keyboard');
       if (kb) kb.style.display = e.target.checked ? 'flex' : 'none';
+      
+      document.querySelectorAll('.cell').forEach(cell => {
+        cell.inputMode = e.target.checked ? 'none' : 'numeric';
+      });
     });
   }
 
