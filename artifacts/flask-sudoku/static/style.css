@@ -12,55 +12,55 @@
 }
 
 :root {
-  --bg:           #121212;
-  --grid-line:    #2A2A2A;
-  --accent-text:  #121212;
-  --user-color:   #B0B0B0;
+  --bg:            #121212;
+  --grid-line:     #2A2A2A;
+  --accent-text:   #121212;
+  --user-color:    #B0B0B0;
 
   --text-primary: #E0E0E0;
-  --text-muted:   #4A4A4A;
+  --text-muted:    #4A4A4A;
 
   --success-color:#6FCFA3;
-  --error-color:  #E07070;
-  --flash-color:  #FF6F61;
+  --error-color:   #E07070;
+  --flash-color:   #FF6F61;
 
-  --radius:       6px;
+  --radius:        6px;
 }
 
 /* ── Theme Definitions ──────────────────────────────────── */
 
 body[data-theme="gold"] {
-  --accent:       #E4C59E; /* Muted Gold / Amber */
-  --ch-bg:        rgba(228, 197, 158, 0.03);
-  --num-hl:       rgba(228, 197, 158, 0.15);
+  --accent:        #E4C59E; /* Muted Gold / Amber */
+  --ch-bg:         rgba(228, 197, 158, 0.03);
+  --num-hl:        rgba(228, 197, 158, 0.15);
 }
 
 body[data-theme="cyan"] {
-  --accent:       #A8DADC; /* Soft Cyan */
-  --ch-bg:        rgba(168, 218, 220, 0.03);
-  --num-hl:       rgba(168, 218, 220, 0.15);
+  --accent:        #A8DADC; /* Soft Cyan */
+  --ch-bg:         rgba(168, 218, 220, 0.03);
+  --num-hl:        rgba(168, 218, 220, 0.15);
 }
 
 body[data-theme="mint"] {
-  --accent:       #A3E4D7; /* Emerald Mint */
-  --ch-bg:        rgba(163, 228, 215, 0.03);
-  --num-hl:       rgba(163, 228, 215, 0.15);
+  --accent:        #A3E4D7; /* Emerald Mint */
+  --ch-bg:         rgba(163, 228, 215, 0.03);
+  --num-hl:        rgba(163, 228, 215, 0.15);
 }
 
 body[data-theme="rose"] {
-  --accent:       #F5B7B1; /* Rose Quartz */
-  --ch-bg:        rgba(245, 183, 177, 0.03);
-  --num-hl:       rgba(245, 183, 177, 0.15);
+  --accent:        #F5B7B1; /* Rose Quartz */
+  --ch-bg:         rgba(245, 183, 177, 0.03);
+  --num-hl:        rgba(245, 183, 177, 0.15);
 }
 
 body[data-theme="lavender"] {
-  --accent:       #D7BDE2; /* Lavender Dusk */
-  --ch-bg:        rgba(215, 189, 226, 0.03);
-  --num-hl:       rgba(215, 189, 226, 0.15);
+  --accent:        #D7BDE2; /* Lavender Dusk */
+  --ch-bg:         rgba(215, 189, 226, 0.03);
+  --num-hl:        rgba(215, 189, 226, 0.15);
 }
 
 :root {
-  --clue-color:   var(--accent);
+  --clue-color:    var(--accent);
 }
 
 html, body { height: 100%; }
@@ -74,6 +74,7 @@ body {
   flex-direction: column;
   touch-action: manipulation;
   -webkit-font-smoothing: antialiased;
+  position:    relative; /* Ensures absolute children align properly to body/wrapper context if needed */
 }
 
 /* ── Page wrapper ────────────────────────────────────────── */
@@ -87,6 +88,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap:         1.5rem;
+  position:    relative; /* Creates stacking context for the absolute settings dropdown */
 }
 
 /* ── Header ─────────────────────────────────────────────── */
@@ -121,6 +123,9 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
+  position: relative;
+  width: 100%;
+  max-width: 500px;
 }
 
 @media (max-width: 599px) {
@@ -207,7 +212,7 @@ h1 {
 
 .btn-icon:hover {
   border-color: #555;
-  color:        var(--text-primary);
+  color:         var(--text-primary);
 }
 
 .btn-icon:active { transform: scale(0.93); }
@@ -219,10 +224,14 @@ h1 {
   border-color: var(--grid-line);
 }
 
-/* ── Settings Panel ──────────────────────────────────────── */
+/* ── Settings Panel Overlay Dropdown ─────────────────────── */
 
 .settings-panel {
-  background: rgba(255, 255, 255, 0.03);
+  position: absolute;
+  top: 65px; /* Floats right under the top action bar */
+  right: calc(50% - 180px); /* Centers/aligns nicely relative to the action bar */
+  z-index: 200;
+  background: #1a1a1a;
   border: 1px solid var(--grid-line);
   padding: 1rem 1.25rem;
   border-radius: var(--radius);
@@ -230,7 +239,15 @@ h1 {
   flex-direction: column;
   gap: 0.75rem;
   width: 100%;
-  max-width: 320px;
+  max-width: 280px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 599px) {
+  .settings-panel {
+    top: 110px;
+    right: auto;
+  }
 }
 
 .setting-item {
@@ -250,12 +267,15 @@ h1 {
   font-family: inherit;
 }
 
-/* ── Message bar (Fixed Layout Jumping) ─────────────────── */
+/* ── Message bar (Narrowed & Centered) ─────────────────── */
 
 .message-bar {
-  width:       100%;
+  max-width:   350px;
+  width:       fit-content;
+  min-width:   220px;
+  margin:      0 auto;
   padding:     0.4rem 1rem;
-  min-height:  34px; /* Fix 1: Reserves space so the game grid doesn't jump */
+  min-height:  34px; /* Reserves space so the game grid doesn't jump */
   display:     flex;
   align-items: center;
   justify-content: center;
@@ -268,7 +288,7 @@ h1 {
   border:      none !important;
 }
 
-/* Fix 1: Uses visibility instead of display:none to prevent layout shift */
+/* Uses visibility instead of display:none to prevent layout shift */
 .message-bar.hidden  { 
   visibility: hidden; 
   opacity: 0;
@@ -277,7 +297,7 @@ h1 {
 .message-bar.error   { color: var(--error-color); opacity: 1; }
 .message-bar.info    { color: var(--accent); opacity: 1; }
 
-/* ── Slices ──────────────────────────────────────────────── */
+/* ── Slices ────────────────────────────────________________ */
 
 .slices-container {
   display:         flex;
@@ -314,13 +334,13 @@ h1 {
   grid-template-rows:    repeat(3, 1fr);
   gap:        2px;
   background: var(--grid-line);
-  border:     3px solid #444;
+  border:      3px solid #444;
   border-radius: 6px;
   padding:    0;
   width:      100%;
   aspect-ratio: 1;
   overflow:   hidden;
-  user-select: none; /* Fix 3 */
+  user-select: none;
   -webkit-user-select: none;
 }
 
@@ -346,7 +366,6 @@ h1 {
   -webkit-appearance: none;
   appearance:    none;
   
-  /* Fix 3: Forcibly stop long-press text selection menus */
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -356,7 +375,7 @@ h1 {
 .cell:focus { outline: none; }
 
 .cell.clue {
-  color:       var(--clue-color); /* Fix 5: Theme color applied to clues */
+  color:        var(--clue-color);
   font-weight: 700;
   cursor:      default;
 }
@@ -374,12 +393,12 @@ h1 {
     circle,
     var(--accent) 0%,
     var(--accent) 42%,
-    transparent   43%
+    transparent    43%
   );
-  color:       var(--accent-text);
+  color:        var(--accent-text);
   font-weight: 600;
   caret-color: var(--accent-text);
-  transition:  background 0.05s, color 0.05s;
+  transition:   background 0.05s, color 0.05s;
 }
 
 .cell.active-cell.constraint-highlight {
@@ -387,18 +406,18 @@ h1 {
     circle,
     var(--accent) 0%,
     var(--accent) 42%,
-    var(--ch-bg)  43%
+    var(--ch-bg)   43%
   );
 }
 
 .cell.flash-conflict {
-  color:      var(--flash-color) !important;
+  color:       var(--flash-color) !important;
   transition: color 0s;
 }
 
 .cell.conflict {
   background: rgba(224, 112, 112, 0.10);
-  color:      var(--error-color);
+  color:       var(--error-color);
 }
 
 .cell.clue.conflict { color: var(--error-color); }
@@ -421,7 +440,7 @@ h1 {
 
 @media (max-width: 599px) {
   .keyboard-container {
-    max-width: 330px;
+    max-width: 380px;
     flex-wrap: wrap;
     gap: 6px;
   }
@@ -434,7 +453,7 @@ h1 {
 
 @media (min-width: 600px) {
   .keyboard-container {
-    max-width: 420px;
+    max-width: 480px;
     flex-wrap: nowrap;
   }
   .key-btn {
@@ -456,7 +475,6 @@ h1 {
   touch-action: manipulation;
   padding: 0;
 
-  /* Fix 3: Forcibly stop text selection on keypad */
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -472,7 +490,6 @@ h1 {
   transform: scale(0.95);
 }
 
-/* Fix 5: The active theme styling for selected keys */
 .key-btn.active {
   background-color: var(--accent);
   color: var(--bg); 
@@ -489,7 +506,7 @@ footer {
   letter-spacing: 0.3px;
 }
 
-/* ── Modal Overlay (Fix 6) ──────────────────────────────── */
+/* ── Modal Overlay ──────────────────────────────────────── */
 .modal-overlay {
   position: fixed;
   top: 0;
