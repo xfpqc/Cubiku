@@ -153,12 +153,14 @@ function selectCell(z, row, col) {
   selected = clueSet.has(`${z},${row},${col}`) ? null : { z, row, col };
   if (selected) {
     applyCrosshair(z, row, col);
+    updateNumberHighlights();
   }
 }
 
 function clearSelection() {
   clearHighlights();
   selected = null;
+  updateNumberHighlights();
 }
 
 function updateNumberHighlights() {
@@ -170,7 +172,9 @@ function updateNumberHighlights() {
       for (let c = 0; c < 3; c++) {
         if (state[z][r][c] === targetVal) {
           const el = getCell(z, r, c);
-          if (el) el.classList.add('number-highlight');
+          if (el) {
+            el.classList.add('number-highlight');
+          }
         }
       }
     }
@@ -394,8 +398,9 @@ function onCellPointerDown(e) {
     // Keypad First Method: A number is selected, place it in the cell
     fillCell(z, row, col, activeNumber);
     
-    // Always keep the cell selected and highlighted regardless of sticky keys
+    // Always keep the cell selected, crosshairs active, and number highlights visible simultaneously
     selectCell(z, row, col);
+    updateNumberHighlights();
 
     if (!stickyKeysEnabled) {
       activeNumber = null;
@@ -405,6 +410,7 @@ function onCellPointerDown(e) {
   } else {
     // Cell First Method: No number selected, select the cell
     selectCell(z, row, col);
+    updateNumberHighlights();
     el.focus();
   }
 }
@@ -423,6 +429,8 @@ function onCellInput(e) {
   if (activeNumber === null) {
     clearSelection();
     el.blur();
+  } else {
+    updateNumberHighlights();
   }
 }
 
@@ -452,6 +460,7 @@ function onCellKeydown(e) {
     e.preventDefault();
     const [nz, nr, nc] = moves[e.key];
     getCell(nz, nr, nc)?.focus();
+    selectCell(nz, nr, nc);
   }
 }
 
@@ -463,7 +472,8 @@ function handleKeyboardTap(valStr) {
     // Cell First Method: A cell was already active, fill it!
     const { z, row, col } = selected;
     fillCell(z, row, col, valStr);
-    selectCell(z, row, col); // Maintain selection and highlights
+    selectCell(z, row, col); 
+    updateNumberHighlights();
   } else {
     // Keypad First Method: Select the number on the keypad
     if (activeNumber === valStr) {
@@ -473,6 +483,9 @@ function handleKeyboardTap(valStr) {
     }
     updateKeyboardUI();
     updateNumberHighlights();
+    if (selected !== null) {
+      applyCrosshair(selected.z, selected.row, selected.col);
+    }
   }
 }
 
