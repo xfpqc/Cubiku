@@ -74,7 +74,7 @@ body {
   flex-direction: column;
   touch-action: manipulation;
   -webkit-font-smoothing: antialiased;
-  position:    relative; /* Ensures absolute children align properly to body/wrapper context if needed */
+  position:    relative;
 }
 
 /* ── Page wrapper ────────────────────────────────────────── */
@@ -88,7 +88,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap:         1.5rem;
-  position:    relative; /* Creates stacking context for the absolute settings dropdown */
+  position:    relative;
 }
 
 /* ── Header ─────────────────────────────────────────────── */
@@ -123,7 +123,7 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
-  position: relative;
+  position: relative; /* Acts as anchor container for dropdown */
   width: 100%;
   max-width: 500px;
 }
@@ -228,8 +228,8 @@ h1 {
 
 .settings-panel {
   position: absolute;
-  top: 65px; /* Floats right under the top action bar */
-  right: calc(50% - 180px); /* Centers/aligns nicely relative to the action bar */
+  top: calc(100% + 12px); /* Drops cleanly below the action bar */
+  right: 0;               /* Aligns to the right side near the gear icon */
   z-index: 200;
   background: #1a1a1a;
   border: 1px solid var(--grid-line);
@@ -238,15 +238,15 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  width: 100%;
-  max-width: 280px;
+  width: 260px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 @media (max-width: 599px) {
   .settings-panel {
-    top: 110px;
-    right: auto;
+    top: calc(100% + 12px);
+    right: 50%;
+    transform: translateX(50%); /* Centers nicely on mobile screens */
   }
 }
 
@@ -275,7 +275,7 @@ h1 {
   min-width:   220px;
   margin:      0 auto;
   padding:     0.4rem 1rem;
-  min-height:  34px; /* Reserves space so the game grid doesn't jump */
+  min-height:  34px;
   display:     flex;
   align-items: center;
   justify-content: center;
@@ -288,7 +288,6 @@ h1 {
   border:      none !important;
 }
 
-/* Uses visibility instead of display:none to prevent layout shift */
 .message-bar.hidden  { 
   visibility: hidden; 
   opacity: 0;
@@ -334,7 +333,7 @@ h1 {
   grid-template-rows:    repeat(3, 1fr);
   gap:        2px;
   background: var(--grid-line);
-  border:      3px solid #444;
+  border:       3px solid #444;
   border-radius: 6px;
   padding:    0;
   width:      100%;
@@ -375,7 +374,7 @@ h1 {
 .cell:focus { outline: none; }
 
 .cell.clue {
-  color:        var(--clue-color);
+  color:         var(--clue-color);
   font-weight: 700;
   cursor:      default;
 }
@@ -395,10 +394,10 @@ h1 {
     var(--accent) 42%,
     transparent    43%
   );
-  color:        var(--accent-text);
+  color:         var(--accent-text);
   font-weight: 600;
   caret-color: var(--accent-text);
-  transition:   background 0.05s, color 0.05s;
+  transition:    background 0.05s, color 0.05s;
 }
 
 .cell.active-cell.constraint-highlight {
@@ -411,13 +410,13 @@ h1 {
 }
 
 .cell.flash-conflict {
-  color:       var(--flash-color) !important;
+  color:        var(--flash-color) !important;
   transition: color 0s;
 }
 
 .cell.conflict {
   background: rgba(224, 112, 112, 0.10);
-  color:       var(--error-color);
+  color:         var(--error-color);
 }
 
 .cell.clue.conflict { color: var(--error-color); }
@@ -499,10 +498,10 @@ h1 {
 /* ── Footer ─────────────────────────────────────────────── */
 
 footer {
-  color:          var(--text-muted);
-  font-size:      clamp(0.68rem, 2vw, 0.78rem);
-  font-weight:    300;
-  text-align:     center;
+  color:           var(--text-muted);
+  font-size:       clamp(0.68rem, 2vw, 0.78rem);
+  font-weight:     300;
+  text-align:      center;
   letter-spacing: 0.3px;
 }
 
