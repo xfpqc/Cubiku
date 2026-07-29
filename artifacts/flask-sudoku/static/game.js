@@ -7,8 +7,9 @@ let clueSet  = new Set();
 let selected = null;          
 
 let activeNumber = null;
+let inspectedNumber = null; // Tracks number highlighting when clicking a clue (read-only inspection)
 let currentDifficulty = "medium"; 
-let currentTheme = "cyan"; // Set default theme to cyan
+let currentTheme = "cyan";
 let stickyKeysEnabled = false; // Set to true to make keypad numbers stay active after placing
 
 let moveHistory = [];
@@ -150,6 +151,7 @@ function applyCrosshair(selZ, selRow, selCol) {
 
 function selectCell(z, row, col) {
   clearHighlights();
+  inspectedNumber = null; // Clear clue inspection when selecting a regular cell
   selected = clueSet.has(`${z},${row},${col}`) ? null : { z, row, col };
   applyCrosshair(z, row, col);
   updateNumberHighlights();
@@ -158,13 +160,16 @@ function selectCell(z, row, col) {
 function clearSelection() {
   clearHighlights();
   selected = null;
+  inspectedNumber = null;
   updateNumberHighlights();
 }
 
 function updateNumberHighlights() {
   document.querySelectorAll('.cell').forEach(el => el.classList.remove('number-highlight'));
-  if (activeNumber === null) return;
-  const targetVal = Number(activeNumber);
+  
+  const targetVal = activeNumber !== null ? Number(activeNumber) : (inspectedNumber !== null ? Number(inspectedNumber) : null);
+  if (targetVal === null) return;
+
   for (let z = 0; z < 3; z++) {
     for (let r = 0; r < 3; r++) {
       for (let c = 0; c < 3; c++) {
@@ -371,7 +376,7 @@ function onCellFocus(e) {
     return;
   }
 
-  if (activeNumber === null && !selected) {
+  if (activeNumber === null && !selected && inspectedNumber === null) {
     selectCell(z, row, col);
   }
 }
@@ -384,8 +389,15 @@ function onCellPointerDown(e) {
   const row = Number(el.dataset.row);
   const col = Number(el.dataset.col);
   
+  // If we were inspecting a clue, clear inspection when tapping any cell
+  if (inspectedNumber !== null) {
+    inspectedNumber = null;
+    clearHighlights();
+  }
+
   if (clueSet.has(`${z},${row},${col}`)) {
-    activeNumber = String(state[z][row][col]);
+    inspectedNumber = String(state[z][row][col]);
+    activeNumber = null; // Do NOT arm the keyboard/drawing tool!
     updateKeyboardUI();
     updateNumberHighlights();
     clearHighlights();
@@ -466,6 +478,10 @@ function onCellKeydown(e) {
 
 function handleKeyboardTap(valStr) {
   if (!valStr) return; // Prevent crashes if utility buttons share this click listener
+
+  if (inspectedNumber !== null) {
+    inspectedNumber = null;
+  }
 
   const btn = document.querySelector(`.key-btn[data-val="${valStr}"]`);
   if (btn && btn.classList.contains('depleted')) return;
