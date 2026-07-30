@@ -858,8 +858,6 @@ function init() {
     diffSelect.addEventListener('change', (e) => {
       currentDifficulty = e.target.value;
       updateStatsUI();
-      // Notice we do NOT save preferences or auto-save here. 
-      // Difficulty change only takes effect when clicking "New Game".
     });
   }
 
@@ -886,6 +884,15 @@ function init() {
   });
 
   document.addEventListener('click', (e) => {
+    // Close settings panel if clicking outside of it and the settings button
+    const settingsPanel = document.getElementById('settings-panel');
+    const btnSet = document.getElementById('btn-settings');
+    if (settingsPanel && settingsPanel.style.display === 'block') {
+      if (!settingsPanel.contains(e.target) && !btnSet.contains(e.target)) {
+        settingsPanel.style.display = 'none';
+      }
+    }
+
     if (!e.target.closest('#slices-container') && !e.target.closest('.keyboard-container') && !e.target.closest('.top-action-bar')) {
       clearSelection();
     }
