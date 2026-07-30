@@ -259,7 +259,7 @@ h1 {
 
 @media (max-width: 599px) {
   .settings-panel {
-    right: -75px; /* Shifted further left on mobile to stay well within screen bounds */
+    right: -10px; /* Pulls it safely back to the left so it stays within mobile bounds */
     width: 220px;
   }
 }
