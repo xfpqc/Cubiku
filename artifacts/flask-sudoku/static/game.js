@@ -64,22 +64,22 @@ function loadStats() {
 
 function updateStatsUI() {
   const elWon = document.getElementById('stat-games-won');
-  const elBest = document.getElementById('stat-best-time');
-  const elDiff = document.getElementById('stat-diff-label');
-
   if (elWon) elWon.textContent = stats.gamesWon;
-  if (elDiff) elDiff.textContent = currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1);
   
-  if (elBest) {
-    const best = stats.bestTimes[currentDifficulty];
-    if (best === null) {
-      elBest.textContent = "--:--";
-    } else {
-      const m = String(Math.floor(best / 60)).padStart(2, '0');
-      const s = String(best % 60).padStart(2, '0');
-      elBest.textContent = `${m}:${s}`;
+  // Update all three difficulty bests at once
+  ['easy', 'medium', 'hard'].forEach(diff => {
+    const elBest = document.getElementById(`stat-best-${diff}`);
+    if (elBest) {
+      const best = stats.bestTimes[diff];
+      if (best === null) {
+        elBest.textContent = "--:--";
+      } else {
+        const m = String(Math.floor(best / 60)).padStart(2, '0');
+        const s = String(best % 60).padStart(2, '0');
+        elBest.textContent = `${m}:${s}`;
+      }
     }
-  }
+  });
 }
 
 // --- Auto-Save Game State ---

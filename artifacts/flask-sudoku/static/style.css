@@ -59,6 +59,12 @@ body[data-theme="lavender"] {
   --num-hl:        rgba(215, 189, 226, 0.15);
 }
 
+body[data-theme="silver"] {
+  --accent:        #9CA3AF; /* Metallic Silver / Steel */
+  --ch-bg:         rgba(156, 163, 175, 0.04);
+  --num-hl:        rgba(156, 163, 175, 0.15);
+}
+
 :root {
   --clue-color:    var(--accent);
 }
@@ -497,35 +503,43 @@ h1 {
 /* ── Session Stats Dashboard ────────────────────────────── */
 
 .stats-container {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
   width: 100%;
-  max-width: 480px;
+  max-width: 500px;
   margin-top: 1.5rem;
-  padding: 1rem;
+  padding: 1.25rem;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--grid-line);
   border-radius: var(--radius);
+}
+
+@media (max-width: 500px) {
+  .stats-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem 1rem;
+  }
 }
 
 .stat-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 1;
+  text-align: center;
 }
 
 .stat-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 0.25rem;
+  white-space: nowrap;
 }
 
 .stat-value {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--accent);
   font-variant-numeric: tabular-nums;
