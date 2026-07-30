@@ -253,14 +253,14 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  width: 260px;
+  width: 240px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 @media (max-width: 599px) {
   .settings-panel {
-    right: -30px; /* Shifts panel inward on mobile so it doesn't clip right edge */
-    width: 230px;
+    right: -75px; /* Shifted further left on mobile to stay well within screen bounds */
+    width: 220px;
   }
 }
 
@@ -279,6 +279,55 @@ h1 {
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-family: inherit;
+}
+
+/* ── Modern Toggle Switch Component ──────────────────────── */
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--grid-line);
+  transition: background-color 0.2s ease;
+  border-radius: 20px;
+}
+
+.slider::before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--text-primary);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+  background-color: var(--accent);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(16px);
+  background-color: var(--accent-text);
 }
 
 /* ── Message bar (Narrowed & Centered) ─────────────────── */
@@ -440,7 +489,7 @@ h1 {
   pointer-events: none;
 }
 
-/* ── Onscreen Keyboard ───────────────────────────────────── */
+/* ── Onscreen Keyboard ────────────────────────────────     */
 
 .keyboard-container {
   display: flex;
