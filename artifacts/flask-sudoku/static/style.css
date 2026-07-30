@@ -659,3 +659,23 @@ footer {
   font-style: italic;
   color: var(--text-muted);
 }
+
+/* ── Tutorial Mode Overrides ────────────────────────────── */
+
+.cell.tutorial-dim {
+  opacity: 0.2 !important;
+  pointer-events: none;
+}
+
+.cell.tutorial-target {
+  border: 2px solid var(--accent) !important;
+  animation: tut-pulse 1.5s infinite;
+  cursor: pointer;
+  z-index: 10;
+}
+
+@keyframes tut-pulse {
+  0%   { background-color: transparent; }
+  50%  { background-color: var(--ch-bg); }
+  100% { background-color: transparent; }
+}

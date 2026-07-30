@@ -164,23 +164,18 @@
         <h2>How to Play Cubiku</h2>
         <button id="btn-close-rules" class="btn-icon" aria-label="Close rules">&times;</button>
       </div>
-      <div class="modal-body">
-        <p>Cubiku is a 3-dimensional Sudoku puzzle. Instead of a flat 9x9 grid, you are solving a 3x3x3 cube, which has been sliced into three flat boards (z=0, z=1, and z=2).</p>
+      <div class="modal-body" style="text-align: center;">
+        <p style="margin-bottom: 1.5rem; color: var(--text-muted);">
+          Cubiku is a 3-dimensional Sudoku puzzle. Instead of a flat 9x9 grid, you are solving a 3x3x3 cube that has been sliced into three flat boards.
+        </p>
         
-        <h3>The Goal</h3>
-        <p>Fill every empty cell with a number from <strong>1 to 9</strong>.</p>
-        
-        <h3>The 3 Rules of the Cube</h3>
-        <p>To win, every number (1-9) must appear exactly once in every 3x3 cross-section of the cube:</p>
-        <ul class="rules-list">
-          <li><strong>1. The Visible Slices (Z-Planes):</strong> Each of the three 3x3 boards on your screen must contain the numbers 1-9 exactly once.</li>
-          <li><strong>2. The Rows (Y-Planes):</strong> If you take Row 1 from <em>z=0</em>, Row 1 from <em>z=1</em>, and Row 1 from <em>z=2</em>, those 9 cells form a flat plane cutting through the cube. They must contain 1-9 exactly once.</li>
-          <li><strong>3. The Columns (X-Planes):</strong> Similarly, Column 1 from <em>z=0</em>, Column 1 from <em>z=1</em>, and Column 1 from <em>z=2</em> form a plane. They must contain 1-9 exactly once.</li>
-        </ul>
+        <button id="btn-start-tutorial" class="btn btn-primary" style="width: 100%; height: 50px; font-size: 1.1rem; margin-bottom: 1.5rem;">
+          Play Interactive Tutorial
+        </button>
 
-        <div class="pro-tip">
-          <strong>Pro Tip:</strong> Tap a clue number on the board to instantly highlight every instance of it. You can tap a keypad number first and then cells, or tap a cell first and then the keypad!
-        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); opacity: 0.8;">
+          Takes 30 seconds. Highly recommended for new players.
+        </p>
       </div>
     </div>
   </div>

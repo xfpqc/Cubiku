@@ -14,6 +14,22 @@ let stickyKeysEnabled = false;
 
 let moveHistory = [];
 
+// --- Tutorial State ---
+let tutorialMode = false;
+let tutorialStep = 0;
+
+const TUT_GRID = [
+  [[1,5,9], [6,7,2], [8,3,4]],
+  [[4,8,3], [9,1,5], [2,6,7]],
+  [[7,2,6], [3,4,8], [5,9,1]]
+];
+
+const TUT_HOLES = [
+  { z: 0, r: 0, c: 0, val: 1, msg: "Like normal Sudoku, this visible 3x3 slice must contain 1-9. Place the missing number." },
+  { z: 1, r: 1, c: 1, val: 1, msg: "Rule 2: Rows cross layers! Look at the middle row cutting through all three grids. Place the missing number." },
+  { z: 2, r: 2, c: 2, val: 1, msg: "Rule 3: Columns cross layers too! Look at the highlighted column slicing through the cube. What completes it?" }
+];
+
 // --- Stats & Settings State ---
 let stats = {
   bestTimes: { easy: null, medium: null, hard: null },
@@ -85,6 +101,7 @@ function updateStatsUI() {
 // --- Auto-Save Game State ---
 function saveGame() {
   if (clueSet.size === 0) return; // Don't save empty boards
+  if (tutorialMode) return; // Don't save tutorial boards
 
   const saveData = {
     state,
@@ -128,6 +145,82 @@ function loadGame() {
   }
 }
 
+// --- Tutorial Functions ---
+function startTutorial() {
+  toggleRules(); 
+  tutorialMode = true;
+  tutorialStep = 1;
+  stopTimer();
+  clearSave(); 
+  
+  state = emptyGrid();
+  clueSet = new Set();
+  
+  // Load the solved matrix, mark all as clues
+  for(let z=0; z<3; z++) {
+    for(let r=0; r<3; r++) {
+      for(let c=0; c<3; c++) {
+        state[z][r][c] = TUT_GRID[z][r][c];
+        clueSet.add(`${z},${r},${c}`);
+      }
+    }
+  }
+  
+  // Dig the 3 specific tutorial holes
+  TUT_HOLES.forEach(hole => {
+    state[hole.z][hole.r][hole.c] = 0;
+    clueSet.delete(`${hole.z},${hole.r},${hole.c}`);
+  });
+  
+  renderState();
+  updateTutorialUI();
+}
+
+function updateTutorialUI() {
+  const target = TUT_HOLES[tutorialStep - 1];
+  showMessage(target.msg, 'info');
+  
+  document.querySelectorAll('.cell').forEach(c => {
+    c.classList.remove('tutorial-dim', 'tutorial-target');
+  });
+  
+  // Highlight only the relevant spatial plane
+  for(let z=0; z<3; z++) {
+    for(let r=0; r<3; r++) {
+      for(let c=0; c<3; c++) {
+        const el = getCell(z,r,c);
+        let inPlane = false;
+        
+        if (tutorialStep === 1 && z === 0) inPlane = true;
+        if (tutorialStep === 2 && r === 1) inPlane = true;
+        if (tutorialStep === 3 && c === 2) inPlane = true;
+        
+        if (!inPlane) {
+          el.classList.add('tutorial-dim');
+        }
+        if (z === target.z && r === target.r && c === target.c) {
+          el.classList.add('tutorial-target');
+        }
+      }
+    }
+  }
+}
+
+function endTutorial() {
+  document.querySelectorAll('.cell').forEach(c => c.classList.remove('tutorial-dim', 'tutorial-target'));
+  showMessage("You've mastered the dimensions! Starting your first real game...", "success");
+  tutorialMode = false;
+  
+  setTimeout(() => {
+     currentDifficulty = 'easy';
+     const diffSelect = document.getElementById('difficulty-select');
+     if (diffSelect) diffSelect.value = 'easy';
+     newGame();
+  }, 3500);
+}
+
+// --- End Tutorial Functions ---
+
 function pushHistory(z, row, col, before, after) {
   if (before === after) return;    
   moveHistory.push({ z, row, col, before, after });
@@ -141,6 +234,8 @@ function updateUndoButton() {
 
 function undoMove() {
   if (moveHistory.length === 0) return;
+  if (tutorialMode) return; // Prevent undo during tutorial
+
   const { z, row, col, before } = moveHistory.pop();
 
   state[z][row][col] = before;
@@ -171,7 +266,7 @@ function startTimer() {
   timerInterval = setInterval(() => {
     timerSeconds++;
     updateTimerDisplay();
-    saveGame(); // Auto-saves the timer progression every second
+    if (!tutorialMode) saveGame(); // Auto-saves the timer progression every second
   }, 1000);
 }
 
@@ -266,6 +361,11 @@ function applyCrosshair(selZ, selRow, selCol) {
 }
 
 function selectCell(z, row, col) {
+  if (tutorialMode) {
+    const target = TUT_HOLES[tutorialStep - 1];
+    if (z !== target.z || row !== target.r || col !== target.c) return;
+  }
+
   clearHighlights();
   inspectedNumber = null;
   selected = clueSet.has(`${z},${row},${col}`) ? null : { z, row, col };
@@ -380,6 +480,35 @@ function fillCell(z, row, col, digitStr) {
   const after = digitStr ? Number(digitStr) : 0;
 
   if (before === after) return;
+
+  // --- TUTORIAL INTERCEPT LOGIC ---
+  if (tutorialMode) {
+    const target = TUT_HOLES[tutorialStep - 1];
+    
+    // Ignore clicks on wrong cells
+    if (z !== target.z || row !== target.r || col !== target.c) return; 
+    
+    // Check if they placed the right number
+    if (after > 0 && after !== target.val) {
+      showMessage("Not quite! Look at the highlighted cells. What number from 1-9 is missing?", "error");
+      return;
+    }
+    
+    // Correct fill
+    el.value = String(after);
+    state[z][row][col] = after;
+    
+    if (after > 0) {
+        tutorialStep++;
+        if (tutorialStep > 3) {
+          endTutorial();
+        } else {
+          updateTutorialUI();
+        }
+    }
+    return;
+  }
+  // ---------------------------------
 
   el.value = digitStr ? String(digitStr) : '';
   state[z][row][col] = after;
@@ -618,6 +747,7 @@ async function newGame() {
   hideMessage();
   stopTimer();
   clearSave(); // Wipe out any saved game
+  tutorialMode = false; // Ensure we exit tutorial logic
 
   try {
     const res = await fetch(`/game/new-game?difficulty=${currentDifficulty}`);
@@ -712,6 +842,9 @@ function init() {
 
   const btnCloseRules = document.getElementById('btn-close-rules');
   if (btnCloseRules) btnCloseRules.addEventListener('click', toggleRules);
+  
+  const btnStartTut = document.getElementById('btn-start-tutorial');
+  if (btnStartTut) btnStartTut.addEventListener('click', startTutorial);
 
   const rulesModal = document.getElementById('rules-modal');
   if (rulesModal) {
