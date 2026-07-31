@@ -53,6 +53,12 @@ body[data-theme="rose"] {
   --num-hl:        rgba(245, 183, 177, 0.15);
 }
 
+body[data-theme="softred"] {
+  --accent:        #E06C75; /* Soft Muted Red */
+  --ch-bg:         rgba(224, 108, 117, 0.03);
+  --num-hl:        rgba(224, 108, 117, 0.15);
+}
+
 body[data-theme="lavender"] {
   --accent:        #D7BDE2; /* Lavender Dusk */
   --ch-bg:         rgba(215, 189, 226, 0.03);
