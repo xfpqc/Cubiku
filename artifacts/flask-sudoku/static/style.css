@@ -76,16 +76,10 @@ body[data-theme="silver"] {
 }
 
 html, body { 
-  height: 100vh; 
-  overflow: hidden; 
-}
-
-body {
+  min-height: 100vh;
   background:  var(--bg);
   color:       var(--text-primary);
   font-family: 'Poppins', system-ui, sans-serif;
-  display:     flex;
-  flex-direction: column;
   touch-action: manipulation;
   -webkit-font-smoothing: antialiased;
   position:    relative;
@@ -103,7 +97,7 @@ body {
   position:      relative;
 }
 
-/* Laptop / Desktop: compact vertical layout to fit 100vh without scrolling */
+/* Laptop / Desktop */
 @media (min-width: 600px) {
   .page-wrapper {
     justify-content: space-between;
@@ -119,77 +113,50 @@ body {
   }
 }
 
-/* Mobile: compact vertical fit ensuring footer is visible and zero scrolling */
+/* Mobile: natural flow, pull-to-refresh enabled, slim notification bar, visible footer */
 @media (max-width: 599px) {
-  html, body {
-    height: 100vh;
-    overflow: hidden;
-  }
   .page-wrapper {
-    height:          100vh;
-    max-height:      100vh;
-    justify-content: space-between;
-    overflow:        hidden;
-    padding:         0.2rem 0.5rem 0.3rem;
-    gap:             0;
+    min-height:      100vh;
+    justify-content: flex-start;
+    padding:         0.6rem 0.5rem 1.5rem;
+    gap:             0.4rem;
   }
   header {
     width:           100%;
     margin-bottom:   0;
   }
   h1 {
-    font-size:       1.9rem;
+    font-size:       2.2rem;
   }
   .description {
-    font-size:       0.6rem;
-    margin-top:      0.02rem;
+    font-size:       0.7rem;
+    margin-top:      0.1rem;
   }
   .top-action-bar {
-    margin-top:      0.05rem;
+    margin-top:      0.4rem;
     margin-bottom:   0;
   }
-  .btn {
-    height:          34px;
-    padding:         0 1.2rem;
-    font-size:       0.8rem;
-  }
-  .btn-icon {
-    width:           34px;
-    height:          34px;
-  }
   .message-bar {
-    min-height:      14px;
-    padding:         0.01rem 0.5rem;
-    font-size:       0.68rem;
-    margin:          0.02rem auto;
+    min-height:      auto;
+    padding:         0.05rem 0.5rem;
+    font-size:       0.72rem;
+    margin:          0.2rem auto 0.2rem auto;
   }
   .slices-container {
-    gap:             6px;
+    gap:             8px;
     margin:          0;
   }
   .keyboard-container {
-    margin-top:      0.05rem;
-    margin-bottom:   0.05rem;
-  }
-  .key-btn {
-    height:          36px !important;
-    font-size:       1.1rem !important;
+    margin-top:      0.6rem;
+    margin-bottom:   0.6rem;
   }
   .stats-container {
-    margin-top:      0.05rem;
-    gap:             0.2rem;
-  }
-  .stat-value {
-    font-size:       0.9rem;
-  }
-  .stat-label {
-    font-size:       0.58rem;
-    margin-bottom:   0.05rem;
+    margin-top:      0.8rem;
+    gap:             0.5rem;
   }
   footer {
-    padding-bottom:  0.05rem;
-    font-size:       0.65rem;
-    margin-top:      0.02rem;
+    margin-top:      1.2rem;
+    padding-bottom:  0.5rem;
   }
 }
 
@@ -254,7 +221,7 @@ h1 {
 }
 
 .controls {
-  position: relative; /* Acts as exact anchor container for settings panel */
+  position: relative;
   display:         flex;
   align-items:     center;
   justify-content: flex-start;
@@ -427,8 +394,8 @@ h1 {
   width:       fit-content;
   min-width:   220px;
   margin:      0 auto;
-  padding:     0.4rem 1rem;
-  min-height:  34px;
+  padding:     0.2rem 0.8rem;
+  min-height:  auto;
   display:     flex;
   align-items: center;
   justify-content: center;
