@@ -131,7 +131,7 @@ html, body {
   .description {
     font-size:       0.7rem;
     margin-top:      0.1rem;
-    margin-bottom:   4.8rem; /* EXACTLY 4 lines between description and new game button */
+    margin-bottom:   4.8rem; /* 4 lines between description and new game button */
   }
   .top-action-bar {
     margin-top:      0;
@@ -141,18 +141,18 @@ html, body {
     min-height:      auto;
     padding:         0.05rem 0.5rem;
     font-size:       0.72rem;
-    margin:          0 auto 2.4rem auto; /* EXACTLY 2 lines below notification bar */
+    margin:          0 auto; /* Zeroed so grid controls the space */
   }
   .slices-container {
     gap:             8px;
-    margin:          0;
-    margin-bottom:   0; /* Zeroed out so it doesn't double-stack with the keyboard margin */
+    margin-top:      3.0rem; /* EXACTLY 2.5 lines spacing ABOVE the grid */
+    margin-bottom:   3.0rem; /* EXACTLY 2.5 lines spacing BELOW the grid */
   }
   .keyboard-container {
     max-width:       380px;
     flex-wrap:       wrap;
     gap:             6px;
-    margin-top:      3.0rem; /* EXACTLY 2.5 lines above keyboard */
+    margin-top:      0; /* Zeroed so grid controls the space */
     margin-bottom:   0.6rem;
   }
   .stats-container {
