@@ -148,6 +148,9 @@ html, body {
     margin:          0;
   }
   .keyboard-container {
+    max-width:       380px;
+    flex-wrap:       wrap;
+    gap:             6px;
     margin-top:      3.6rem; /* 3 lines of spacing between Grid and keyboard */
     margin-bottom:   0.6rem;
   }
