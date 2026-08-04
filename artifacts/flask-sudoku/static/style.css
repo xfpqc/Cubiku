@@ -131,7 +131,7 @@ html, body {
   .description {
     font-size:       0.7rem;
     margin-top:      0.1rem;
-    margin-bottom:   7.2rem; /* 6 lines of spacing between description and new game button */
+    margin-bottom:   4.8rem; /* 4 lines of spacing between description and new game button */
   }
   .top-action-bar {
     margin-top:      0;
@@ -141,7 +141,7 @@ html, body {
     min-height:      auto;
     padding:         0.05rem 0.5rem;
     font-size:       0.72rem;
-    margin:          0 auto 3.6rem auto; /* 3 lines of spacing between notification bar and Grid */
+    margin:          0 auto 2.4rem auto; /* 2 lines of spacing between notification bar and Grid */
   }
   .slices-container {
     gap:             8px;
