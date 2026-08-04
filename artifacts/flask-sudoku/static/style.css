@@ -118,7 +118,7 @@ html, body {
   .page-wrapper {
     min-height:      100vh;
     justify-content: flex-start;
-    padding:         3.6rem 0.5rem 1.5rem; /* 3 lines of spacing ABOVE THE TITLE */
+    padding:         3.6rem 0.5rem 1.5rem; /* 3 lines above title */
     gap:             0;
   }
   header {
@@ -131,7 +131,7 @@ html, body {
   .description {
     font-size:       0.7rem;
     margin-top:      0.1rem;
-    margin-bottom:   4.8rem; /* 4 lines of spacing between description and new game button */
+    margin-bottom:   4.8rem; /* EXACTLY 4 lines between description and new game button */
   }
   .top-action-bar {
     margin-top:      0;
@@ -141,18 +141,18 @@ html, body {
     min-height:      auto;
     padding:         0.05rem 0.5rem;
     font-size:       0.72rem;
-    margin:          0 auto 4.8rem auto; /* FORCED: 4 lines of physical space below the notification bar */
+    margin:          0 auto 2.4rem auto; /* EXACTLY 2 lines below notification bar */
   }
   .slices-container {
     gap:             8px;
     margin:          0;
-    margin-bottom:   3.0rem; /* 2.5 lines of spacing between Grid and keyboard */
+    margin-bottom:   0; /* Zeroed out so it doesn't double-stack with the keyboard margin */
   }
   .keyboard-container {
     max-width:       380px;
     flex-wrap:       wrap;
     gap:             6px;
-    margin-top:      3.0rem; /* 2.5 lines of spacing between Grid and keyboard */
+    margin-top:      3.0rem; /* EXACTLY 2.5 lines above keyboard */
     margin-bottom:   0.6rem;
   }
   .stats-container {
@@ -160,7 +160,7 @@ html, body {
     gap:             0.5rem;
   }
   footer {
-    margin-top:      2.4rem; /* 2 lines of spacing between stats and footer */
+    margin-top:      2.4rem; 
     padding-bottom:  0.5rem;
   }
 }
