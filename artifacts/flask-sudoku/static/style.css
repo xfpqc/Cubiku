@@ -141,7 +141,7 @@ html, body {
     min-height:      auto;
     padding:         0.05rem 0.5rem;
     font-size:       0.72rem;
-    margin:          0 auto 2.4rem auto; /* 2 lines of spacing between notification bar and Grid */
+    margin:          0 auto 4.8rem auto; /* FORCED: 4 lines of physical space below the notification bar */
   }
   .slices-container {
     gap:             8px;
