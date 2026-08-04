@@ -113,12 +113,12 @@ html, body {
   }
 }
 
-/* Mobile: custom precise spacing per user instructions */
+/* Mobile: exact line-based spacing requested by user */
 @media (max-width: 599px) {
   .page-wrapper {
     min-height:      100vh;
     justify-content: flex-start;
-    padding:         1.5rem 0.5rem 1.5rem; /* 1½ lines of spacing ABOVE THE TITLE */
+    padding:         2rem 0.5rem 1.5rem; /* 2 lines of spacing ABOVE THE TITLE */
     gap:             0.4rem;
   }
   header {
@@ -131,7 +131,7 @@ html, body {
   .description {
     font-size:       0.7rem;
     margin-top:      0.1rem;
-    margin-bottom:   3.5rem; /* 3½ lines of spacing between description and new game button */
+    margin-bottom:   5rem; /* 5 lines of spacing between description and new game button */
   }
   .top-action-bar {
     margin-top:      0;
@@ -156,7 +156,7 @@ html, body {
     gap:             0.5rem;
   }
   footer {
-    margin-top:      1rem; /* 1 line of spacing between stats and footer */
+    margin-top:      2rem; /* 2 lines of spacing between stats and footer */
     padding-bottom:  0.5rem;
   }
 }
