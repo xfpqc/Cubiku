@@ -145,7 +145,7 @@ html, body {
   }
   .slices-container {
     gap:             8px;
-    margin-top:      3.0rem; /* EXACTLY 2.5 lines spacing ABOVE the grid */
+    margin-top:      1.2rem; /* REDUCED: Now exactly 1 line spacing ABOVE the grid */
     margin-bottom:   3.0rem; /* EXACTLY 2.5 lines spacing BELOW the grid */
   }
   .keyboard-container {
