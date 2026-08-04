@@ -75,7 +75,7 @@ body[data-theme="silver"] {
   --clue-color:    var(--accent);
 }
 
-html, body { height: 100%; }
+html, body { height: 100%; overflow-x: hidden; }
 
 body {
   background:  var(--bg);
@@ -95,29 +95,38 @@ body {
   width:         100%;
   max-width:     960px;
   margin:        0 auto;
-  padding:       1.5rem 0.5rem 2rem;
   display:       flex;
   flex-direction: column;
   align-items: center;
   position:      relative;
-  gap:           1.25rem;
 }
 
-/* Laptop / Desktop: spread content evenly */
+/* Laptop / Desktop: compact vertical layout to fit 100vh without scrolling */
 @media (min-width: 600px) {
   .page-wrapper {
     justify-content: space-between;
     min-height:      100vh;
+    padding:         0.4rem 0.5rem 0.5rem;
+    gap:             0.3rem;
+  }
+  .stats-container {
+    margin-top: 0.2rem !important;
+  }
+  .keyboard-container {
+    margin-top: 0.2rem !important;
   }
 }
 
-/* Mobile: natural stack with clean spacing above the search bar */
+/* Mobile: push title down, space between title and new game, fill screen height */
 @media (max-width: 599px) {
   .page-wrapper {
-    justify-content: flex-start;
-    min-height:      auto;
-    gap:             1rem;
-    padding-bottom:  3rem;
+    justify-content: space-between;
+    min-height:      100vh;
+    padding:         1.25rem 0.5rem 1rem;
+    gap:             0.75rem;
+  }
+  header {
+    margin-bottom:   0.5rem;
   }
 }
 
