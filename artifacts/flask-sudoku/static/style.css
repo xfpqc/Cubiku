@@ -146,13 +146,13 @@ html, body {
   .slices-container {
     gap:             8px;
     margin:          0;
-    margin-bottom:   3.6rem; /* 3 lines of spacing between Grid and keyboard */
+    margin-bottom:   3.0rem; /* 2.5 lines of spacing between Grid and keyboard */
   }
   .keyboard-container {
     max-width:       380px;
     flex-wrap:       wrap;
     gap:             6px;
-    margin-top:      3.6rem; /* 3 lines of spacing between Grid and keyboard */
+    margin-top:      3.0rem; /* 2.5 lines of spacing between Grid and keyboard */
     margin-bottom:   0.6rem;
   }
   .stats-container {
