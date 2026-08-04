@@ -118,8 +118,8 @@ html, body {
   .page-wrapper {
     min-height:      100vh;
     justify-content: flex-start;
-    padding:         3rem 0.5rem 1.5rem; /* 3 lines of spacing ABOVE THE TITLE */
-    gap:             0.4rem;
+    padding:         3.6rem 0.5rem 1.5rem; /* 3 lines of spacing ABOVE THE TITLE */
+    gap:             0;
   }
   header {
     width:           100%;
@@ -131,7 +131,7 @@ html, body {
   .description {
     font-size:       0.7rem;
     margin-top:      0.1rem;
-    margin-bottom:   8rem; /* 8 lines of spacing between description and new game button */
+    margin-bottom:   7.2rem; /* 6 lines of spacing between description and new game button */
   }
   .top-action-bar {
     margin-top:      0;
@@ -141,22 +141,22 @@ html, body {
     min-height:      auto;
     padding:         0.05rem 0.5rem;
     font-size:       0.72rem;
-    margin:          2rem auto 2rem auto; /* 2 lines of spacing between notification bar and grid */
+    margin:          0 auto 3.6rem auto; /* 3 lines of spacing between notification bar and Grid */
   }
   .slices-container {
     gap:             8px;
     margin:          0;
   }
   .keyboard-container {
-    margin-top:      0.6rem;
+    margin-top:      3.6rem; /* 3 lines of spacing between Grid and keyboard */
     margin-bottom:   0.6rem;
   }
   .stats-container {
-    margin-top:      0.8rem;
+    margin-top:      1.2rem;
     gap:             0.5rem;
   }
   footer {
-    margin-top:      2rem; /* 2 lines of spacing between stats and footer */
+    margin-top:      2.4rem; /* 2 lines of spacing between stats and footer */
     padding-bottom:  0.5rem;
   }
 }
