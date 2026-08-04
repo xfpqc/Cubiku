@@ -119,7 +119,7 @@ body {
   }
 }
 
-/* Mobile: natural top-aligned stack so new game bar rests tightly on grid */
+/* Mobile: anchor content to bottom, pushing all remaining space above the title */
 @media (max-width: 599px) {
   html, body {
     height: 100vh;
@@ -128,9 +128,9 @@ body {
   .page-wrapper {
     height:          100vh;
     max-height:      100vh;
-    justify-content: flex-start; /* Removes forced stretching */
+    justify-content: flex-end; /* Anchors content to the bottom and sends space above title */
     overflow:        hidden;
-    padding:         2.2rem 0.5rem 0.4rem;
+    padding:         0.5rem 0.5rem 0.4rem;
     gap:             0.2rem;
   }
   header {
@@ -151,18 +151,18 @@ body {
     min-height:      18px;
     padding:         0.05rem 0.5rem;
     font-size:       0.72rem;
-    margin:          0.1rem auto 0.2rem auto; /* Sits tightly right below new game and above grid */
+    margin:          0.1rem auto 0.2rem auto;
   }
   .slices-container {
     gap:             8px;
     margin:          0;
   }
   .keyboard-container {
-    margin-top:      0.3rem;
-    margin-bottom:   0.3rem;
+    margin-top:      0.2rem;
+    margin-bottom:   0.2rem;
   }
   .stats-container {
-    margin-top:      0.3rem;
+    margin-top:      0.2rem;
     gap:             0.3rem;
   }
   footer {
