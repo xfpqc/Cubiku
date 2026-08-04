@@ -3,7 +3,7 @@
  */
 
 let state    = emptyGrid();    
-let clueSet  = new Set();     
+let clueSet  = new Set();      
 let selected = null;          
 
 let activeNumber = null;
@@ -904,4 +904,35 @@ function init() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+  init();
+
+  // 1. Check local storage for the completion flag
+  const tutorialCompleted = localStorage.getItem('cubiku_tutorial_complete');
+  
+  if (!tutorialCompleted) {
+    const rulesModal = document.getElementById('rules-modal');
+    const tutorialBtn = document.getElementById('btn-start-tutorial');
+    
+    // 2. Open the modal automatically for fresh users
+    if (rulesModal) {
+      rulesModal.classList.remove('hidden');
+    }
+    
+    // 3. Apply the visual anchor to the tutorial button
+    if (tutorialBtn) {
+      tutorialBtn.classList.add('highlight-pulse');
+      
+      // 4. Set the flag the moment they engage with the tutorial
+      tutorialBtn.addEventListener('click', function() {
+        this.classList.remove('highlight-pulse');
+        localStorage.setItem('cubiku_tutorial_complete', 'true');
+        
+        // Hide the modal so the tutorial can begin on the main grid
+        if (rulesModal) {
+          rulesModal.classList.add('hidden');
+        }
+      }, { once: true });
+    }
+  }
+});
