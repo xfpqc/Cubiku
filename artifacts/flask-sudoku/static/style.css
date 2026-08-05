@@ -147,7 +147,7 @@ html, body {
     margin:          0 auto; /* Zeroed so grid controls the space */
   }
   .slices-container {
-    gap:             3px; /* OPTIMIZATION: Reduced from 8px to maximize cell size */
+    gap:             1px; /* OPTIMIZATION: Minimized to 1px to maximize cell size */
     margin-top:      1.3rem; /* IDENTICAL spacing ABOVE the grid */
     margin-bottom:   1.3rem; /* IDENTICAL spacing BELOW the grid */
   }
