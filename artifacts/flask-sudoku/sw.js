@@ -52,8 +52,8 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(() => {
-        // If the network fails (you are offline), pull the last saved version from cache
-        return caches.match(event.request);
+        // If the network fails (you are offline), pull the last saved version from cache, ignoring ?v= tags
+        return caches.match(event.request, { ignoreSearch: true });
       })
   );
 });

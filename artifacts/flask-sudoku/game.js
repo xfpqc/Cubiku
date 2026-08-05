@@ -1,6 +1,278 @@
 /**
- * Cubiku — 3D Sudoku frontend
+ * Cubiku — 3D Sudoku frontend (100% Client-Side Engine)
  */
+
+// ==========================================
+// --- THE CUBIKU ENGINE (Ported from Python) ---
+// ==========================================
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function isValid(grid, x, y, z, num, n = 3) {
+  for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+          if (grid[z][i][j] === num) return false;
+          if (grid[i][y][j] === num) return false;
+          if (grid[i][j][x] === num) return false;
+      }
+  }
+  return true;
+}
+
+function solveAndCount(grid, n = 3, count = { val: 0 }) {
+  if (count.val > 1) return;
+
+  for (let z = 0; z < n; z++) {
+      for (let y = 0; y < n; y++) {
+          for (let x = 0; x < n; x++) {
+              if (grid[z][y][x] === 0) {
+                  for (let num = 1; num <= n * n; num++) {
+                      if (isValid(grid, x, y, z, num, n)) {
+                          grid[z][y][x] = num;
+                          solveAndCount(grid, n, count);
+                          grid[z][y][x] = 0;
+                      }
+                  }
+                  return;
+              }
+          }
+      }
+  }
+  count.val += 1;
+}
+
+function generateSolvedGrid(grid, n = 3) {
+  const cells = [];
+  for (let z = 0; z < n; z++) {
+      for (let y = 0; y < n; y++) {
+          for (let x = 0; x < n; x++) {
+              cells.push({ z, y, x });
+          }
+      }
+  }
+
+  for (const { z, y, x } of cells) {
+      if (grid[z][y][x] === 0) {
+          let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+          shuffleArray(nums);
+
+          for (const num of nums) {
+              if (isValid(grid, x, y, z, num, n)) {
+                  grid[z][y][x] = num;
+                  if (generateSolvedGrid(grid, n)) return true;
+                  grid[z][y][x] = 0;
+              }
+          }
+          return false;
+      }
+  }
+  return true;
+}
+
+function generateUniquePuzzle(n = 3, difficulty = 'medium') {
+  const grid = Array.from({ length: n }, () =>
+      Array.from({ length: n }, () => Array(n).fill(0))
+  );
+  
+  generateSolvedGrid(grid, n);
+
+  let cells = [];
+  for (let z = 0; z < n; z++) {
+      for (let y = 0; y < n; y++) {
+          for (let x = 0; x < n; x++) {
+              cells.push({ z, y, x });
+          }
+      }
+  }
+  shuffleArray(cells);
+
+  const targetMinClues = difficulty === 'easy' ? 12 : (difficulty === 'medium' ? 10 : 8);
+  let currentClues = n * n * n;
+
+  for (const { z, y, x } of cells) {
+      if (currentClues <= targetMinClues && difficulty !== 'hard') break;
+
+      const backup = grid[z][y][x];
+      grid[z][y][x] = 0;
+
+      const gridCopy = JSON.parse(JSON.stringify(grid));
+      const solutions = { val: 0 };
+      solveAndCount(gridCopy, n, solutions);
+
+      if (solutions.val !== 1) {
+          grid[z][y][x] = backup; 
+      } else {
+          currentClues--;
+      }
+  }
+  
+  const clues = [];
+  for (let z = 0; z < n; z++) {
+      for (let y = 0; y < n; y++) {
+          for (let x = 0; x < n; x++) {
+              const v = grid[z][y][x];
+              if (v !== 0) clues.push([z, y, x, v]);
+          }
+      }
+  }
+  return { grid, clues };
+}
+
+function measureHumanDifficulty(grid, n = 3) {
+  const testGrid = JSON.parse(JSON.stringify(grid));
+  let progress = true;
+  const totalCells = n * n * n;
+  let initialEmpty = 0;
+
+  for (let z = 0; z < n; z++) {
+      for (let y = 0; y < n; y++) {
+          for (let x = 0; x < n; x++) {
+              if (testGrid[z][y][x] === 0) initialEmpty++;
+          }
+      }
+  }
+
+  let emptyCount = initialEmpty;
+
+  while (progress && emptyCount > 0) {
+      progress = false;
+      for (let z = 0; z < n; z++) {
+          for (let y = 0; y < n; y++) {
+              for (let x = 0; x < n; x++) {
+                  if (testGrid[z][y][x] === 0) {
+                      const validMoves = [];
+                      for (let num = 1; num <= n * n; num++) {
+                          if (isValid(testGrid, x, y, z, num, n)) {
+                              validMoves.push(num);
+                          }
+                      }
+                      if (validMoves.length === 1) {
+                          testGrid[z][y][x] = validMoves[0];
+                          emptyCount--;
+                          progress = true;
+                      }
+                  }
+              }
+          }
+      }
+  }
+
+  const cluesCount = totalCells - initialEmpty;
+  if (cluesCount >= 11 && emptyCount === 0) return "easy";
+  if (cluesCount >= 9 && emptyCount <= 3) return "medium";
+  return "hard";
+}
+
+function generateGame(difficulty = 'medium') {
+  let attempts = 0;
+  let bestClues = null;
+  // Safety break to prevent infinite loops while generating specific difficulties
+  while (attempts < 30) {
+      attempts++;
+      const { grid, clues } = generateUniquePuzzle(3, difficulty);
+      bestClues = clues;
+      const actualDifficulty = measureHumanDifficulty(grid, 3);
+      
+      if (actualDifficulty === difficulty) {
+          return clues;
+      }
+  }
+  return bestClues;
+}
+
+function check3SSC(grid, n = 3) {
+  const conflicts = new Set();
+  const addConflict = (z, y, x) => conflicts.add(`${z},${y},${x}`);
+
+  // Check validity / empty cells first
+  for (let z = 0; z < n; z++) {
+      for (let y = 0; y < n; y++) {
+          for (let x = 0; x < n; x++) {
+              const v = grid[z][y][x];
+              if (typeof v !== 'number' || v < 1 || v > 9) {
+                  return {
+                      valid: false,
+                      message: "Some cells are still empty or contain invalid values.",
+                      conflicts: []
+                  };
+              }
+          }
+      }
+  }
+
+  for (let z = 0; z < n; z++) {
+      const seen = {};
+      for (let y = 0; y < n; y++) {
+          for (let x = 0; x < n; x++) {
+              const num = grid[z][y][x];
+              if (!seen[num]) seen[num] = [];
+              seen[num].push({ y, x });
+          }
+      }
+      for (const num in seen) {
+          if (seen[num].length > 1) {
+              seen[num].forEach(({ y, x }) => addConflict(z, y, x));
+          }
+      }
+  }
+
+  for (let y = 0; y < n; y++) {
+      const seen = {};
+      for (let z = 0; z < n; z++) {
+          for (let x = 0; x < n; x++) {
+              const num = grid[z][y][x];
+              if (!seen[num]) seen[num] = [];
+              seen[num].push({ z, x });
+          }
+      }
+      for (const num in seen) {
+          if (seen[num].length > 1) {
+              seen[num].forEach(({ z, x }) => addConflict(z, y, x));
+          }
+      }
+  }
+
+  for (let x = 0; x < n; x++) {
+      const seen = {};
+      for (let z = 0; z < n; z++) {
+          for (let y = 0; y < n; y++) {
+              const num = grid[z][y][x];
+              if (!seen[num]) seen[num] = [];
+              seen[num].push({ z, y });
+          }
+      }
+      for (const num in seen) {
+          if (seen[num].length > 1) {
+              seen[num].forEach(({ z, y }) => addConflict(z, y, x));
+          }
+      }
+  }
+
+  if (conflicts.size > 0) {
+      return {
+          valid: false,
+          message: "Some constraints are violated — conflicting cells highlighted.",
+          conflicts: Array.from(conflicts).map(c => {
+              const [z, y, x] = c.split(',').map(Number);
+              return [z, y, x];
+          })
+      };
+  }
+  return {
+      valid: true,
+      message: "Puzzle solved correctly! 🎉",
+      conflicts: []
+  };
+}
+// ==========================================
+// --- END ENGINE ---
+// ==========================================
 
 let state    = emptyGrid();    
 let clueSet  = new Set();      
@@ -82,7 +354,6 @@ function updateStatsUI() {
   const elWon = document.getElementById('stat-games-won');
   if (elWon) elWon.textContent = stats.gamesWon;
   
-  // Update all three difficulty bests at once
   ['easy', 'medium', 'hard'].forEach(diff => {
     const elBest = document.getElementById(`stat-best-${diff}`);
     if (elBest) {
@@ -98,10 +369,9 @@ function updateStatsUI() {
   });
 }
 
-// --- Auto-Save Game State ---
 function saveGame() {
-  if (clueSet.size === 0) return; // Don't save empty boards
-  if (tutorialMode) return; // Don't save tutorial boards
+  if (clueSet.size === 0) return; 
+  if (tutorialMode) return; 
 
   const saveData = {
     state,
@@ -135,7 +405,7 @@ function loadGame() {
     
     renderState();
     updateDepletion();
-    startTimer(); // Will continue from saved timerSeconds
+    startTimer(); 
     showMessage('Game resumed.', 'info');
     return true;
   } catch (e) {
@@ -156,7 +426,6 @@ function startTutorial() {
   state = emptyGrid();
   clueSet = new Set();
   
-  // Load the solved matrix, mark all as clues
   for(let z=0; z<3; z++) {
     for(let r=0; r<3; r++) {
       for(let c=0; c<3; c++) {
@@ -166,7 +435,6 @@ function startTutorial() {
     }
   }
   
-  // Dig the 3 specific tutorial holes
   TUT_HOLES.forEach(hole => {
     state[hole.z][hole.r][hole.c] = 0;
     clueSet.delete(`${hole.z},${hole.r},${hole.c}`);
@@ -184,7 +452,6 @@ function updateTutorialUI() {
     c.classList.remove('tutorial-dim', 'tutorial-target');
   });
   
-  // Highlight only the relevant spatial plane
   for(let z=0; z<3; z++) {
     for(let r=0; r<3; r++) {
       for(let c=0; c<3; c++) {
@@ -219,8 +486,6 @@ function endTutorial() {
   }, 3500);
 }
 
-// --- End Tutorial Functions ---
-
 function pushHistory(z, row, col, before, after) {
   if (before === after) return;    
   moveHistory.push({ z, row, col, before, after });
@@ -234,10 +499,9 @@ function updateUndoButton() {
 
 function undoMove() {
   if (moveHistory.length === 0) return;
-  if (tutorialMode) return; // Prevent undo during tutorial
+  if (tutorialMode) return; 
 
   const { z, row, col, before } = moveHistory.pop();
-
   state[z][row][col] = before;
 
   const el = getCell(z, row, col);
@@ -247,7 +511,6 @@ function undoMove() {
   }
 
   document.querySelectorAll('.cell.conflict').forEach(c => c.classList.remove('conflict'));
-
   updateUndoButton();
   hideMessage();       
   updateDepletion();   
@@ -260,13 +523,11 @@ let timerInterval = null;
 
 function startTimer() {
   stopTimer();
-  // We DO NOT reset timerSeconds here because startTimer is used for loading saves too.
-  // newGame() manually resets timerSeconds to 0 before calling startTimer().
   updateTimerDisplay();
   timerInterval = setInterval(() => {
     timerSeconds++;
     updateTimerDisplay();
-    if (!tutorialMode) saveGame(); // Auto-saves the timer progression every second
+    if (!tutorialMode) saveGame(); 
   }, 1000);
 }
 
@@ -481,20 +742,15 @@ function fillCell(z, row, col, digitStr) {
 
   if (before === after) return;
 
-  // --- TUTORIAL INTERCEPT LOGIC ---
   if (tutorialMode) {
     const target = TUT_HOLES[tutorialStep - 1];
-    
-    // Ignore clicks on wrong cells
     if (z !== target.z || row !== target.r || col !== target.c) return; 
     
-    // Check if they placed the right number
     if (after > 0 && after !== target.val) {
       showMessage("Not quite! Look at the highlighted cells. What number from 1-9 is missing?", "error");
       return;
     }
     
-    // Correct fill
     el.value = String(after);
     state[z][row][col] = after;
     
@@ -508,7 +764,6 @@ function fillCell(z, row, col, digitStr) {
     }
     return;
   }
-  // ---------------------------------
 
   el.value = digitStr ? String(digitStr) : '';
   state[z][row][col] = after;
@@ -742,24 +997,29 @@ function handleKeyboardTap(valStr) {
   }
 }
 
+// ------------------------------------------
+// REWRITTEN NEW GAME AND CHECK LOGIC
+// ------------------------------------------
+
 async function newGame() {
   setLoading(true);
   hideMessage();
   stopTimer();
-  clearSave(); // Wipe out any saved game
-  tutorialMode = false; // Ensure we exit tutorial logic
+  clearSave();
+  tutorialMode = false;
+
+  // Let the browser render the loading state before synchronous heavy lifting
+  await new Promise(resolve => setTimeout(resolve, 50));
 
   try {
-    const res = await fetch(`/game/new-game?difficulty=${currentDifficulty}`);
-    if (!res.ok) throw new Error(`Server error ${res.status}`);
-    const data = await res.json();
+    const clues = generateGame(currentDifficulty);
 
     state = emptyGrid();
     clueSet = new Set();
     moveHistory = [];
-    timerSeconds = 0; // Reset timer for new game
+    timerSeconds = 0; 
 
-    for (const [z, row, col, value] of data.clues) {
+    for (const [z, row, col, value] of clues) {
       state[z][row][col] = value;
       clueSet.add(`${z},${row},${col}`);
     }
@@ -767,7 +1027,7 @@ async function newGame() {
     renderState();
     updateDepletion(); 
     startTimer();
-    saveGame(); // Save initial state of the new puzzle immediately
+    saveGame(); 
     showMessage('New puzzle loaded. Good luck!', 'info');
   } catch (err) {
     showMessage(`Failed to load puzzle: ${err.message}`, 'error');
@@ -781,22 +1041,19 @@ async function checkSolution() {
   document.querySelectorAll('.cell.conflict').forEach(c => c.classList.remove('conflict'));
 
   setLoading(true);
+  
+  // Let UI update before processing
+  await new Promise(resolve => setTimeout(resolve, 50));
+
   try {
-    const res = await fetch('/game/check-solution', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ grid: state.map(sl => sl.map(r => [...r])) }),
-    });
-    if (!res.ok) throw new Error(`Server error ${res.status}`);
-    const data = await res.json();
+    const data = check3SSC(state);
 
     if (data.valid) {
       stopTimer();
       showMessage(data.message, 'success');
       clearSelection();
-      clearSave(); // Puzzle beaten! Erase save so refresh doesn't reload it
+      clearSave(); 
       
-      // Update Stats
       stats.gamesWon++;
       const currentBest = stats.bestTimes[currentDifficulty];
       if (currentBest === null || timerSeconds < currentBest) {
@@ -818,6 +1075,8 @@ async function checkSolution() {
     setLoading(false);
   }
 }
+// ------------------------------------------
+
 
 function init() {
   buildGrids();
@@ -884,7 +1143,6 @@ function init() {
   });
 
   document.addEventListener('click', (e) => {
-    // Close settings panel if clicking outside of it and the settings button
     const settingsPanel = document.getElementById('settings-panel');
     const btnSet = document.getElementById('btn-settings');
     if (settingsPanel && settingsPanel.style.display === 'block') {
@@ -898,7 +1156,6 @@ function init() {
     }
   });
 
-  // Attempt to load save, if none exists, fetch a new game
   if (!loadGame()) {
     newGame();
   }
@@ -907,28 +1164,23 @@ function init() {
 document.addEventListener('DOMContentLoaded', () => {
   init();
 
-  // 1. Check local storage for the completion flag
   const tutorialCompleted = localStorage.getItem('cubiku_tutorial_complete');
   
   if (!tutorialCompleted) {
     const rulesModal = document.getElementById('rules-modal');
     const tutorialBtn = document.getElementById('btn-start-tutorial');
     
-    // 2. Open the modal automatically for fresh users
     if (rulesModal) {
       rulesModal.classList.remove('hidden');
     }
     
-    // 3. Apply the visual anchor to the tutorial button
     if (tutorialBtn) {
       tutorialBtn.classList.add('highlight-pulse');
       
-      // 4. Set the flag the moment they engage with the tutorial
       tutorialBtn.addEventListener('click', function() {
         this.classList.remove('highlight-pulse');
         localStorage.setItem('cubiku_tutorial_complete', 'true');
         
-        // Hide the modal so the tutorial can begin on the main grid
         if (rulesModal) {
           rulesModal.classList.add('hidden');
         }

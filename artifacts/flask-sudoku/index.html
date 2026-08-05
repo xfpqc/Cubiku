@@ -9,16 +9,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   
-  <!-- Bumping cache to v11 -->
-  <link rel="stylesheet" href="/static/style.css?v=11" />
-
-  <!-- Web App Manifest -->
-  <link rel="manifest" href="/static/manifest.json" />
+  <!-- Paths updated for static hosting -->
+  <link rel="stylesheet" href="style.css?v=12" />
+  <link rel="manifest" href="manifest.json" />
   
   <!-- iOS Web App Support -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="apple-touch-icon" href="/static/icon-512.png" />
+  <link rel="apple-touch-icon" href="icon-512.png" />
 </head>
 <body data-theme="cyan">
   <div class="page-wrapper">
@@ -198,13 +196,13 @@
     </div>
   </div>
 
-  <script src="/static/game.js"></script>
+  <script src="game.js"></script>
 
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        // Now pointing to the Flask root route!
-        navigator.serviceWorker.register('/sw.js')
+        // Pointing to the flat directory
+        navigator.serviceWorker.register('sw.js')
           .then((reg) => console.log('Service Worker registered! Scope:', reg.scope))
           .catch((err) => console.log('Service Worker registration failed:', err));
       });
