@@ -5,7 +5,7 @@
 import os
 import copy
 import random
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, send_from_directory
 
 app = Flask(__name__)
 
@@ -185,6 +185,11 @@ def check_3ssc(grid, n=3):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/sw.js")
+def serve_sw():
+    # Serves the sw.js file from the static folder, but at the root URL
+    return send_from_directory("static", "sw.js", mimetype="application/javascript")
 
 @app.route("/game/new-game")
 def new_game():

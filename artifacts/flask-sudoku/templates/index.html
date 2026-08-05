@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   
-<!-- Bumping cache to v11 -->
+  <!-- Bumping cache to v11 -->
   <link rel="stylesheet" href="/static/style.css?v=11" />
 
   <!-- Web App Manifest -->
@@ -200,10 +200,11 @@
 
   <script src="/static/game.js"></script>
 
-<script>
+  <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/static/sw.js')
+        // Now pointing to the Flask root route!
+        navigator.serviceWorker.register('/sw.js')
           .then((reg) => console.log('Service Worker registered! Scope:', reg.scope))
           .catch((err) => console.log('Service Worker registration failed:', err));
       });

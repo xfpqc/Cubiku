@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cubiku-v3';
+const CACHE_NAME = 'cubiku-v4';
 const ASSETS_TO_CACHE = [
   '/',
   '/static/style.css',
@@ -7,7 +7,7 @@ const ASSETS_TO_CACHE = [
   '/static/manifest.json'
 ];
 
-// Install event: cache assets
+// Install event: cache initial assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -17,7 +17,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate event: clean up old caches
+// Activate event: clean up old cache versions
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -33,15 +33,26 @@ self.addEventListener('activate', (event) => {
   self.clientsClaim();
 });
 
-// Fetch event: NETWORK FIRST, fall back to cache if offline
+// Fetch event: NETWORK FIRST, dynamically update cache, fall back to cache if offline
 self.addEventListener('fetch', (event) => {
+  // Only intercept GET requests
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
+        // Clone the fresh response from the server
+        const responseClone = networkResponse.clone();
+        
+        // Open the cache and update it with the fresh file
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseClone);
+        });
+        
         return networkResponse;
       })
       .catch(() => {
-        // If offline, grab from cache
+        // If the network fails (you are offline), pull the last saved version from cache
         return caches.match(event.request);
       })
   );
