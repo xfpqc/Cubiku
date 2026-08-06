@@ -17,10 +17,10 @@
   --accent-text:   #121212;
   --user-color:    #B0B0B0;
 
-  --text-primary: #E0E0E0;
+  --text-primary:  #E0E0E0;
   --text-muted:    #4A4A4A;
 
-  --success-color:#6FCFA3;
+  --success-color: #6FCFA3;
   --error-color:   #E07070;
   --flash-color:   #FF6F61;
 
@@ -35,10 +35,10 @@ body[data-theme="gold"] {
   --num-hl:        rgba(228, 197, 158, 0.15);
 }
 
-body[data-theme="cyan"] {
-  --accent:        #A8DADC; /* Soft Cyan */
-  --ch-bg:         rgba(168, 218, 220, 0.03);
-  --num-hl:        rgba(168, 218, 220, 0.15);
+body[data-theme="olo"] {
+  --accent:        #00FFCC; /* Olo */
+  --ch-bg:         rgba(0, 255, 204, 0.03);
+  --num-hl:        rgba(0, 255, 204, 0.15);
 }
 
 body[data-theme="mint"] {
