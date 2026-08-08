@@ -194,23 +194,29 @@ h1 {
   letter-spacing: 0.3px;
 }
 
-/* ── Top Action Bar ──────────────────────────────────────── */
+/* ── Top Action Bar (Flex Layout with Absolute Center) ───── */
 
 .top-action-bar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
   width: 100%;
   max-width: 600px;
+  padding: 0 0.5rem;
+  min-height: 44px;
 }
 
-/* ── Timer bar ───────────────────────────────────────────── */
+/* Left Group: Timer + Zen Button */
+.top-left-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
 .timer-bar {
-  display:         flex;
-  align-items:     center;
-  justify-content: flex-start;
-  padding-left:    0.5rem;
+  display: flex;
+  align-items: center;
 }
 
 #timer-display {
@@ -227,22 +233,19 @@ h1 {
   visibility: hidden;
 }
 
-/* ── Center Action Cluster (Zen, New Game, Controls) ─────── */
-
+/* Center Action: New Game Button (Strictly centered) */
 .center-action {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-/* ── Controls (Restart & Settings Group) ─────────────────── */
-
+/* Right Group: Restart & Settings */
 .controls {
   position: relative;
-  display:         flex;
-  align-items:     center;
-  gap:             8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .btn {
