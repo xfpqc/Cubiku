@@ -234,6 +234,8 @@ h1 {
 .center-action {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 10px;
 }
 
 .controls {
@@ -474,7 +476,7 @@ h1 {
   padding:    0;
   width:      100%;
   aspect-ratio: 1;
-  overflow:   hidden;
+  overflow:    hidden;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -512,7 +514,7 @@ h1 {
 .cell.clue {
   color:         var(--clue-color);
   font-weight: 700;
-  cursor:      default;
+  cursor:        default;
 }
 
 .cell.constraint-highlight {

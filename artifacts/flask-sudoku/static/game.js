@@ -274,9 +274,10 @@ function check3SSC(grid, n = 3) {
 // --- END ENGINE ---
 // ==========================================
 
-let state    = emptyGrid();    
-let clueSet  = new Set();      
-let selected = null;          
+let state       = emptyGrid();  
+let initialGrid = emptyGrid(); // Tracks pristine state for sharing and resets
+let clueSet     = new Set();      
+let selected    = null;          
 
 let activeNumber = null;
 let inspectedNumber = null;
@@ -375,6 +376,7 @@ function saveGame() {
 
   const saveData = {
     state,
+    initialGrid,
     clues: Array.from(clueSet),
     moveHistory,
     difficulty: currentDifficulty,
@@ -394,6 +396,7 @@ function loadGame() {
   try {
     const data = JSON.parse(saved);
     state = data.state;
+    initialGrid = data.initialGrid || emptyGrid();
     clueSet = new Set(data.clues);
     moveHistory = data.moveHistory;
     currentDifficulty = data.difficulty;
@@ -516,6 +519,29 @@ function undoMove() {
   updateDepletion();   
   updateNumberHighlights();
   saveGame(); 
+}
+
+function eraseCell() {
+  if (activeNumber !== null) return;
+
+  // Erase explicitly selected cell
+  if (selected && !clueSet.has(`${selected.z},${selected.row},${selected.col}`)) {
+      const { z, row, col } = selected;
+      if (state[z][row][col] !== 0) {
+          fillCell(z, row, col, '');
+      }
+  } else {
+      // Fallback for currently active crosshair cell
+      const activeEl = document.querySelector('.cell.active-cell');
+      if (activeEl && !activeEl.classList.contains('clue')) {
+          const z = Number(activeEl.dataset.z);
+          const row = Number(activeEl.dataset.row);
+          const col = Number(activeEl.dataset.col);
+          if (state[z][row][col] !== 0) {
+              fillCell(z, row, col, '');
+          }
+      }
+  }
 }
 
 let timerSeconds  = 0;
@@ -997,6 +1023,34 @@ function handleKeyboardTap(valStr) {
   }
 }
 
+function sharePuzzle() {
+    const capDiff = currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1);
+    let boardSeed = "";
+    
+    for (let z = 0; z < 3; z++) {
+      for (let y = 0; y < 3; y++) {
+        for (let x = 0; x < 3; x++) {
+          boardSeed += initialGrid[z][y][x];
+        }
+      }
+    }
+
+    const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+    const s = String(timerSeconds % 60).padStart(2, '0');
+    const timeString = `${m}:${s}`;
+    
+    const shareUrl = `https://cubiku.onrender.com/?b=${boardSeed}&d=${currentDifficulty}`;
+    const shareText = `Cubiku ${timeString} (${capDiff})\n${shareUrl}`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareText).then(() => {
+            showMessage("Link copied! Share it with a friend.", "success");
+        }).catch(() => {
+            showMessage("Failed to copy link.", "error");
+        });
+    }
+}
+
 // ------------------------------------------
 // REWRITTEN NEW GAME AND CHECK LOGIC
 // ------------------------------------------
@@ -1015,12 +1069,14 @@ async function newGame() {
     const clues = generateGame(currentDifficulty);
 
     state = emptyGrid();
+    initialGrid = emptyGrid();
     clueSet = new Set();
     moveHistory = [];
     timerSeconds = 0; 
 
     for (const [z, row, col, value] of clues) {
       state[z][row][col] = value;
+      initialGrid[z][row][col] = value;
       clueSet.add(`${z},${row},${col}`);
     }
 
@@ -1034,6 +1090,41 @@ async function newGame() {
   } finally {
     setLoading(false);
   }
+}
+
+function loadGameFromSeed(seedStr, difficultyStr) {
+    setLoading(true);
+    state = emptyGrid();
+    initialGrid = emptyGrid();
+    clueSet = new Set();
+    moveHistory = [];
+    timerSeconds = 0;
+    currentDifficulty = difficultyStr || 'custom';
+    
+    let index = 0;
+    for (let z = 0; z < 3; z++) {
+      for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+          let val = parseInt(seedStr[index], 10);
+          if (val > 0) {
+            state[z][row][col] = val;
+            initialGrid[z][row][col] = val;
+            clueSet.add(`${z},${row},${col}`);
+          }
+          index++;
+        }
+      }
+    }
+    
+    const diffSelect = document.getElementById('difficulty-select');
+    if (diffSelect) diffSelect.value = currentDifficulty;
+    
+    renderState();
+    updateDepletion();
+    startTimer();
+    setLoading(false);
+    saveGame();
+    showMessage('Shared puzzle loaded!', 'info');
 }
 
 async function checkSolution() {
@@ -1077,7 +1168,6 @@ async function checkSolution() {
 }
 // ------------------------------------------
 
-
 function init() {
   buildGrids();
   
@@ -1092,6 +1182,32 @@ function init() {
 
   const btnUndo = document.getElementById('btn-undo');
   if (btnUndo) btnUndo.addEventListener('click', undoMove);
+
+  const btnErase = document.getElementById('btn-erase');
+  if (btnErase) btnErase.addEventListener('click', eraseCell);
+
+  const btnRestart = document.getElementById('btn-restart');
+  if (btnRestart) btnRestart.addEventListener('click', () => {
+      if (confirm("Are you sure you want to restart this puzzle from the beginning?")) {
+          for (let z = 0; z < 3; z++) {
+              for (let y = 0; y < 3; y++) {
+                  for (let x = 0; x < 3; x++) {
+                      state[z][y][x] = initialGrid[z][y][x];
+                  }
+              }
+          }
+          moveHistory = [];
+          timerSeconds = 0;
+          renderState();
+          updateDepletion();
+          startTimer();
+          saveGame();
+          showMessage("Puzzle restarted.", "info");
+      }
+  });
+
+  const btnShare = document.getElementById('btn-share');
+  if (btnShare) btnShare.addEventListener('click', sharePuzzle);
 
   const btnZen = document.getElementById('btn-zen');
   if (btnZen) btnZen.addEventListener('click', toggleZen);
@@ -1139,7 +1255,7 @@ function init() {
   }
 
   document.querySelectorAll('.key-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => handleKeyboardTap(e.target.dataset.val));
+    btn.addEventListener('click', (e) => handleKeyboardTap(e.currentTarget.dataset.val));
   });
 
   document.addEventListener('click', (e) => {
@@ -1156,8 +1272,16 @@ function init() {
     }
   });
 
-  if (!loadGame()) {
-    newGame();
+  // Intercept shared URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const boardSeed = urlParams.get('b');
+  const difficultySeed = urlParams.get('d');
+
+  if (boardSeed && boardSeed.length === 27 && /^\d+$/.test(boardSeed)) {
+      loadGameFromSeed(boardSeed, difficultySeed);
+      window.history.replaceState({}, document.title, window.location.pathname); 
+  } else if (!loadGame()) {
+      newGame();
   }
 }
 
