@@ -729,6 +729,9 @@ function fillCell(z, row, col, digitStr) {
     return;
   }
 
+  // Clear all global conflict red highlights as soon as any cell is changed or cleared
+  document.querySelectorAll('.cell.conflict').forEach(c => c.classList.remove('conflict'));
+
   el.value = digitStr ? String(digitStr) : '';
   state[z][row][col] = after;
 
