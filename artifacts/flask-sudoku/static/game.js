@@ -293,10 +293,11 @@ const TUT_GRID = [
   [[7,2,6], [3,4,8], [5,9,1]]
 ];
 
+// Updated tutorial holes to test numbers other than 1 (5, 9, and 4)
 const TUT_HOLES = [
-  { z: 0, r: 0, c: 0, val: 1, msg: "Like normal Sudoku, this visible 3x3 slice must contain 1-9. Place the missing number." },
-  { z: 1, r: 1, c: 1, val: 1, msg: "Rule 2: Rows cross layers! Look at the middle row cutting through all three grids. Place the missing number." },
-  { z: 2, r: 2, c: 2, val: 1, msg: "Rule 3: Columns cross layers too! Look at the highlighted column slicing through the cube. What completes it?" }
+  { z: 0, r: 0, c: 1, val: 5, msg: "Like normal Sudoku, this visible 3x3 slice must contain 1-9. Place the missing number (5)." },
+  { z: 1, r: 1, c: 0, val: 9, msg: "Rule 2: Rows cross layers! Look at the middle row cutting through all three layers. Place the missing number (9)." },
+  { z: 2, r: 1, c: 1, val: 4, msg: "Rule 3: Columns cross layers too! Look at the highlighted column/row slicing through the cube. Place the missing number (4)." }
 ];
 
 // --- Stats & Settings State ---
@@ -414,7 +415,9 @@ function loadGame() {
 
 // --- Tutorial Functions ---
 function startTutorial() {
-  toggleRules(); 
+  const settingsPanel = document.getElementById('settings-panel');
+  if (settingsPanel) settingsPanel.style.display = 'none';
+
   tutorialMode = true;
   tutorialStep = 1;
   stopTimer();
@@ -457,7 +460,7 @@ function updateTutorialUI() {
         
         if (tutorialStep === 1 && z === 0) inPlane = true;
         if (tutorialStep === 2 && r === 1) inPlane = true;
-        if (tutorialStep === 3 && c === 2) inPlane = true;
+        if (tutorialStep === 3 && (c === 1 || r === 1)) inPlane = true;
         
         if (!inPlane) {
           el.classList.add('tutorial-dim');
@@ -711,7 +714,7 @@ function fillCell(z, row, col, digitStr) {
     if (z !== target.z || row !== target.r || col !== target.c) return; 
     
     if (after > 0 && after !== target.val) {
-      showMessage("Not quite! Look at the highlighted cells. What number from 1-9 is missing?", "error");
+      showMessage(`Not quite! Look at the highlighted cells. The correct number is ${target.val}.`, "error");
       return;
     }
     
@@ -1131,8 +1134,13 @@ function init() {
   const btnCloseRules = document.getElementById('btn-close-rules');
   if (btnCloseRules) btnCloseRules.addEventListener('click', toggleRules);
   
-  const btnStartTut = document.getElementById('btn-start-tutorial');
-  if (btnStartTut) btnStartTut.addEventListener('click', startTutorial);
+  const btnSettingsTut = document.getElementById('btn-settings-tutorial');
+  if (btnSettingsTut) {
+      btnSettingsTut.addEventListener('click', () => {
+          document.getElementById('settings-panel').style.display = 'none';
+          startTutorial();
+      });
+  }
 
   const rulesModal = document.getElementById('rules-modal');
   if (rulesModal) {
@@ -1205,23 +1213,11 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (!tutorialCompleted) {
     const rulesModal = document.getElementById('rules-modal');
-    const tutorialBtn = document.getElementById('btn-start-tutorial');
     
     if (rulesModal) {
       rulesModal.classList.remove('hidden');
     }
     
-    if (tutorialBtn) {
-      tutorialBtn.classList.add('highlight-pulse');
-      
-      tutorialBtn.addEventListener('click', function() {
-        this.classList.remove('highlight-pulse');
-        localStorage.setItem('cubiku_tutorial_complete', 'true');
-        
-        if (rulesModal) {
-          rulesModal.classList.add('hidden');
-        }
-      }, { once: true });
-    }
+    localStorage.setItem('cubiku_tutorial_complete', 'true');
   }
 });
