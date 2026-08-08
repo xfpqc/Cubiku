@@ -206,7 +206,7 @@ h1 {
   min-height: 44px;
 }
 
-/* Left Group: Timer + Zen Button (with gap between timer and button) */
+/* Left Group: Timer + Zen Button */
 .top-left-group {
   justify-self: end;
   display: flex;
@@ -239,7 +239,7 @@ h1 {
   justify-self: center;
 }
 
-/* Right Group: Restart & Settings (with gap between restart and settings) */
+/* Right Group: Restart & Menu */
 .controls {
   justify-self: start;
   position: relative;
@@ -299,22 +299,23 @@ h1 {
 
 .btn-icon:active { transform: scale(0.93); }
 
-/* ── Settings Panel Overlay Dropdown ─────────────────────── */
+/* ── Menu Panel Overlay Dropdown ─────────────────────────── */
 
 .settings-panel {
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
   z-index: 200;
-  background: #1a1a1a;
-  border: 1px solid var(--grid-line);
-  padding: 1rem 1.25rem;
-  border-radius: var(--radius);
+  background: rgba(22, 22, 22, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 0;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  width: 240px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  width: 200px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
 }
 
 @media (max-width: 599px) {
@@ -328,17 +329,60 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 400;
   color: var(--text-primary);
+  padding: 0.75rem 1.25rem;
+  transition: background 0.15s;
 }
 
-.setting-item select {
+.setting-item.action-item {
+  cursor: pointer;
+}
+
+.setting-item.action-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.setting-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0.35rem 0;
+}
+
+/* Custom minimal dropdowns inside menu */
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper select {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-weight: 500;
+  font-size: 0.85rem;
+  padding-right: 1rem;
+  cursor: pointer;
+  outline: none;
+  text-align: right;
+  font-family: inherit;
+}
+
+.select-wrapper::after {
+  content: "▼";
+  font-size: 0.5rem;
+  color: var(--accent);
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.select-wrapper select option {
   background: var(--bg);
   color: var(--text-primary);
-  border: 1px solid var(--grid-line);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-family: inherit;
 }
 
 /* ── Modern Toggle Switch Component ──────────────────────── */

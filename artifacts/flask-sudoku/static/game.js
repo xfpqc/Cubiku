@@ -231,7 +231,7 @@ function check3SSC(grid, n = 3) {
       }
       for (const num in seen) {
           if (seen[num].length > 1) {
-              seen[num].forEach(({ z, x }) => addConflict(z, x));
+              seen[num].forEach(({ z, x }) => addConflict(z, y, x));
           }
       }
   }
@@ -287,16 +287,18 @@ let stickyKeysEnabled = false;
 let tutorialMode = false;
 let tutorialStep = 0;
 
+// An internally logically sound 3x3x3 grid that obeys all rules.
 const TUT_GRID = [
   [[1,5,9], [6,7,2], [8,3,4]],
   [[4,8,3], [9,1,5], [2,6,7]],
   [[7,2,6], [3,4,8], [5,9,1]]
 ];
 
+// 3 rules = 3 orthogonal planes. Holes that isolate exactly 1 logical step perfectly.
 const TUT_HOLES = [
-  { z: 0, r: 0, c: 1, val: 5, msg: "Like normal Sudoku, this visible 3x3 slice must contain 1-9. Place the missing number (5)." },
-  { z: 1, r: 1, c: 0, val: 9, msg: "Rule 2: Rows cross layers! Look at the middle row cutting through all three layers. Place the missing number (9)." },
-  { z: 2, r: 1, c: 1, val: 4, msg: "Rule 3: Columns cross layers too! Look at the highlighted column/row slicing through the cube. Place the missing number (4)." }
+  { z: 0, r: 0, c: 1, val: 5, msg: "Rule 1: Each flat 3x3 slice must contain 1-9. Look at this slice. What number is missing?" },
+  { z: 1, r: 1, c: 0, val: 9, msg: "Rule 2: Horizontal rows cross the cube! The highlighted middle row across all slices contains 1-9. Place the missing number." },
+  { z: 2, r: 0, c: 2, val: 6, msg: "Rule 3: Vertical columns cross the cube! Check the highlighted right-most column across all slices. Place the final number." }
 ];
 
 let stats = {
@@ -454,9 +456,10 @@ function updateTutorialUI() {
         const el = getCell(z,r,c);
         let inPlane = false;
         
-        if (tutorialStep === 1 && z === 0) inPlane = true;
-        if (tutorialStep === 2 && r === 1) inPlane = true;
-        if (tutorialStep === 3 && (c === 1 || r === 1)) inPlane = true;
+        // Correct logic to show exactly the 9 cells of the relevant constraint plane
+        if (tutorialStep === 1 && z === target.z) inPlane = true; // Z-slice plane
+        if (tutorialStep === 2 && r === target.r) inPlane = true; // Y-slice plane
+        if (tutorialStep === 3 && c === target.c) inPlane = true; // X-slice plane
         
         if (!inPlane) {
           el.classList.add('tutorial-dim');
@@ -528,10 +531,10 @@ function toggleZen() {
   }
 }
 
-function toggleSettings() {
+function toggleMenu() {
   const panel = document.getElementById('settings-panel');
   if (panel) {
-    panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'block' : 'none';
+    panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'flex' : 'none';
   }
 }
 
@@ -1093,8 +1096,8 @@ function init() {
   const btnNew = document.getElementById('btn-new-game');
   if (btnNew) btnNew.addEventListener('click', newGame);
 
-  const btnSettings = document.getElementById('btn-settings');
-  if (btnSettings) btnSettings.addEventListener('click', toggleSettings);
+  const btnMenu = document.getElementById('btn-menu');
+  if (btnMenu) btnMenu.addEventListener('click', toggleMenu);
 
   const btnRestart = document.getElementById('btn-restart');
   if (btnRestart) btnRestart.addEventListener('click', () => {
@@ -1123,14 +1126,6 @@ function init() {
       btnSettingsTut.addEventListener('click', () => {
           document.getElementById('settings-panel').style.display = 'none';
           startTutorial();
-      });
-  }
-
-  const btnSettingsRules = document.getElementById('btn-settings-rules');
-  if (btnSettingsRules) {
-      btnSettingsRules.addEventListener('click', () => {
-          document.getElementById('settings-panel').style.display = 'none';
-          toggleRules();
       });
   }
 
@@ -1176,9 +1171,9 @@ function init() {
 
   document.addEventListener('click', (e) => {
     const settingsPanel = document.getElementById('settings-panel');
-    const btnSet = document.getElementById('btn-settings');
-    if (settingsPanel && settingsPanel.style.display === 'block') {
-      if (!settingsPanel.contains(e.target) && !btnSet.contains(e.target)) {
+    const btnM = document.getElementById('btn-menu');
+    if (settingsPanel && settingsPanel.style.display === 'flex') {
+      if (!settingsPanel.contains(e.target) && !btnM.contains(e.target)) {
         settingsPanel.style.display = 'none';
       }
     }
