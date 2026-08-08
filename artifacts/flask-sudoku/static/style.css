@@ -194,12 +194,11 @@ h1 {
   letter-spacing: 0.3px;
 }
 
-/* ── Top Action Bar (Flex Layout with Absolute Center) ───── */
+/* ── Top Action Bar (Centered New Game + Tight Groups) ───── */
 
 .top-action-bar {
-  position: relative;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   width: 100%;
   max-width: 600px;
@@ -209,9 +208,10 @@ h1 {
 
 /* Left Group: Timer + Zen Button */
 .top-left-group {
+  justify-self: end;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .timer-bar {
@@ -233,19 +233,18 @@ h1 {
   visibility: hidden;
 }
 
-/* Center Action: New Game Button (Strictly centered) */
+/* Center Action: New Game Button (Strictly Centered) */
 .center-action {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  justify-self: center;
 }
 
 /* Right Group: Restart & Settings */
 .controls {
+  justify-self: start;
   position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .btn {
