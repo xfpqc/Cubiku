@@ -293,7 +293,6 @@ const TUT_GRID = [
   [[7,2,6], [3,4,8], [5,9,1]]
 ];
 
-// Updated tutorial holes to test numbers other than 1 (5, 9, and 4)
 const TUT_HOLES = [
   { z: 0, r: 0, c: 1, val: 5, msg: "Like normal Sudoku, this visible 3x3 slice must contain 1-9. Place the missing number (5)." },
   { z: 1, r: 1, c: 0, val: 9, msg: "Rule 2: Rows cross layers! Look at the middle row cutting through all three layers. Place the missing number (9)." },
@@ -732,7 +731,6 @@ function fillCell(z, row, col, digitStr) {
     return;
   }
 
-  // Clear all global conflict red highlights as soon as any cell is changed or cleared
   document.querySelectorAll('.cell.conflict').forEach(c => c.classList.remove('conflict'));
 
   el.value = digitStr ? String(digitStr) : '';
@@ -1128,12 +1126,6 @@ function init() {
   const btnZen = document.getElementById('btn-zen');
   if (btnZen) btnZen.addEventListener('click', toggleZen);
   
-  const btnInfo = document.getElementById('btn-info');
-  if (btnInfo) btnInfo.addEventListener('click', toggleRules);
-
-  const btnCloseRules = document.getElementById('btn-close-rules');
-  if (btnCloseRules) btnCloseRules.addEventListener('click', toggleRules);
-  
   const btnSettingsTut = document.getElementById('btn-settings-tutorial');
   if (btnSettingsTut) {
       btnSettingsTut.addEventListener('click', () => {
@@ -1141,6 +1133,17 @@ function init() {
           startTutorial();
       });
   }
+
+  const btnSettingsRules = document.getElementById('btn-settings-rules');
+  if (btnSettingsRules) {
+      btnSettingsRules.addEventListener('click', () => {
+          document.getElementById('settings-panel').style.display = 'none';
+          toggleRules();
+      });
+  }
+
+  const btnCloseRules = document.getElementById('btn-close-rules');
+  if (btnCloseRules) btnCloseRules.addEventListener('click', toggleRules);
 
   const rulesModal = document.getElementById('rules-modal');
   if (rulesModal) {
