@@ -172,7 +172,6 @@ function measureHumanDifficulty(grid, n = 3) {
 function generateGame(difficulty = 'medium') {
   let attempts = 0;
   let bestClues = null;
-  // Safety break to prevent infinite loops while generating specific difficulties
   while (attempts < 30) {
       attempts++;
       const { grid, clues } = generateUniquePuzzle(3, difficulty);
@@ -190,7 +189,6 @@ function check3SSC(grid, n = 3) {
   const conflicts = new Set();
   const addConflict = (z, y, x) => conflicts.add(`${z},${y},${x}`);
 
-  // Check validity / empty cells first
   for (let z = 0; z < n; z++) {
       for (let y = 0; y < n; y++) {
           for (let x = 0; x < n; x++) {
@@ -275,17 +273,15 @@ function check3SSC(grid, n = 3) {
 // ==========================================
 
 let state       = emptyGrid();  
-let initialGrid = emptyGrid(); // Tracks pristine state for sharing and resets
+let initialGrid = emptyGrid(); 
 let clueSet     = new Set();      
 let selected    = null;          
 
-let activeNumber = null;
+let activeNumber = null; // Can be "1" through "9" or "erase"
 let inspectedNumber = null;
 let currentDifficulty = "medium"; 
 let currentTheme = "cyan";
 let stickyKeysEnabled = false; 
-
-let moveHistory = [];
 
 // --- Tutorial State ---
 let tutorialMode = false;
@@ -378,7 +374,6 @@ function saveGame() {
     state,
     initialGrid,
     clues: Array.from(clueSet),
-    moveHistory,
     difficulty: currentDifficulty,
     timer: timerSeconds
   };
@@ -398,7 +393,6 @@ function loadGame() {
     state = data.state;
     initialGrid = data.initialGrid || emptyGrid();
     clueSet = new Set(data.clues);
-    moveHistory = data.moveHistory;
     currentDifficulty = data.difficulty;
     timerSeconds = data.timer;
     
@@ -487,61 +481,6 @@ function endTutorial() {
      if (diffSelect) diffSelect.value = 'easy';
      newGame();
   }, 3500);
-}
-
-function pushHistory(z, row, col, before, after) {
-  if (before === after) return;    
-  moveHistory.push({ z, row, col, before, after });
-  updateUndoButton();
-}
-
-function updateUndoButton() {
-  const undoBtn = document.getElementById('btn-undo');
-  if (undoBtn) undoBtn.disabled = moveHistory.length === 0;
-}
-
-function undoMove() {
-  if (moveHistory.length === 0) return;
-  if (tutorialMode) return; 
-
-  const { z, row, col, before } = moveHistory.pop();
-  state[z][row][col] = before;
-
-  const el = getCell(z, row, col);
-  if (el) {
-    el.value = before > 0 ? String(before) : '';
-    el.classList.remove('conflict', 'flash-conflict');
-  }
-
-  document.querySelectorAll('.cell.conflict').forEach(c => c.classList.remove('conflict'));
-  updateUndoButton();
-  hideMessage();       
-  updateDepletion();   
-  updateNumberHighlights();
-  saveGame(); 
-}
-
-function eraseCell() {
-  if (activeNumber !== null) return;
-
-  // Erase explicitly selected cell
-  if (selected && !clueSet.has(`${selected.z},${selected.row},${selected.col}`)) {
-      const { z, row, col } = selected;
-      if (state[z][row][col] !== 0) {
-          fillCell(z, row, col, '');
-      }
-  } else {
-      // Fallback for currently active crosshair cell
-      const activeEl = document.querySelector('.cell.active-cell');
-      if (activeEl && !activeEl.classList.contains('clue')) {
-          const z = Number(activeEl.dataset.z);
-          const row = Number(activeEl.dataset.row);
-          const col = Number(activeEl.dataset.col);
-          if (state[z][row][col] !== 0) {
-              fillCell(z, row, col, '');
-          }
-      }
-  }
 }
 
 let timerSeconds  = 0;
@@ -670,7 +609,7 @@ function clearSelection() {
 function updateNumberHighlights() {
   document.querySelectorAll('.cell').forEach(el => el.classList.remove('number-highlight'));
   
-  const targetVal = activeNumber !== null ? Number(activeNumber) : (inspectedNumber !== null ? Number(inspectedNumber) : null);
+  const targetVal = activeNumber !== null && activeNumber !== 'erase' ? Number(activeNumber) : (inspectedNumber !== null ? Number(inspectedNumber) : null);
   if (targetVal === null) return;
 
   for (let z = 0; z < 3; z++) {
@@ -733,7 +672,6 @@ function buildGrids() {
 
 function renderState() {
   clearSelection();
-  updateUndoButton();
 
   for (let z = 0; z < 3; z++) {
     for (let row = 0; row < 3; row++) {
@@ -793,7 +731,6 @@ function fillCell(z, row, col, digitStr) {
 
   el.value = digitStr ? String(digitStr) : '';
   state[z][row][col] = after;
-  pushHistory(z, row, col, before, after);
 
   el.classList.remove('conflict', 'flash-conflict');
   hideMessage();
@@ -822,9 +759,10 @@ function updateDepletion() {
   let activeWasDepleted = false;
 
   document.querySelectorAll('.key-btn').forEach(btn => {
-    if (!btn.dataset.val) return; 
+    const valStr = btn.dataset.val;
+    if (!valStr || valStr === 'erase') return; 
     
-    const val = Number(btn.dataset.val);
+    const val = Number(valStr);
     if (counts[val] >= 3) {
       btn.style.opacity = '0.3';
       btn.style.textDecoration = 'line-through';
@@ -931,7 +869,13 @@ function onCellPointerDown(e) {
   }
 
   if (activeNumber !== null) {
-    fillCell(z, row, col, activeNumber);
+    if (activeNumber === 'erase') {
+      if (!clueSet.has(`${z},${row},${col}`)) {
+        fillCell(z, row, col, '');
+      }
+    } else {
+      fillCell(z, row, col, activeNumber);
+    }
     
     if (activeNumber === null) return;
 
@@ -1004,12 +948,20 @@ function handleKeyboardTap(valStr) {
   clearHighlights();
   inspectedNumber = null;
 
-  const btn = document.querySelector(`.key-btn[data-val="${valStr}"]`);
-  if (btn && btn.classList.contains('depleted')) return;
+  if (valStr !== 'erase') {
+    const btn = document.querySelector(`.key-btn[data-val="${valStr}"]`);
+    if (btn && btn.classList.contains('depleted')) return;
+  }
 
   if (selected !== null) {
     const { z, row, col } = selected;
-    fillCell(z, row, col, valStr);
+    if (valStr === 'erase') {
+      if (!clueSet.has(`${z},${row},${col}`)) {
+        fillCell(z, row, col, '');
+      }
+    } else {
+      fillCell(z, row, col, valStr);
+    }
     clearSelection(); 
     updateNumberHighlights();
   } else {
@@ -1023,36 +975,8 @@ function handleKeyboardTap(valStr) {
   }
 }
 
-function sharePuzzle() {
-    const capDiff = currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1);
-    let boardSeed = "";
-    
-    for (let z = 0; z < 3; z++) {
-      for (let y = 0; y < 3; y++) {
-        for (let x = 0; x < 3; x++) {
-          boardSeed += initialGrid[z][y][x];
-        }
-      }
-    }
-
-    const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
-    const s = String(timerSeconds % 60).padStart(2, '0');
-    const timeString = `${m}:${s}`;
-    
-    const shareUrl = `https://cubiku.onrender.com/?b=${boardSeed}&d=${currentDifficulty}`;
-    const shareText = `Cubiku ${timeString} (${capDiff})\n${shareUrl}`;
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(shareText).then(() => {
-            showMessage("Link copied! Share it with a friend.", "success");
-        }).catch(() => {
-            showMessage("Failed to copy link.", "error");
-        });
-    }
-}
-
 // ------------------------------------------
-// REWRITTEN NEW GAME AND CHECK LOGIC
+// NEW GAME AND CHECK LOGIC
 // ------------------------------------------
 
 async function newGame() {
@@ -1062,7 +986,6 @@ async function newGame() {
   clearSave();
   tutorialMode = false;
 
-  // Let the browser render the loading state before synchronous heavy lifting
   await new Promise(resolve => setTimeout(resolve, 50));
 
   try {
@@ -1071,7 +994,6 @@ async function newGame() {
     state = emptyGrid();
     initialGrid = emptyGrid();
     clueSet = new Set();
-    moveHistory = [];
     timerSeconds = 0; 
 
     for (const [z, row, col, value] of clues) {
@@ -1097,7 +1019,6 @@ function loadGameFromSeed(seedStr, difficultyStr) {
     state = emptyGrid();
     initialGrid = emptyGrid();
     clueSet = new Set();
-    moveHistory = [];
     timerSeconds = 0;
     currentDifficulty = difficultyStr || 'custom';
     
@@ -1133,7 +1054,6 @@ async function checkSolution() {
 
   setLoading(true);
   
-  // Let UI update before processing
   await new Promise(resolve => setTimeout(resolve, 50));
 
   try {
@@ -1180,12 +1100,6 @@ function init() {
   const btnSettings = document.getElementById('btn-settings');
   if (btnSettings) btnSettings.addEventListener('click', toggleSettings);
 
-  const btnUndo = document.getElementById('btn-undo');
-  if (btnUndo) btnUndo.addEventListener('click', undoMove);
-
-  const btnErase = document.getElementById('btn-erase');
-  if (btnErase) btnErase.addEventListener('click', eraseCell);
-
   const btnRestart = document.getElementById('btn-restart');
   if (btnRestart) btnRestart.addEventListener('click', () => {
       if (confirm("Are you sure you want to restart this puzzle from the beginning?")) {
@@ -1196,7 +1110,6 @@ function init() {
                   }
               }
           }
-          moveHistory = [];
           timerSeconds = 0;
           renderState();
           updateDepletion();
@@ -1205,9 +1118,6 @@ function init() {
           showMessage("Puzzle restarted.", "info");
       }
   });
-
-  const btnShare = document.getElementById('btn-share');
-  if (btnShare) btnShare.addEventListener('click', sharePuzzle);
 
   const btnZen = document.getElementById('btn-zen');
   if (btnZen) btnZen.addEventListener('click', toggleZen);
