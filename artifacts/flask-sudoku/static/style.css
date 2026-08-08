@@ -194,21 +194,14 @@ h1 {
   letter-spacing: 0.3px;
 }
 
-/* ── Top Action Bar (Matched 3-Column Grid) ───────────────── */
+/* ── Top Action Bar ──────────────────────────────────────── */
 
 .top-action-bar {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   width: 100%;
   max-width: 600px;
-}
-
-@media (max-width: 599px) {
-  .top-action-bar {
-    gap: 1px;
-  }
 }
 
 /* ── Timer bar ───────────────────────────────────────────── */
@@ -217,7 +210,6 @@ h1 {
   display:         flex;
   align-items:     center;
   justify-content: flex-start;
-  gap:             0.6rem;
   padding-left:    0.5rem;
 }
 
@@ -235,30 +227,22 @@ h1 {
   visibility: hidden;
 }
 
-/* ── Center Action (New Game Button) ────────────────────── */
+/* ── Center Action Cluster (Zen, New Game, Controls) ─────── */
 
 .center-action {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
+  gap: 8px;
 }
 
-/* ── Controls & Settings ────────────────────────────────── */
+/* ── Controls (Restart & Settings Group) ─────────────────── */
 
 .controls {
   position: relative;
   display:         flex;
   align-items:     center;
-  justify-content: flex-end;
-  gap:             0.75rem;
-  padding-right:   0.5rem;
-}
-
-@media (max-width: 599px) {
-  .controls {
-    gap: 0.5rem;
-  }
+  gap:             8px;
 }
 
 .btn {
