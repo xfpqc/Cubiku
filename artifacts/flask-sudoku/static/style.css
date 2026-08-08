@@ -350,12 +350,12 @@ h1 {
   margin: 0.2rem 0;
 }
 
-/* ── Custom Styled Mini-Dropdowns inside Menu ──────────────── */
+/* ── Custom Styled Centered Mini-Dropdowns inside Menu ───── */
 
 .select-wrapper {
   position: relative;
-  display: flex;
-  align-items: center;
+  display: inline-block;
+  width: 110px;
 }
 
 .select-wrapper select {
@@ -368,11 +368,13 @@ h1 {
   font-family: inherit;
   font-weight: 600;
   font-size: 0.75rem;
-  padding: 0.35rem 1.8rem 0.35rem 0.75rem;
+  padding: 0.35rem 1.5rem;
+  width: 100%;
   border-radius: 8px;
   cursor: pointer;
   outline: none;
-  text-align: right;
+  text-align: center;
+  text-align-last: center;
   text-transform: capitalize;
   letter-spacing: 0.5px;
   transition: all 0.2s ease;
@@ -406,6 +408,7 @@ h1 {
 .select-wrapper select option {
   background: #1a1a1a;
   color: var(--text-primary);
+  text-align: center;
   text-transform: capitalize;
   padding: 0.5rem;
 }
