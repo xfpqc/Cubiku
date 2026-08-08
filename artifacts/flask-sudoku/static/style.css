@@ -306,22 +306,22 @@ h1 {
   top: calc(100% + 10px);
   right: 0;
   z-index: 200;
-  background: rgba(22, 22, 22, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(22, 22, 22, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 0.5rem 0;
-  border-radius: 12px;
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
-  width: 200px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  width: 220px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
 }
 
 @media (max-width: 599px) {
   .settings-panel {
     right: -10px;
-    width: 220px;
+    width: 230px;
   }
 }
 
@@ -329,10 +329,10 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.9rem;
-  font-weight: 400;
+  font-size: 0.85rem;
+  font-weight: 500;
   color: var(--text-primary);
-  padding: 0.75rem 1.25rem;
+  padding: 0.65rem 1.25rem;
   transition: background 0.15s;
 }
 
@@ -346,43 +346,68 @@ h1 {
 
 .setting-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.08);
-  margin: 0.35rem 0;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 0.2rem 0;
 }
 
-/* Custom minimal dropdowns inside menu */
+/* ── Custom Styled Mini-Dropdowns inside Menu ──────────────── */
+
 .select-wrapper {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .select-wrapper select {
   appearance: none;
-  background: transparent;
-  border: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: var(--accent);
-  font-weight: 500;
-  font-size: 0.85rem;
-  padding-right: 1rem;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.35rem 1.8rem 0.35rem 0.75rem;
+  border-radius: 8px;
   cursor: pointer;
   outline: none;
   text-align: right;
-  font-family: inherit;
+  text-transform: capitalize;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.select-wrapper select:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.select-wrapper select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
 }
 
 .select-wrapper::after {
-  content: "▼";
-  font-size: 0.5rem;
-  color: var(--accent);
+  content: "";
   position: absolute;
-  right: 0;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--accent);
   pointer-events: none;
+  opacity: 0.85;
 }
 
 .select-wrapper select option {
-  background: var(--bg);
+  background: #1a1a1a;
   color: var(--text-primary);
+  text-transform: capitalize;
+  padding: 0.5rem;
 }
 
 /* ── Modern Toggle Switch Component ──────────────────────── */
