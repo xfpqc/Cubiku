@@ -231,7 +231,7 @@ function check3SSC(grid, n = 3) {
       }
       for (const num in seen) {
           if (seen[num].length > 1) {
-              seen[num].forEach(({ z, x }) => addConflict(z, y, x));
+              seen[num].forEach(({ z, x }) => addConflict(z, x));
           }
       }
   }
@@ -277,7 +277,7 @@ let initialGrid = emptyGrid();
 let clueSet     = new Set();      
 let selected    = null;          
 
-let activeNumber = null; // Can be "1" through "9" or "erase"
+let activeNumber = null;
 let inspectedNumber = null;
 let currentDifficulty = "medium"; 
 let currentTheme = "cyan";
@@ -299,7 +299,6 @@ const TUT_HOLES = [
   { z: 2, r: 1, c: 1, val: 4, msg: "Rule 3: Columns cross layers too! Look at the highlighted column/row slicing through the cube. Place the missing number (4)." }
 ];
 
-// --- Stats & Settings State ---
 let stats = {
   bestTimes: { easy: null, medium: null, hard: null },
   gamesWon: 0
@@ -406,13 +405,11 @@ function loadGame() {
     showMessage('Game resumed.', 'info');
     return true;
   } catch (e) {
-    console.error("Save file corrupted, starting fresh.");
     clearSave();
     return false;
   }
 }
 
-// --- Tutorial Functions ---
 function startTutorial() {
   const settingsPanel = document.getElementById('settings-panel');
   if (settingsPanel) settingsPanel.style.display = 'none';
@@ -979,10 +976,6 @@ function handleKeyboardTap(valStr) {
   }
 }
 
-// ------------------------------------------
-// NEW GAME AND CHECK LOGIC
-// ------------------------------------------
-
 async function newGame() {
   setLoading(true);
   hideMessage();
@@ -1090,7 +1083,6 @@ async function checkSolution() {
     setLoading(false);
   }
 }
-// ------------------------------------------
 
 function init() {
   buildGrids();
@@ -1196,7 +1188,6 @@ function init() {
     }
   });
 
-  // Intercept shared URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   const boardSeed = urlParams.get('b');
   const difficultySeed = urlParams.get('d');
@@ -1216,11 +1207,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (!tutorialCompleted) {
     const rulesModal = document.getElementById('rules-modal');
-    
     if (rulesModal) {
       rulesModal.classList.remove('hidden');
     }
-    
     localStorage.setItem('cubiku_tutorial_complete', 'true');
   }
 });

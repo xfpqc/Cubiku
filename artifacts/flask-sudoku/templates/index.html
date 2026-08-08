@@ -27,7 +27,7 @@
       <p class="description">3-dimensional Sudoku</p>
     </header>
 
-    <!-- Top Action Bar -->
+    <!-- Top Action Bar (Aligned 1-to-1 with the 3 Slices below) -->
     <div class="top-action-bar">
       <!-- Left Column: Passive timer -->
       <div class="timer-bar" id="timer-bar">
@@ -52,19 +52,21 @@
         </button>
       </div>
 
-      <!-- Center Column: New Game & Restart Buttons -->
+      <!-- Center Column: New Game Button (Centered over middle block) -->
       <div class="center-action">
         <button id="btn-new-game" class="btn btn-primary">New Game</button>
+      </div>
+
+      <!-- Right Column: Controls, Restart & Settings -->
+      <div class="controls">
+        <!-- Restart Button -->
         <button id="btn-restart" class="btn-icon" aria-label="Restart Puzzle" title="Restart Puzzle">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
             <polyline points="3 3 3 8 8 8"></polyline>
           </svg>
         </button>
-      </div>
 
-      <!-- Right Column: Settings Gear Only -->
-      <div class="controls">
         <!-- Settings gear icon -->
         <button id="btn-settings" class="btn-icon" aria-label="Settings" title="Settings">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" 

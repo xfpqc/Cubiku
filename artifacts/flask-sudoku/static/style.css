@@ -30,49 +30,49 @@
 /* ── Theme Definitions ──────────────────────────────────── */
 
 body[data-theme="gold"] {
-  --accent:        #E4C59E; /* Muted Gold / Amber */
+  --accent:        #E4C59E;
   --ch-bg:         rgba(228, 197, 158, 0.03);
   --num-hl:        rgba(228, 197, 158, 0.15);
 }
 
 body[data-theme="cyan"] {
-  --accent:        #A8DADC; /* Soft Cyan */
+  --accent:        #A8DADC;
   --ch-bg:         rgba(168, 218, 220, 0.03);
   --num-hl:        rgba(168, 218, 220, 0.15);
 }
 
 body[data-theme="olo"] {
-  --accent:        #00FFCC; /* Olo */
+  --accent:        #00FFCC;
   --ch-bg:         rgba(0, 255, 204, 0.03);
   --num-hl:        rgba(0, 255, 204, 0.15);
 }
 
 body[data-theme="mint"] {
-  --accent:        #A3E4D7; /* Emerald Mint */
+  --accent:        #A3E4D7;
   --ch-bg:         rgba(163, 228, 215, 0.03);
   --num-hl:        rgba(163, 228, 215, 0.15);
 }
 
 body[data-theme="rose"] {
-  --accent:        #F5B7B1; /* Rose Quartz */
+  --accent:        #F5B7B1;
   --ch-bg:         rgba(245, 183, 177, 0.03);
   --num-hl:        rgba(245, 183, 177, 0.15);
 }
 
 body[data-theme="softred"] {
-  --accent:        #E06C75; /* Soft Muted Red */
+  --accent:        #E06C75;
   --ch-bg:         rgba(224, 108, 117, 0.03);
   --num-hl:        rgba(224, 108, 117, 0.15);
 }
 
 body[data-theme="lavender"] {
-  --accent:        #D7BDE2; /* Lavender Dusk */
+  --accent:        #D7BDE2;
   --ch-bg:         rgba(215, 189, 226, 0.03);
   --num-hl:        rgba(215, 189, 226, 0.15);
 }
 
 body[data-theme="silver"] {
-  --accent:        #9CA3AF; /* Metallic Silver / Steel */
+  --accent:        #9CA3AF;
   --ch-bg:         rgba(156, 163, 175, 0.04);
   --num-hl:        rgba(156, 163, 175, 0.15);
 }
@@ -83,7 +83,7 @@ body[data-theme="silver"] {
 
 html, body { 
   min-height: 100vh;
-  min-height: 100dvh; /* OPTIMIZATION: Fixes address bar bounce */
+  min-height: 100dvh;
   background:  var(--bg);
   color:       var(--text-primary);
   font-family: 'Poppins', system-ui, sans-serif;
@@ -121,13 +121,13 @@ html, body {
   }
 }
 
-/* Mobile: exact user-specified line spacing */
+/* Mobile */
 @media (max-width: 599px) {
   .page-wrapper {
     min-height:      100vh;
-    min-height:      100dvh; /* OPTIMIZATION: Dynamic Viewport bounds */
+    min-height:      100dvh;
     justify-content: flex-start;
-    padding:         3.6rem 0.5rem 1.5rem; /* 3 lines above title */
+    padding:         3.6rem 0.5rem 1.5rem;
     gap:             0;
   }
   header {
@@ -140,7 +140,7 @@ html, body {
   .description {
     font-size:       0.7rem;
     margin-top:      0.1rem;
-    margin-bottom:   4.8rem; /* 4 lines between description and new game button */
+    margin-bottom:   4.8rem;
   }
   .top-action-bar {
     margin-top:      0;
@@ -150,28 +150,27 @@ html, body {
     min-height:      auto;
     padding:         0.05rem 0.5rem;
     font-size:       0.72rem;
-    margin:          0 auto; /* Zeroed so grid controls the space */
+    margin:          0 auto;
   }
   .slices-container {
-    gap:             1px; /* OPTIMIZATION: Minimized to 1px to maximize cell size */
-    margin-top:      1.3rem; /* IDENTICAL spacing ABOVE the grid */
-    margin-bottom:   1.3rem; /* IDENTICAL spacing BELOW the grid */
+    gap:             1px;
+    margin-top:      1.3rem;
+    margin-bottom:   1.3rem;
   }
   .keyboard-container {
     max-width:       380px;
     flex-wrap:       wrap;
     gap:             6px;
-    margin-top:      0; /* Zeroed so grid controls the space */
+    margin-top:      0;
     margin-bottom:   0.6rem;
   }
   .stats-container {
-    margin-top:      auto; /* OPTIMIZATION: Pushes stats & footer to bottom of screen dynamically */
-    padding-top:     1.2rem; /* Maintains fallback gap if screen is small */
+    margin-top:      auto;
+    padding-top:     1.2rem;
     gap:             0.5rem;
   }
   footer {
     margin-top:      2.4rem; 
-    /* OPTIMIZATION: Accounts for iOS home swipe bar notch */
     padding-bottom:  calc(0.5rem + env(safe-area-inset-bottom)); 
   }
 }
@@ -195,14 +194,21 @@ h1 {
   letter-spacing: 0.3px;
 }
 
-/* ── Top Action Bar (Grid Centered Layout) ───────────────── */
+/* ── Top Action Bar (Matched 3-Column Grid) ───────────────── */
 
 .top-action-bar {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
   align-items: center;
   width: 100%;
   max-width: 600px;
+}
+
+@media (max-width: 599px) {
+  .top-action-bar {
+    gap: 1px;
+  }
 }
 
 /* ── Timer bar ───────────────────────────────────────────── */
@@ -210,9 +216,9 @@ h1 {
 .timer-bar {
   display:         flex;
   align-items:     center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap:             0.6rem;
-  padding-right:   1.25rem;
+  padding-left:    0.5rem;
 }
 
 #timer-display {
@@ -229,30 +235,28 @@ h1 {
   visibility: hidden;
 }
 
-/* ── Controls & Center Action ───────────────────────────── */
+/* ── Center Action (New Game Button) ────────────────────── */
 
 .center-action {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  width: 100%;
 }
+
+/* ── Controls & Settings ────────────────────────────────── */
 
 .controls {
   position: relative;
   display:         flex;
   align-items:     center;
-  justify-content: flex-start;
+  justify-content: flex-end;
   gap:             0.75rem;
-  padding-left:    1.25rem;
+  padding-right:   0.5rem;
 }
 
 @media (max-width: 599px) {
-  .timer-bar {
-    padding-right: 0.5rem;
-  }
   .controls {
-    padding-left: 0.5rem;
     gap: 0.5rem;
   }
 }
@@ -306,13 +310,6 @@ h1 {
 }
 
 .btn-icon:active { transform: scale(0.93); }
-
-#btn-undo:disabled {
-  opacity: 0.2;
-  cursor:  default;
-  pointer-events: none;
-  border-color: var(--grid-line);
-}
 
 /* ── Settings Panel Overlay Dropdown ─────────────────────── */
 
@@ -405,7 +402,7 @@ h1 {
   background-color: var(--accent-text);
 }
 
-/* ── Message bar (Narrowed & Centered) ─────────────────── */
+/* ── Message bar ─────────────────────────────────────────── */
 
 .message-bar {
   max-width:   350px;
@@ -434,7 +431,7 @@ h1 {
 .message-bar.error   { color: var(--error-color); opacity: 1; }
 .message-bar.info    { color: var(--accent); opacity: 1; }
 
-/* ── Slices ────────────────────────────────________________ */
+/* ── Slices ──────────────────────────────────────────────── */
 
 .slices-container {
   display:         flex;
@@ -463,7 +460,7 @@ h1 {
   letter-spacing: 0.5px;
 }
 
-/* ── Grid ────────────────────────────────________________── */
+/* ── Grid ────────────────────────────────────────────────── */
 
 .grid {
   display:    grid;
@@ -636,7 +633,7 @@ h1 {
   border-color: var(--accent);
 }
 
-/* ── Session Stats Dashboard (Borderless & Flat) ─────────── */
+/* ── Session Stats Dashboard ─────────────────────────────── */
 
 .stats-container {
   display: grid;
