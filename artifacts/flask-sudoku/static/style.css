@@ -194,7 +194,7 @@ h1 {
   letter-spacing: 0.3px;
 }
 
-/* ── Top Action Bar (Centered New Game + Tight Groups) ───── */
+/* ── Top Action Bar (Centered New Game + Reasonable Gaps) ── */
 
 .top-action-bar {
   display: grid;
@@ -206,12 +206,13 @@ h1 {
   min-height: 44px;
 }
 
-/* Left Group: Timer + Zen Button */
+/* Left Group: Timer + Zen Button (with gap between timer and button) */
 .top-left-group {
   justify-self: end;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
+  margin-right: 12px;
 }
 
 .timer-bar {
@@ -238,13 +239,14 @@ h1 {
   justify-self: center;
 }
 
-/* Right Group: Restart & Settings */
+/* Right Group: Restart & Settings (with gap between restart and settings) */
 .controls {
   justify-self: start;
   position: relative;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
+  margin-left: 12px;
 }
 
 .btn {
