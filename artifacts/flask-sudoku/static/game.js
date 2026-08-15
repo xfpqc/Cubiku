@@ -276,6 +276,7 @@ let state       = emptyGrid();
 let initialGrid = emptyGrid(); 
 let clueSet     = new Set();      
 let selected    = null;          
+let undoStack   = [];
 
 let activeNumber = null;
 let inspectedNumber = null;
@@ -396,6 +397,7 @@ function loadGame() {
     clueSet = new Set(data.clues);
     currentDifficulty = data.difficulty;
     timerSeconds = data.timer;
+    undoStack = [];
     
     const diffSelect = document.getElementById('difficulty-select');
     if (diffSelect) diffSelect.value = currentDifficulty;
@@ -423,6 +425,7 @@ function startTutorial() {
   
   state = emptyGrid();
   clueSet = new Set();
+  undoStack = [];
   
   for(let z=0; z<3; z++) {
     for(let r=0; r<3; r++) {
@@ -611,7 +614,7 @@ function clearSelection() {
 function updateNumberHighlights() {
   document.querySelectorAll('.cell').forEach(el => el.classList.remove('number-highlight'));
   
-  const targetVal = activeNumber !== null && activeNumber !== 'erase' ? Number(activeNumber) : (inspectedNumber !== null ? Number(inspectedNumber) : null);
+  const targetVal = activeNumber !== null && activeNumber !== 'erase' && activeNumber !== 'undo' ? Number(activeNumber) : (inspectedNumber !== null ? Number(inspectedNumber) : null);
   if (targetVal === null) return;
 
   for (let z = 0; z < 3; z++) {
@@ -700,6 +703,25 @@ function setLoading(on) {
   if (newGameBtn) newGameBtn.disabled = on;
 }
 
+function undoLastAction() {
+  if (undoStack.length === 0) return;
+  const action = undoStack.pop();
+  
+  const el = getCell(action.z, action.row, action.col);
+  if (!el) return;
+
+  state[action.z][action.row][action.col] = action.before;
+  el.value = action.before > 0 ? String(action.before) : '';
+
+  // Clear specific cell formatting
+  el.classList.remove('conflict', 'flash-conflict');
+
+  updateDepletion();
+  updateNumberHighlights();
+  saveGame();
+  checkAutoComplete();
+}
+
 function fillCell(z, row, col, digitStr) {
   const el = getCell(z, row, col);
   if (!el) return;
@@ -731,12 +753,15 @@ function fillCell(z, row, col, digitStr) {
     return;
   }
 
-  document.querySelectorAll('.cell.conflict').forEach(c => c.classList.remove('conflict'));
+  // Push action to Undo Stack
+  undoStack.push({ z, row, col, before });
+
+  // Only clear the conflict class on the modified cell.
+  // Other cells causing conflicts remain highlighted until addressed.
+  el.classList.remove('conflict', 'flash-conflict');
 
   el.value = digitStr ? String(digitStr) : '';
   state[z][row][col] = after;
-
-  el.classList.remove('conflict', 'flash-conflict');
   hideMessage();
 
   if (after > 0) {
@@ -764,7 +789,7 @@ function updateDepletion() {
 
   document.querySelectorAll('.key-btn').forEach(btn => {
     const valStr = btn.dataset.val;
-    if (!valStr || valStr === 'erase') return; 
+    if (!valStr || valStr === 'erase' || valStr === 'undo') return; 
     
     const val = Number(valStr);
     if (counts[val] >= 3) {
@@ -930,6 +955,13 @@ function onCellKeydown(e) {
     return;
   }
 
+  // Quick keyboard undo support
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+      e.preventDefault();
+      undoLastAction();
+      return;
+  }
+
   if (e.key === 'Escape') { clearSelection(); el.blur(); return; }
 
   const moves = {
@@ -948,6 +980,12 @@ function onCellKeydown(e) {
 
 function handleKeyboardTap(valStr) {
   if (!valStr) return; 
+
+  // Immediate Action bypasses Sticky Keys logic
+  if (valStr === 'undo') {
+    undoLastAction();
+    return;
+  }
 
   clearHighlights();
   inspectedNumber = null;
@@ -994,6 +1032,7 @@ async function newGame() {
     state = emptyGrid();
     initialGrid = emptyGrid();
     clueSet = new Set();
+    undoStack = [];
     timerSeconds = 0; 
 
     for (const [z, row, col, value] of clues) {
@@ -1019,6 +1058,7 @@ function loadGameFromSeed(seedStr, difficultyStr) {
     state = emptyGrid();
     initialGrid = emptyGrid();
     clueSet = new Set();
+    undoStack = [];
     timerSeconds = 0;
     currentDifficulty = difficultyStr || 'custom';
     
@@ -1050,6 +1090,8 @@ function loadGameFromSeed(seedStr, difficultyStr) {
 
 async function checkSolution() {
   hideMessage();
+  
+  // Clear any existing conflict stylings before checking the whole board
   document.querySelectorAll('.cell.conflict').forEach(c => c.classList.remove('conflict'));
 
   setLoading(true);
@@ -1109,6 +1151,7 @@ function init() {
                   }
               }
           }
+          undoStack = [];
           timerSeconds = 0;
           renderState();
           updateDepletion();
@@ -1164,6 +1207,14 @@ function init() {
       savePreferences();
     });
   }
+
+  // Bind Physical Keyboard global undo
+  document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+          e.preventDefault();
+          undoLastAction();
+      }
+  });
 
   document.querySelectorAll('.key-btn').forEach(btn => {
     btn.addEventListener('click', (e) => handleKeyboardTap(e.currentTarget.dataset.val));
