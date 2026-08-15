@@ -236,7 +236,7 @@ function check3SSC(grid, n = 3) {
       }
       for (const num in seen) {
           if (seen[num].length > 1) {
-              seen[num].forEach(({ z, x }) => addConflict(z, x));
+              seen[num].forEach(({ z, x }) => addConflict(z, y, x));
           }
       }
   }
