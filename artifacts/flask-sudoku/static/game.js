@@ -172,16 +172,20 @@ function measureHumanDifficulty(grid, n = 3) {
 function generateGame(difficulty = 'medium') {
   let attempts = 0;
   let bestClues = null;
+  let bestSolved = null;
   while (attempts < 30) {
       attempts++;
       const { grid, clues } = generateUniquePuzzle(3, difficulty);
       bestClues = clues;
+      bestSolved = JSON.parse(JSON.stringify(grid));
       const actualDifficulty = measureHumanDifficulty(grid, 3);
       
       if (actualDifficulty === difficulty) {
+          solvedGrid = bestSolved;
           return clues;
       }
   }
+  solvedGrid = bestSolved;
   return bestClues;
 }
 
@@ -274,6 +278,7 @@ function check3SSC(grid, n = 3) {
 
 let state       = emptyGrid();  
 let initialGrid = emptyGrid(); 
+let solvedGrid  = null;
 let clueSet     = new Set();      
 let selected    = null;          
 let undoStack   = [];
@@ -295,7 +300,6 @@ const TUT_GRID = [
   [[7,2,6], [3,4,8], [5,9,1]]
 ];
 
-// 3 rules = 3 orthogonal planes. Holes that isolate exactly 1 logical step perfectly.
 const TUT_HOLES = [
   { z: 0, r: 0, c: 1, val: 5, msg: "Rule 1: Each flat 3x3 slice must contain 1-9. Look at this slice. What number is missing?" },
   { z: 1, r: 1, c: 0, val: 9, msg: "Rule 2: Horizontal rows cross the cube! The highlighted middle row across all slices contains 1-9. Place the missing number." },
@@ -375,6 +379,7 @@ function saveGame() {
   const saveData = {
     state,
     initialGrid,
+    solvedGrid,
     clues: Array.from(clueSet),
     difficulty: currentDifficulty,
     timer: timerSeconds
@@ -386,6 +391,42 @@ function clearSave() {
   localStorage.removeItem('cubiku_save');
 }
 
+function computeSolutionGrid() {
+  const grid = emptyGrid();
+  for (let z = 0; z < 3; z++) {
+    for (let y = 0; y < 3; y++) {
+      for (let x = 0; x < 3; x++) {
+        if (initialGrid[z][y][x] > 0) {
+          grid[z][y][x] = initialGrid[z][y][x];
+        }
+      }
+    }
+  }
+  const solved = JSON.parse(JSON.stringify(grid));
+  solveGridHelper(solved, 3);
+  return solved;
+}
+
+function solveGridHelper(grid, n = 3) {
+  for (let z = 0; z < n; z++) {
+    for (let y = 0; y < n; y++) {
+      for (let x = 0; x < n; x++) {
+        if (grid[z][y][x] === 0) {
+          for (let num = 1; num <= n * n; num++) {
+            if (isValid(grid, x, y, z, num, n)) {
+              grid[z][y][x] = num;
+              if (solveGridHelper(grid, n)) return true;
+              grid[z][y][x] = 0;
+            }
+          }
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
 function loadGame() {
   const saved = localStorage.getItem('cubiku_save');
   if (!saved) return false;
@@ -394,6 +435,7 @@ function loadGame() {
     const data = JSON.parse(saved);
     state = data.state;
     initialGrid = data.initialGrid || emptyGrid();
+    solvedGrid = data.solvedGrid || computeSolutionGrid();
     clueSet = new Set(data.clues);
     currentDifficulty = data.difficulty;
     timerSeconds = data.timer;
@@ -441,6 +483,7 @@ function startTutorial() {
     clueSet.delete(`${hole.z},${hole.r},${hole.c}`);
   });
   
+  solvedGrid = JSON.parse(JSON.stringify(TUT_GRID));
   renderState();
   updateTutorialUI();
 }
@@ -459,10 +502,9 @@ function updateTutorialUI() {
         const el = getCell(z,r,c);
         let inPlane = false;
         
-        // Correct logic to show exactly the 9 cells of the relevant constraint plane
-        if (tutorialStep === 1 && z === target.z) inPlane = true; // Z-slice plane
-        if (tutorialStep === 2 && r === target.r) inPlane = true; // Y-slice plane
-        if (tutorialStep === 3 && c === target.c) inPlane = true; // X-slice plane
+        if (tutorialStep === 1 && z === target.z) inPlane = true;
+        if (tutorialStep === 2 && r === target.r) inPlane = true;
+        if (tutorialStep === 3 && c === target.c) inPlane = true;
         
         if (!inPlane) {
           el.classList.add('tutorial-dim');
@@ -713,7 +755,6 @@ function undoLastAction() {
   state[action.z][action.row][action.col] = action.before;
   el.value = action.before > 0 ? String(action.before) : '';
 
-  // Clear specific cell formatting
   el.classList.remove('conflict', 'flash-conflict');
 
   updateDepletion();
@@ -753,11 +794,8 @@ function fillCell(z, row, col, digitStr) {
     return;
   }
 
-  // Push action to Undo Stack
   undoStack.push({ z, row, col, before });
 
-  // Only clear the conflict class on the modified cell.
-  // Other cells causing conflicts remain highlighted until addressed.
   el.classList.remove('conflict', 'flash-conflict');
 
   el.value = digitStr ? String(digitStr) : '';
@@ -955,7 +993,6 @@ function onCellKeydown(e) {
     return;
   }
 
-  // Quick keyboard undo support
   if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
       e.preventDefault();
       undoLastAction();
@@ -981,7 +1018,6 @@ function onCellKeydown(e) {
 function handleKeyboardTap(valStr) {
   if (!valStr) return; 
 
-  // Immediate Action bypasses Sticky Keys logic
   if (valStr === 'undo') {
     undoLastAction();
     return;
@@ -1031,7 +1067,6 @@ async function newGame() {
 
     state = emptyGrid();
     initialGrid = emptyGrid();
-    clueSet = new Set();
     undoStack = [];
     timerSeconds = 0; 
 
@@ -1077,6 +1112,7 @@ function loadGameFromSeed(seedStr, difficultyStr) {
       }
     }
     
+    solvedGrid = computeSolutionGrid();
     const diffSelect = document.getElementById('difficulty-select');
     if (diffSelect) diffSelect.value = currentDifficulty;
     
@@ -1090,8 +1126,6 @@ function loadGameFromSeed(seedStr, difficultyStr) {
 
 async function checkSolution() {
   hideMessage();
-  
-  // Clear any existing conflict stylings before checking the whole board
   document.querySelectorAll('.cell.conflict').forEach(c => c.classList.remove('conflict'));
 
   setLoading(true);
@@ -1116,9 +1150,13 @@ async function checkSolution() {
 
     } else {
       showMessage(data.message, 'error');
+      if (!solvedGrid) solvedGrid = computeSolutionGrid();
       if (Array.isArray(data.conflicts)) {
         data.conflicts.forEach(([z, row, col]) => {
-          getCell(z, row, col)?.classList.add('conflict');
+          // ONLY highlight incorrect filled cells: not clues and not correct filled cells
+          if (!clueSet.has(`${z},${row},${col}`) && state[z][row][col] !== solvedGrid[z][row][col]) {
+            getCell(z, row, col)?.classList.add('conflict');
+          }
         });
       }
     }
@@ -1208,7 +1246,6 @@ function init() {
     });
   }
 
-  // Bind Physical Keyboard global undo
   document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
           e.preventDefault();
