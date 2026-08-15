@@ -81,6 +81,7 @@ function generateUniquePuzzle(n = 3, difficulty = 'medium') {
   );
   
   generateSolvedGrid(grid, n);
+  const solvedCopy = JSON.parse(JSON.stringify(grid));
 
   let cells = [];
   for (let z = 0; z < n; z++) {
@@ -121,7 +122,7 @@ function generateUniquePuzzle(n = 3, difficulty = 'medium') {
           }
       }
   }
-  return { grid, clues };
+  return { grid, clues, solvedGrid: solvedCopy };
 }
 
 function measureHumanDifficulty(grid, n = 3) {
@@ -175,13 +176,13 @@ function generateGame(difficulty = 'medium') {
   let bestSolved = null;
   while (attempts < 30) {
       attempts++;
-      const { grid, clues } = generateUniquePuzzle(3, difficulty);
+      const { grid, clues, solvedGrid: candidateSolved } = generateUniquePuzzle(3, difficulty);
       bestClues = clues;
-      bestSolved = JSON.parse(JSON.stringify(grid));
+      bestSolved = candidateSolved;
       const actualDifficulty = measureHumanDifficulty(grid, 3);
       
       if (actualDifficulty === difficulty) {
-          solvedGrid = bestSolved;
+          solvedGrid = candidateSolved;
           return clues;
       }
   }
@@ -235,7 +236,7 @@ function check3SSC(grid, n = 3) {
       }
       for (const num in seen) {
           if (seen[num].length > 1) {
-              seen[num].forEach(({ z, x }) => addConflict(z, y, x));
+              seen[num].forEach(({ z, x }) => addConflict(z, x));
           }
       }
   }
@@ -1067,6 +1068,7 @@ async function newGame() {
 
     state = emptyGrid();
     initialGrid = emptyGrid();
+    clueSet = new Set();
     undoStack = [];
     timerSeconds = 0; 
 
@@ -1153,7 +1155,6 @@ async function checkSolution() {
       if (!solvedGrid) solvedGrid = computeSolutionGrid();
       if (Array.isArray(data.conflicts)) {
         data.conflicts.forEach(([z, row, col]) => {
-          // ONLY highlight incorrect filled cells: not clues and not correct filled cells
           if (!clueSet.has(`${z},${row},${col}`) && state[z][row][col] !== solvedGrid[z][row][col]) {
             getCell(z, row, col)?.classList.add('conflict');
           }
