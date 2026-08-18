@@ -532,15 +532,27 @@ function endTutorial() {
     btn.style.textDecoration = 'none';
     btn.classList.remove('depleted');
   });
-  showMessage("You've mastered the dimensions! Admire your completed grid...", "success");
-  tutorialMode = false;
   
-  setTimeout(() => {
-     currentDifficulty = 'easy';
-     const diffSelect = document.getElementById('difficulty-select');
-     if (diffSelect) diffSelect.value = 'easy';
-     newGame();
-  }, 7000); // 7-second pause to process the solved grid
+  showMessage("Tutorial complete! 🎉", "success");
+  
+  // Check if this is the starting tutorial (on a new browser/device)
+  const isStartingTutorial = !localStorage.getItem('cubiku_tutorial_complete');
+  
+  if (isStartingTutorial) {
+    localStorage.setItem('cubiku_tutorial_complete', 'true');
+    tutorialMode = false;
+    
+    // Auto-redirect to easy mode after 15 seconds
+    setTimeout(() => {
+       currentDifficulty = 'easy';
+       const diffSelect = document.getElementById('difficulty-select');
+       if (diffSelect) diffSelect.value = 'easy';
+       newGame();
+    }, 15000); 
+  } else {
+    // Burger menu tutorial: stay as is like any other completed grid
+    tutorialMode = false;
+  }
 }
 
 let timerSeconds  = 0;
@@ -745,7 +757,6 @@ function renderState() {
         el.readOnly = isClue;
         el.tabIndex = isClue ? -1 : 0;
         el.classList.toggle('clue', isClue);
-        // Strips out lingering tutorial highlights when rendering a normal board
         el.classList.remove('conflict', 'active-cell', 'constraint-highlight', 'flash-conflict', 'tutorial-dim', 'tutorial-target');
       }
     }
@@ -827,7 +838,6 @@ function fillCell(z, row, col, digitStr) {
 }
 
 function updateDepletion() {
-  // Completely bypasses depletion checks during the tutorial mode
   if (tutorialMode) {
     document.querySelectorAll('.key-btn').forEach(btn => {
       btn.style.opacity = '1';
@@ -1326,6 +1336,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (rulesModal) {
       rulesModal.classList.remove('hidden');
     }
-    localStorage.setItem('cubiku_tutorial_complete', 'true');
+    // Removed automatic setItem here so initial tutorial status is tracked properly until completion!
   }
 });

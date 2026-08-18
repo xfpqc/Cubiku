@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cubiku-v8';
+const CACHE_NAME = 'cubiku-v9';
 const ASSETS_TO_CACHE = [
   '/',
   '/static/style.css',
