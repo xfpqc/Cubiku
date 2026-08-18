@@ -280,8 +280,8 @@ function check3SSC(grid, n = 3) {
 let state       = emptyGrid();  
 let initialGrid = emptyGrid(); 
 let solvedGrid  = null;
-let clueSet     = new Set();      
-let selected    = null;          
+let clueSet     = new Set();       
+let selected    = null;            
 let undoStack   = [];
 
 let activeNumber = null;
@@ -309,7 +309,8 @@ const TUT_HOLES = [
 
 let stats = {
   bestTimes: { easy: null, medium: null, hard: null },
-  gamesWon: 0
+  gamesWon: 0,
+  gamesPlayed: 0
 };
 
 function savePreferences() {
@@ -349,6 +350,7 @@ function loadStats() {
       const parsed = JSON.parse(savedStats);
       if (parsed.bestTimes) stats.bestTimes = parsed.bestTimes;
       if (parsed.gamesWon !== undefined) stats.gamesWon = parsed.gamesWon;
+      if (parsed.gamesPlayed !== undefined) stats.gamesPlayed = parsed.gamesPlayed;
     } catch(e) {}
   }
   updateStatsUI();
@@ -357,6 +359,9 @@ function loadStats() {
 function updateStatsUI() {
   const elWon = document.getElementById('stat-games-won');
   if (elWon) elWon.textContent = stats.gamesWon;
+
+  const elPlayed = document.getElementById('stat-games-played');
+  if (elPlayed) elPlayed.textContent = stats.gamesPlayed;
   
   ['easy', 'medium', 'hard'].forEach(diff => {
     const elBest = document.getElementById(`stat-best-${diff}`);
@@ -486,6 +491,7 @@ function startTutorial() {
   
   solvedGrid = JSON.parse(JSON.stringify(TUT_GRID));
   renderState();
+  updateDepletion();
   updateTutorialUI();
 }
 
@@ -520,7 +526,13 @@ function updateTutorialUI() {
 
 function endTutorial() {
   document.querySelectorAll('.cell').forEach(c => c.classList.remove('tutorial-dim', 'tutorial-target'));
-  showMessage("You've mastered the dimensions! Starting your first real game...", "success");
+  // Ensure keyboard buttons look normal when tutorial finishes
+  document.querySelectorAll('.key-btn').forEach(btn => {
+    btn.style.opacity = '1';
+    btn.style.textDecoration = 'none';
+    btn.classList.remove('depleted');
+  });
+  showMessage("You've mastered the dimensions! Admire your completed grid...", "success");
   tutorialMode = false;
   
   setTimeout(() => {
@@ -528,7 +540,7 @@ function endTutorial() {
      const diffSelect = document.getElementById('difficulty-select');
      if (diffSelect) diffSelect.value = 'easy';
      newGame();
-  }, 3500);
+  }, 7000); // 7-second pause to process the solved grid
 }
 
 let timerSeconds  = 0;
@@ -733,7 +745,8 @@ function renderState() {
         el.readOnly = isClue;
         el.tabIndex = isClue ? -1 : 0;
         el.classList.toggle('clue', isClue);
-        el.classList.remove('conflict', 'active-cell', 'constraint-highlight', 'flash-conflict');
+        // Strips out lingering tutorial highlights when rendering a normal board
+        el.classList.remove('conflict', 'active-cell', 'constraint-highlight', 'flash-conflict', 'tutorial-dim', 'tutorial-target');
       }
     }
   }
@@ -814,6 +827,16 @@ function fillCell(z, row, col, digitStr) {
 }
 
 function updateDepletion() {
+  // Completely bypasses depletion checks during the tutorial mode
+  if (tutorialMode) {
+    document.querySelectorAll('.key-btn').forEach(btn => {
+      btn.style.opacity = '1';
+      btn.style.textDecoration = 'none';
+      btn.classList.remove('depleted');
+    });
+    return;
+  }
+
   const counts = Array(10).fill(0);
   for (let z = 0; z < 3; z++) {
     for (let r = 0; r < 3; r++) {
@@ -1061,6 +1084,11 @@ async function newGame() {
   clearSave();
   tutorialMode = false;
 
+  // Clear any lingering tutorial styles if interrupted
+  document.querySelectorAll('.cell').forEach(c => {
+    c.classList.remove('tutorial-dim', 'tutorial-target');
+  });
+
   await new Promise(resolve => setTimeout(resolve, 50));
 
   try {
@@ -1071,6 +1099,8 @@ async function newGame() {
     clueSet = new Set();
     undoStack = [];
     timerSeconds = 0; 
+    stats.gamesPlayed++;
+    saveStats();
 
     for (const [z, row, col, value] of clues) {
       state[z][row][col] = value;
@@ -1098,6 +1128,8 @@ function loadGameFromSeed(seedStr, difficultyStr) {
     undoStack = [];
     timerSeconds = 0;
     currentDifficulty = difficultyStr || 'custom';
+    stats.gamesPlayed++;
+    saveStats();
     
     let index = 0;
     for (let z = 0; z < 3; z++) {
