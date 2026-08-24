@@ -29,34 +29,10 @@
 
 /* ── Theme Definitions ──────────────────────────────────── */
 
-body[data-theme="gold"] {
-  --accent:        #E4C59E;
-  --ch-bg:         rgba(228, 197, 158, 0.03);
-  --num-hl:        rgba(228, 197, 158, 0.15);
-}
-
 body[data-theme="cyan"] {
   --accent:        #A8DADC;
   --ch-bg:         rgba(168, 218, 220, 0.03);
   --num-hl:        rgba(168, 218, 220, 0.15);
-}
-
-body[data-theme="olo"] {
-  --accent:        #00FFCC;
-  --ch-bg:         rgba(0, 255, 204, 0.03);
-  --num-hl:        rgba(0, 255, 204, 0.15);
-}
-
-body[data-theme="sunset"] {
-  --accent:        #F4A261;
-  --ch-bg:         rgba(244, 162, 97, 0.04);
-  --num-hl:        rgba(244, 162, 97, 0.15);
-}
-
-body[data-theme="amethyst"] {
-  --accent:        #BB86FC;
-  --ch-bg:         rgba(187, 134, 252, 0.04);
-  --num-hl:        rgba(187, 134, 252, 0.15);
 }
 
 body[data-theme="azure"] {
@@ -65,22 +41,46 @@ body[data-theme="azure"] {
   --num-hl:        rgba(96, 165, 250, 0.15);
 }
 
-body[data-theme="rose"] {
-  --accent:        #F5B7B1;
-  --ch-bg:         rgba(245, 183, 177, 0.03);
-  --num-hl:        rgba(245, 183, 177, 0.15);
+body[data-theme="olo"] {
+  --accent:        #00FFCC;
+  --ch-bg:         rgba(0, 255, 204, 0.03);
+  --num-hl:        rgba(0, 255, 204, 0.15);
 }
 
-body[data-theme="softred"] {
-  --accent:        #E06C75;
-  --ch-bg:         rgba(224, 108, 117, 0.03);
-  --num-hl:        rgba(224, 108, 117, 0.15);
+body[data-theme="amethyst"] {
+  --accent:        #BB86FC;
+  --ch-bg:         rgba(187, 134, 252, 0.04);
+  --num-hl:        rgba(187, 134, 252, 0.15);
 }
 
 body[data-theme="lavender"] {
   --accent:        #D7BDE2;
   --ch-bg:         rgba(215, 189, 226, 0.03);
   --num-hl:        rgba(215, 189, 226, 0.15);
+}
+
+body[data-theme="rose"] {
+  --accent:        #F5B7B1;
+  --ch-bg:         rgba(245, 183, 177, 0.03);
+  --num-hl:        rgba(245, 183, 177, 0.15);
+}
+
+body[data-theme="sunset"] {
+  --accent:        #F4A261;
+  --ch-bg:         rgba(244, 162, 97, 0.04);
+  --num-hl:        rgba(244, 162, 97, 0.15);
+}
+
+body[data-theme="gold"] {
+  --accent:        #E4C59E;
+  --ch-bg:         rgba(228, 197, 158, 0.03);
+  --num-hl:        rgba(228, 197, 158, 0.15);
+}
+
+body[data-theme="softred"] {
+  --accent:        #E06C75;
+  --ch-bg:         rgba(224, 108, 117, 0.03);
+  --num-hl:        rgba(224, 108, 117, 0.15);
 }
 
 body[data-theme="silver"] {
@@ -124,11 +124,11 @@ html, body {
     max-height:      100dvh;
     padding:         0.4rem 1rem 0.6rem;
     gap:             0.2rem;
-    overflow:        hidden; /* Locks viewport to eliminate vertical scrollbars across different scaling setups */
+    overflow:        hidden;
   }
 
   .slices-container {
-    width:           min(100%, 48vh); /* Scales dynamically relative to screen height */
+    width:           min(100%, 48vh);
     max-width:       580px;
     margin:          0 auto;
   }
@@ -209,7 +209,7 @@ h1 {
   letter-spacing: 0.3px;
 }
 
-/* ── Top Action Bar (Centered New Game + Reasonable Gaps) ── */
+/* ── Top Action Bar ── */
 
 .top-action-bar {
   display: grid;
@@ -221,7 +221,6 @@ h1 {
   min-height: 44px;
 }
 
-/* Left Group: Timer + Zen Button */
 .top-left-group {
   justify-self: end;
   display: flex;
@@ -249,12 +248,10 @@ h1 {
   visibility: hidden;
 }
 
-/* Center Action: New Game Button (Strictly Centered) */
 .center-action {
   justify-self: center;
 }
 
-/* Right Group: Restart & Menu */
 .controls {
   justify-self: start;
   position: relative;
@@ -365,8 +362,6 @@ h1 {
   margin: 0.2rem 0;
 }
 
-/* ── Custom Styled Centered Mini-Dropdowns inside Menu ───── */
-
 .select-wrapper {
   position: relative;
   display: inline-block;
@@ -428,8 +423,6 @@ h1 {
   padding: 0.5rem;
 }
 
-/* ── Modern Toggle Switch Component ──────────────────────── */
-
 .switch {
   position: relative;
   display: inline-block;
@@ -477,8 +470,6 @@ h1 {
   background-color: var(--accent-text);
 }
 
-/* ── Message bar ─────────────────────────────────────────── */
-
 .message-bar {
   max-width:   350px;
   width:       fit-content;
@@ -505,8 +496,6 @@ h1 {
 .message-bar.success { color: var(--success-color); opacity: 1; }
 .message-bar.error   { color: var(--error-color); opacity: 1; }
 .message-bar.info    { color: var(--accent); opacity: 1; }
-
-/* ── Slices ──────────────────────────────────────────────── */
 
 .slices-container {
   display:         flex;
@@ -535,8 +524,6 @@ h1 {
   letter-spacing: 0.5px;
 }
 
-/* ── Grid ────────────────────────────────────────────────── */
-
 .grid {
   display:    grid;
   grid-template-columns: repeat(3, 1fr);
@@ -552,8 +539,6 @@ h1 {
   user-select: none;
   -webkit-user-select: none;
 }
-
-/* ── Cells (<input>) ─────────────────────────────────────── */
 
 .cell {
   width:         100%;
@@ -636,8 +621,6 @@ h1 {
   pointer-events: none;
 }
 
-/* ── Onscreen Keyboard ────────────────────────────────     */
-
 .keyboard-container {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -715,15 +698,12 @@ h1 {
   pointer-events: none;
 }
 
-/* Locked control state (Win State) */
 .control-disabled {
   text-decoration: line-through !important;
   opacity: 0.35 !important;
   pointer-events: none !important;
   cursor: default !important;
 }
-
-/* ── Session Stats Dashboard ─────────────────────────────── */
 
 .stats-container {
   display: grid;
@@ -768,8 +748,6 @@ h1 {
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Footer ─────────────────────────────────────────────── */
-
 footer {
   color:           var(--text-muted);
   font-size:       clamp(0.68rem, 2vw, 0.78rem);
@@ -778,7 +756,6 @@ footer {
   letter-spacing: 0.3px;
 }
 
-/* ── Modal Overlay ──────────────────────────────────────── */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -883,8 +860,6 @@ footer {
   color: var(--text-muted);
 }
 
-/* ── Tutorial Mode Overrides ────────────────────────────── */
-
 .cell.tutorial-dim {
   opacity: 0.2 !important;
   pointer-events: none;
@@ -902,8 +877,6 @@ footer {
   50%  { background-color: var(--ch-bg); }
   100% { background-color: transparent; }
 }
-
-/* ── First-Time User Highlight ──────────────────────────── */
 
 .highlight-pulse {
   animation: strong-pulse 2s infinite;
@@ -924,7 +897,6 @@ footer {
   }
 }
 
-/* ── Ultra-Large / High-Res Displays (1440p, 4K, etc.) ───── */
 @media (min-width: 1400px) and (min-height: 850px) {
   .page-wrapper {
     max-width: 1400px;
@@ -959,7 +931,7 @@ footer {
   .keyboard-container {
     max-width: 65vh;
     gap: 12px;
-    margin-top: 1rem !important;
+    margin-top: 1.5rem !important;
   }
 
   .key-btn {
