@@ -47,10 +47,22 @@ body[data-theme="olo"] {
   --num-hl:        rgba(0, 255, 204, 0.15);
 }
 
-body[data-theme="mint"] {
-  --accent:        #A3E4D7;
-  --ch-bg:         rgba(163, 228, 215, 0.03);
-  --num-hl:        rgba(163, 228, 215, 0.15);
+body[data-theme="sunset"] {
+  --accent:        #F4A261;
+  --ch-bg:         rgba(244, 162, 97, 0.04);
+  --num-hl:        rgba(244, 162, 97, 0.15);
+}
+
+body[data-theme="amethyst"] {
+  --accent:        #BB86FC;
+  --ch-bg:         rgba(187, 134, 252, 0.04);
+  --num-hl:        rgba(187, 134, 252, 0.15);
+}
+
+body[data-theme="azure"] {
+  --accent:        #60A5FA;
+  --ch-bg:         rgba(96, 165, 250, 0.04);
+  --num-hl:        rgba(96, 165, 250, 0.15);
 }
 
 body[data-theme="rose"] {
