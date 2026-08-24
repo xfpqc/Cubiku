@@ -289,6 +289,7 @@ let inspectedNumber = null;
 let currentDifficulty = "medium"; 
 let currentTheme = "cyan";
 let stickyKeysEnabled = false; 
+let isGameComplete = false; // State lock flag
 
 // --- Tutorial State ---
 let tutorialMode = false;
@@ -446,6 +447,8 @@ function loadGame() {
     currentDifficulty = data.difficulty;
     timerSeconds = data.timer;
     undoStack = [];
+    isGameComplete = false; 
+    document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
     
     const diffSelect = document.getElementById('difficulty-select');
     if (diffSelect) diffSelect.value = currentDifficulty;
@@ -474,6 +477,8 @@ function startTutorial() {
   state = emptyGrid();
   clueSet = new Set();
   undoStack = [];
+  isGameComplete = false; 
+  document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
   
   for(let z=0; z<3; z++) {
     for(let r=0; r<3; r++) {
@@ -771,7 +776,7 @@ function setLoading(on) {
 }
 
 function undoLastAction() {
-  if (undoStack.length === 0) return;
+  if (isGameComplete || undoStack.length === 0) return;
   const action = undoStack.pop();
   
   const el = getCell(action.z, action.row, action.col);
@@ -789,6 +794,8 @@ function undoLastAction() {
 }
 
 function fillCell(z, row, col, digitStr) {
+  if (isGameComplete) return; 
+
   const el = getCell(z, row, col);
   if (!el) return;
   const before = state[z][row][col];
@@ -1093,6 +1100,8 @@ async function newGame() {
   stopTimer();
   clearSave();
   tutorialMode = false;
+  isGameComplete = false; 
+  document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
 
   // Clear any lingering tutorial styles if interrupted
   document.querySelectorAll('.cell').forEach(c => {
@@ -1137,6 +1146,8 @@ function loadGameFromSeed(seedStr, difficultyStr) {
     clueSet = new Set();
     undoStack = [];
     timerSeconds = 0;
+    isGameComplete = false; 
+    document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
     currentDifficulty = difficultyStr || 'custom';
     stats.gamesPlayed++;
     saveStats();
@@ -1169,6 +1180,8 @@ function loadGameFromSeed(seedStr, difficultyStr) {
 }
 
 async function checkSolution() {
+  if (isGameComplete) return; 
+
   hideMessage();
   document.querySelectorAll('.cell.conflict').forEach(c => c.classList.remove('conflict'));
 
@@ -1180,6 +1193,9 @@ async function checkSolution() {
     const data = check3SSC(state);
 
     if (data.valid) {
+      isGameComplete = true; 
+      document.querySelectorAll('.key-btn').forEach(btn => btn.classList.add('control-disabled')); 
+
       stopTimer();
       showMessage(data.message, 'success');
       clearSelection();
@@ -1233,6 +1249,8 @@ function init() {
               }
           }
           undoStack = [];
+          isGameComplete = false; 
+          document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
           timerSeconds = 0;
           renderState();
           updateDepletion();
@@ -1336,6 +1354,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (rulesModal) {
       rulesModal.classList.remove('hidden');
     }
-    // Removed automatic setItem here so initial tutorial status is tracked properly until completion!
   }
 });

@@ -703,6 +703,14 @@ h1 {
   pointer-events: none;
 }
 
+/* Locked control state (Win State) */
+.control-disabled {
+  text-decoration: line-through !important;
+  opacity: 0.35 !important;
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
 /* ── Session Stats Dashboard ─────────────────────────────── */
 
 .stats-container {
