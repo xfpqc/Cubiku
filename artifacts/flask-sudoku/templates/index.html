@@ -107,6 +107,15 @@
               <polygon points="10 8 16 12 10 16 10 8"></polygon>
             </svg>
           </div>
+
+          <!-- Reset Stats Menu Option -->
+          <div class="setting-item action-item" id="btn-settings-reset-stats">
+            <span>Reset Stats</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color: var(--error-color);">
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </div>
           
           <div class="setting-divider"></div>
           
@@ -187,7 +196,12 @@
           <path d="M3 13a9 9 0 0 1 15-6.7L21 10"></path>
         </svg>
       </button>
-      <button class="key-btn blank-btn" disabled></button>
+      <!-- Symmetric Pencil / Draft Placeholder Button -->
+      <button class="key-btn" id="btn-pencil" disabled title="Draft mode (Coming Soon)" style="opacity: 0.4; cursor: default;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+          <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+        </svg>
+      </button>
     </div>
 
     <!-- Dynamic Session Stats Dashboard -->
