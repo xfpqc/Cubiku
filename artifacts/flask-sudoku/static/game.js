@@ -373,6 +373,20 @@ function loadStats() {
   updateStatsUI();
 }
 
+function resetStats() {
+  const diff = (currentDifficulty === 'custom') ? 'medium' : currentDifficulty;
+  const capitalizedDiff = diff.charAt(0).toUpperCase() + diff.slice(1);
+  
+  if (confirm(`Are you sure you want to erase your statistics for ${capitalizedDiff} mode? This cannot be undone.`)) {
+    stats[diff] = { wins: 0, bestTime: null, totalTime: 0, lastTime: null };
+    saveStats();
+    showMessage(`${capitalizedDiff} statistics reset.`, "info");
+    
+    const settingsPanel = document.getElementById('settings-panel');
+    if (settingsPanel) settingsPanel.style.display = 'none';
+  }
+}
+
 function formatTime(seconds) {
   if (seconds === null || seconds === undefined) return "--:--";
   const m = String(Math.floor(seconds / 60)).padStart(2, '0');
@@ -1288,6 +1302,14 @@ function init() {
       });
   }
 
+  const btnSettingsReset = document.getElementById('btn-settings-reset-stats');
+  if (btnSettingsReset) {
+      btnSettingsReset.addEventListener('click', (e) => {
+          e.stopPropagation();
+          resetStats();
+      });
+  }
+
   const btnCloseRules = document.getElementById('btn-close-rules');
   if (btnCloseRules) btnCloseRules.addEventListener('click', toggleRules);
 
@@ -1303,8 +1325,6 @@ function init() {
     diffSelect.addEventListener('change', (e) => {
       currentDifficulty = e.target.value;
       updateStatsUI();
-      // Only start a new game if the board isn't currently loaded (or if you prefer, prompt them to start a new game)
-      // For now, it just updates the stats dashboard immediately!
     });
   }
 
