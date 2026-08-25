@@ -277,25 +277,24 @@ function check3SSC(grid, n = 3) {
 // --- END ENGINE ---
 // ==========================================
 
-let state       = emptyGrid();  
-let initialGrid = emptyGrid(); 
-let solvedGrid  = null;
-let clueSet     = new Set();       
-let selected    = null;            
-let undoStack   = [];
+let state        = emptyGrid();  
+let initialGrid  = emptyGrid(); 
+let solvedGrid   = null;
+let clueSet      = new Set();        
+let selected     = null;            
+let undoStack    = [];
 
 let activeNumber = null;
 let inspectedNumber = null;
 let currentDifficulty = "medium"; 
 let currentTheme = "cyan";
 let stickyKeysEnabled = false; 
-let isGameComplete = false; // State lock flag
+let isGameComplete = false; 
 
 // --- Tutorial State ---
 let tutorialMode = false;
 let tutorialStep = 0;
 
-// An internally logically sound 3x3x3 grid that obeys all rules.
 const TUT_GRID = [
   [[1,5,9], [6,7,2], [8,3,4]],
   [[4,8,3], [9,1,5], [2,6,7]],
@@ -308,10 +307,11 @@ const TUT_HOLES = [
   { z: 2, r: 0, c: 2, val: 6, msg: "Rule 3: Vertical columns cross the cube! Check the highlighted right-most column across all slices. Place the final number." }
 ];
 
+// --- Dynamic Stats Engine ---
 let stats = {
-  bestTimes: { easy: null, medium: null, hard: null },
-  gamesWon: 0,
-  gamesPlayed: 0
+  easy:   { wins: 0, bestTime: null, totalTime: 0, lastTime: null },
+  medium: { wins: 0, bestTime: null, totalTime: 0, lastTime: null },
+  hard:   { wins: 0, bestTime: null, totalTime: 0, lastTime: null }
 };
 
 function savePreferences() {
@@ -340,43 +340,64 @@ function loadPreferences() {
 }
 
 function saveStats() {
-  localStorage.setItem('cubiku_stats', JSON.stringify(stats));
+  localStorage.setItem('cubiku_stats_v2', JSON.stringify(stats));
   updateStatsUI();
 }
 
 function loadStats() {
-  const savedStats = localStorage.getItem('cubiku_stats');
-  if (savedStats) {
+  const savedStatsV2 = localStorage.getItem('cubiku_stats_v2');
+  
+  if (savedStatsV2) {
     try {
-      const parsed = JSON.parse(savedStats);
-      if (parsed.bestTimes) stats.bestTimes = parsed.bestTimes;
-      if (parsed.gamesWon !== undefined) stats.gamesWon = parsed.gamesWon;
-      if (parsed.gamesPlayed !== undefined) stats.gamesPlayed = parsed.gamesPlayed;
+      stats = JSON.parse(savedStatsV2);
     } catch(e) {}
+  } else {
+    // Migration: Recover old 'best' times from V1 so players don't lose their records
+    const savedStatsV1 = localStorage.getItem('cubiku_stats');
+    if (savedStatsV1) {
+      try {
+        const parsed = JSON.parse(savedStatsV1);
+        if (parsed.bestTimes) {
+          ['easy', 'medium', 'hard'].forEach(diff => {
+            if (parsed.bestTimes[diff] !== null) {
+              stats[diff].bestTime = parsed.bestTimes[diff];
+              stats[diff].lastTime = parsed.bestTimes[diff];
+              stats[diff].wins = 1; // Base assumption
+              stats[diff].totalTime = parsed.bestTimes[diff];
+            }
+          });
+        }
+      } catch(e) {}
+    }
   }
   updateStatsUI();
 }
 
-function updateStatsUI() {
-  const elWon = document.getElementById('stat-games-won');
-  if (elWon) elWon.textContent = stats.gamesWon;
+function formatTime(seconds) {
+  if (seconds === null || seconds === undefined) return "--:--";
+  const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+  const s = String(Math.floor(seconds % 60)).padStart(2, '0');
+  return `${m}:${s}`;
+}
 
-  const elPlayed = document.getElementById('stat-games-played');
-  if (elPlayed) elPlayed.textContent = stats.gamesPlayed;
-  
-  ['easy', 'medium', 'hard'].forEach(diff => {
-    const elBest = document.getElementById(`stat-best-${diff}`);
-    if (elBest) {
-      const best = stats.bestTimes[diff];
-      if (best === null) {
-        elBest.textContent = "--:--";
-      } else {
-        const m = String(Math.floor(best / 60)).padStart(2, '0');
-        const s = String(best % 60).padStart(2, '0');
-        elBest.textContent = `${m}:${s}`;
-      }
-    }
-  });
+function updateStatsUI() {
+  const diff = currentDifficulty === 'custom' ? 'medium' : currentDifficulty;
+  const currentStats = stats[diff] || stats['medium'];
+
+  const elWins = document.getElementById('stat-wins');
+  if (elWins) elWins.textContent = currentStats.wins;
+
+  const elBest = document.getElementById('stat-best');
+  if (elBest) elBest.textContent = formatTime(currentStats.bestTime);
+
+  const elAvg = document.getElementById('stat-avg');
+  if (elAvg) {
+    const avg = currentStats.wins > 0 ? Math.floor(currentStats.totalTime / currentStats.wins) : null;
+    elAvg.textContent = formatTime(avg);
+  }
+
+  const elLast = document.getElementById('stat-last');
+  if (elLast) elLast.textContent = formatTime(currentStats.lastTime);
 }
 
 function saveGame() {
@@ -531,7 +552,6 @@ function updateTutorialUI() {
 
 function endTutorial() {
   document.querySelectorAll('.cell').forEach(c => c.classList.remove('tutorial-dim', 'tutorial-target'));
-  // Ensure keyboard buttons look normal when tutorial finishes
   document.querySelectorAll('.key-btn').forEach(btn => {
     btn.style.opacity = '1';
     btn.style.textDecoration = 'none';
@@ -540,22 +560,20 @@ function endTutorial() {
   
   showMessage("Tutorial complete! 🎉", "success");
   
-  // Check if this is the starting tutorial (on a new browser/device)
   const isStartingTutorial = !localStorage.getItem('cubiku_tutorial_complete');
   
   if (isStartingTutorial) {
     localStorage.setItem('cubiku_tutorial_complete', 'true');
     tutorialMode = false;
     
-    // Auto-redirect to easy mode after 15 seconds
     setTimeout(() => {
        currentDifficulty = 'easy';
        const diffSelect = document.getElementById('difficulty-select');
        if (diffSelect) diffSelect.value = 'easy';
+       updateStatsUI();
        newGame();
     }, 15000); 
   } else {
-    // Burger menu tutorial: stay as is like any other completed grid
     tutorialMode = false;
   }
 }
@@ -1103,7 +1121,6 @@ async function newGame() {
   isGameComplete = false; 
   document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
 
-  // Clear any lingering tutorial styles if interrupted
   document.querySelectorAll('.cell').forEach(c => {
     c.classList.remove('tutorial-dim', 'tutorial-target');
   });
@@ -1118,8 +1135,6 @@ async function newGame() {
     clueSet = new Set();
     undoStack = [];
     timerSeconds = 0; 
-    stats.gamesPlayed++;
-    saveStats();
 
     for (const [z, row, col, value] of clues) {
       state[z][row][col] = value;
@@ -1149,8 +1164,6 @@ function loadGameFromSeed(seedStr, difficultyStr) {
     isGameComplete = false; 
     document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
     currentDifficulty = difficultyStr || 'custom';
-    stats.gamesPlayed++;
-    saveStats();
     
     let index = 0;
     for (let z = 0; z < 3; z++) {
@@ -1170,6 +1183,7 @@ function loadGameFromSeed(seedStr, difficultyStr) {
     solvedGrid = computeSolutionGrid();
     const diffSelect = document.getElementById('difficulty-select');
     if (diffSelect) diffSelect.value = currentDifficulty;
+    updateStatsUI();
     
     renderState();
     updateDepletion();
@@ -1201,10 +1215,13 @@ async function checkSolution() {
       clearSelection();
       clearSave(); 
       
-      stats.gamesWon++;
-      const currentBest = stats.bestTimes[currentDifficulty];
-      if (currentBest === null || timerSeconds < currentBest) {
-        stats.bestTimes[currentDifficulty] = timerSeconds;
+      const diff = (currentDifficulty === 'custom') ? 'medium' : currentDifficulty;
+      stats[diff].wins++;
+      stats[diff].totalTime += timerSeconds;
+      stats[diff].lastTime = timerSeconds;
+      
+      if (stats[diff].bestTime === null || timerSeconds < stats[diff].bestTime) {
+        stats[diff].bestTime = timerSeconds;
       }
       saveStats();
 
@@ -1286,6 +1303,8 @@ function init() {
     diffSelect.addEventListener('change', (e) => {
       currentDifficulty = e.target.value;
       updateStatsUI();
+      // Only start a new game if the board isn't currently loaded (or if you prefer, prompt them to start a new game)
+      // For now, it just updates the stats dashboard immediately!
     });
   }
 
