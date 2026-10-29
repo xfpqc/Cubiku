@@ -753,6 +753,9 @@ function updateNumberHighlights() {
 
 function updateKeyboardUI() {
   document.querySelectorAll('.key-btn').forEach(b => {
+    // CRITICAL FIX: Skip the pencil button so it doesn't lose its highlight state
+    if (b.id === 'btn-pencil') return;
+
     if (b.dataset.val === activeNumber) {
       b.classList.add('active');
     } else {
@@ -853,12 +856,11 @@ function undoLastAction() {
   if (isGameComplete || undoStack.length === 0) return;
   const action = undoStack.pop();
 
-  // Process auto-draft clears FIRST, before attempting to fetch a specific cell
   if (action.type === 'auto_draft_clear') {
       action.cells.forEach(({z: az, r: ar, c: ac}) => {
           drafts[az][ar][ac].add(action.digit);
       });
-      // Automatically pop the preceding primary action (the digit placement)
+      // automatically pop the preceding primary action
       undoLastAction();
       return; 
   }
