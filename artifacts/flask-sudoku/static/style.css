@@ -558,12 +558,17 @@ h1 {
   color: var(--text-muted);
 }
 
+/* CRITICAL LAYOUT FIX: Remove candidates from standard layout entirely to prevent cell blowout */
 .cell .candidate {
-  display: flex;
+  display: none; 
   align-items: center;
   justify-content: center;
   width: 100%;
   height: 100%;
+}
+
+.cell.draft-mode .candidate {
+  display: flex; 
   visibility: hidden;
 }
 

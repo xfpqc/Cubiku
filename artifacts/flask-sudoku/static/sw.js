@@ -1,11 +1,11 @@
-const CACHE_NAME = 'cubiku-v21';
+const CACHE_NAME = 'cubiku-v25';
 
 // Appending query strings forces a network fetch during install, bypassing aggressive HTTP caches.
 // The `ignoreSearch: true` in the fetch event ensures they still match later.
 const ASSETS_TO_CACHE = [
   '/',
-  '/static/style.css?v=21',
-  '/static/game.js?v=21',
+  '/static/style.css?v=25',
+  '/static/game.js?v=25',
   '/static/icon-512.png',
   '/static/manifest.json'
 ];
