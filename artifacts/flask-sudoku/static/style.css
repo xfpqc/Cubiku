@@ -165,10 +165,10 @@ html, body {
 header { text-align: center; }
 
 h1 {
-  font-size:     clamp(2.4rem, 8vw, 3rem);
-  font-weight:   700;
+  font-size:      clamp(2.4rem, 8vw, 3rem);
+  font-weight:    700;
   letter-spacing: -1px;
-  color:         var(--text-primary);
+  color:          var(--text-primary);
 }
 
 .description {
@@ -205,13 +205,13 @@ h1 {
 }
 
 #timer-display {
-  font-size:     clamp(1rem, 3.5vw, 1.25rem);
-  font-weight:   300;
+  font-size:      clamp(1rem, 3.5vw, 1.25rem);
+  font-weight:    300;
   letter-spacing: 3px;
-  color:         var(--text-muted);
+  color:          var(--text-muted);
   font-variant-numeric: tabular-nums;
-  min-width:     3.8ch;
-  text-align:     center;
+  min-width:      3.8ch;
+  text-align:      center;
 }
 
 .timer-bar.zen #timer-display {
@@ -510,6 +510,7 @@ h1 {
   -webkit-user-select: none;
 }
 
+/* Updated Cell Styles for Divs & Drafting */
 .cell {
   width:         100%;
   height:        100%;
@@ -522,14 +523,15 @@ h1 {
   font-size:     clamp(0.78rem, 3.4vw, 1.35rem);
   font-weight:   400;
   color:         var(--user-color);
-  text-align:    center;
   cursor:        pointer;
-  caret-color:   transparent;
   transition:    background 0.1s, color 0.6s;
   touch-action:  manipulation;
-  -webkit-appearance: none;
-  appearance:    none;
   
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -542,6 +544,39 @@ h1 {
   color:         var(--clue-color);
   font-weight: 700;
   cursor:        default;
+}
+
+/* Pencil Draft Display */
+.cell.draft-mode {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  align-items: center;
+  justify-items: center;
+  font-size: clamp(0.35rem, 1.5vw, 0.5rem);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.cell .candidate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  visibility: hidden;
+}
+
+.cell.draft-mode .candidate.visible {
+  visibility: visible;
+}
+
+.cell .main-value {
+  display: block;
+}
+
+.cell.draft-mode .main-value {
+  display: none;
 }
 
 .cell.constraint-highlight {
@@ -561,7 +596,6 @@ h1 {
   );
   color:         var(--accent-text);
   font-weight: 600;
-  caret-color: var(--accent-text);
   transition:    background 0.05s, color 0.05s;
 }
 
@@ -656,7 +690,7 @@ h1 {
   transform: scale(0.95);
 }
 
-.key-btn.active {
+.key-btn.active, #btn-pencil.active {
   background-color: var(--accent);
   color: var(--bg); 
   border-color: var(--accent);
