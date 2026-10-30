@@ -1,9 +1,9 @@
-const CACHE_NAME = 'cubiku-v32';
+const CACHE_NAME = 'cubiku-v33';
 
 const ASSETS_TO_CACHE = [
   '/',
-  '/static/style.css?v=32',
-  '/static/game.js?v=32',
+  '/static/style.css?v=33',
+  '/static/game.js?v=33',
   '/static/icon-512.png',
   '/static/manifest.json'
 ];
@@ -30,6 +30,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim(); 
 });
 
+// Network-First Strategy to ensure code updates ALWAYS deploy successfully
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
@@ -45,7 +46,8 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(() => {
-        return caches.match(event.request, { ignoreSearch: !event.request.url.includes('?') });
+        // Fallback to cache if network is unavailable
+        return caches.match(event.request, { ignoreSearch: true });
       })
   );
 });

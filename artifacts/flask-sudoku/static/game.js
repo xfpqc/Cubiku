@@ -495,7 +495,11 @@ function loadGame() {
     currentDifficulty = data.difficulty;
     timerSeconds = data.timer;
     undoStack = [];
-    isGameComplete = false; 
+    isGameComplete = false;
+    
+    pencilMode = false;
+    activeNumber = null;
+
     document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
     
     const diffSelect = document.getElementById('difficulty-select');
@@ -527,6 +531,10 @@ function startTutorial() {
   clueSet = new Set();
   undoStack = [];
   isGameComplete = false; 
+  
+  pencilMode = false;
+  activeNumber = null;
+
   document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
   
   for(let z=0; z<3; z++) {
@@ -985,7 +993,7 @@ function updateDepletion() {
 
   document.querySelectorAll('.key-btn').forEach(btn => {
     const valStr = btn.dataset.val;
-    if (!valStr || valStr === 'erase' || valStr === 'undo' || valStr === 'pencil') return; 
+    if (!valStr || ['erase', 'undo', 'pencil'].includes(valStr)) return; 
     
     const val = Number(valStr);
     if (counts[val] >= 3) {
@@ -995,7 +1003,6 @@ function updateDepletion() {
       btn.classList.remove('active');
 
       if (activeNumber === String(val)) {
-        activeNumber = null;
         activeWasDepleted = true;
       }
     } else {
@@ -1006,7 +1013,8 @@ function updateDepletion() {
   });
 
   if (activeWasDepleted) {
-    activeNumber = null; 
+    // Definitive exhaustion trigger: forcefully shatter the selection
+    activeNumber = null;
     updateKeyboardUI();
     clearSelection();
     if (document.activeElement && document.activeElement.classList.contains('cell')) {
@@ -1095,18 +1103,25 @@ function onCellPointerDown(e) {
   }
 
   if (activeNumber !== null) {
-    if (activeNumber === 'erase') {
+    const placedNumber = activeNumber; 
+    
+    if (placedNumber === 'erase') {
       fillCell(z, row, col, '');
     } else {
-      fillCell(z, row, col, activeNumber);
+      fillCell(z, row, col, placedNumber);
     }
     
-    if (!stickyKeysEnabled) {
-      activeNumber = null;
-      // pencilMode = false removed so pencil stays active
-      clearSelection();
+    // Check if placed number caused exhaustion (activeNumber becomes null)
+    if (activeNumber !== null) {
+      if (!stickyKeysEnabled) {
+        activeNumber = null;
+        clearSelection();
+      } else {
+        selectCell(z, row, col);
+      }
     } else {
-      selectCell(z, row, col);
+      // If it WAS exhausted, strictly ensure selection is dropped
+      clearSelection();
     }
     
     updateKeyboardUI();
@@ -1204,7 +1219,14 @@ function handleKeyboardTap(valStr) {
       fillCell(z, row, col, valStr);
     }
     
-    if (!stickyKeysEnabled) {
+    // Check if the number button we just placed is now depleted
+    const btn = document.querySelector(`.key-btn[data-val="${valStr}"]`);
+    const isNowDepleted = btn && btn.classList.contains('depleted');
+
+    if (isNowDepleted) {
+        activeNumber = null;
+        clearSelection();
+    } else if (!stickyKeysEnabled) {
         if (!pencilMode) {
             activeNumber = null;
             clearSelection(); 
@@ -1238,6 +1260,11 @@ async function newGame() {
   clearSelection();
   tutorialMode = false;
   isGameComplete = false; 
+  
+  pencilMode = false;
+  activeNumber = null;
+  updateKeyboardUI();
+
   document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
 
   document.querySelectorAll('.cell').forEach(c => {
@@ -1284,6 +1311,11 @@ function loadGameFromSeed(seedStr, difficultyStr) {
     timerSeconds = 0;
     isGameComplete = false;
     clearSelection(); 
+    
+    pencilMode = false;
+    activeNumber = null;
+    updateKeyboardUI();
+
     document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
     currentDifficulty = difficultyStr || 'custom';
     
