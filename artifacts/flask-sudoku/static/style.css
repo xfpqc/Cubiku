@@ -554,6 +554,28 @@ h1 {
 }
 
 .cell .candidate {
+  position: absolute;
+  font-size: 0.35rem;
+  color: var(--text-muted);
+  display: none;
+  line-height: 1;
+}
+
+.cell.draft-mode .candidate.visible {
+  display: block;
+}
+
+.cand-1 { top: 2px; left: 3px; }
+.cand-2 { top: 2px; left: 50%; transform: translateX(-50%); }
+.cand-3 { top: 2px; right: 3px; }
+.cand-4 { top: 50%; left: 3px; transform: translateY(-50%); }
+.cand-5 { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.cand-6 { top: 50%; right: 3px; transform: translateY(-50%); }
+.cand-7 { bottom: 2px; left: 3px; }
+.cand-8 { bottom: 2px; left: 50%; transform: translateX(-50%); }
+.cand-9 { bottom: 2px; right: 3px; }
+
+.cell .candidate {
   display: none; 
   align-items: center;
   justify-content: center;
