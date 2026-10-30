@@ -2,10 +2,6 @@
  * Cubiku — 3D Sudoku frontend (100% Client-Side Engine)
  */
 
-// ==========================================
-// --- THE CUBIKU ENGINE (Ported from Python) ---
-// ==========================================
-
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -273,9 +269,6 @@ function check3SSC(grid, n = 3) {
       conflicts: []
   };
 }
-// ==========================================
-// --- END ENGINE ---
-// ==========================================
 
 function emptyGrid() {
   return Array.from({ length: 3 }, () =>
@@ -305,7 +298,6 @@ let stickyKeysEnabled = false;
 let pencilMode = false;
 let isGameComplete = false; 
 
-// --- Tutorial State ---
 let tutorialMode = false;
 let tutorialStep = 0;
 
@@ -321,7 +313,6 @@ const TUT_HOLES = [
   { z: 2, r: 0, c: 2, val: 6, msg: "Rule 3: Vertical columns cross the cube! Check the highlighted right-most column across all slices. Place the final number." }
 ];
 
-// --- Dynamic Stats Engine ---
 let stats = {
   easy:   { wins: 0, bestTime: null, totalTime: 0, lastTime: null },
   medium: { wins: 0, bestTime: null, totalTime: 0, lastTime: null },
@@ -360,7 +351,6 @@ function saveStats() {
 
 function loadStats() {
   const savedStatsV2 = localStorage.getItem('cubiku_stats_v2');
-  
   if (savedStatsV2) {
     try {
       stats = JSON.parse(savedStatsV2);
@@ -667,13 +657,6 @@ function toggleMenu() {
   const panel = document.getElementById('settings-panel');
   if (panel) {
     panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'flex' : 'none';
-  }
-}
-
-function toggleRules() {
-  const modal = document.getElementById('rules-modal');
-  if (modal) {
-    modal.classList.toggle('hidden');
   }
 }
 
@@ -1023,6 +1006,7 @@ function updateDepletion() {
   });
 
   if (activeWasDepleted) {
+    activeNumber = null; 
     updateKeyboardUI();
     clearSelection();
     if (document.activeElement && document.activeElement.classList.contains('cell')) {
@@ -1119,7 +1103,7 @@ function onCellPointerDown(e) {
     
     if (!stickyKeysEnabled) {
       activeNumber = null;
-      pencilMode = false;
+      // pencilMode = false removed so pencil stays active
       clearSelection();
     } else {
       selectCell(z, row, col);
@@ -1441,32 +1425,6 @@ function init() {
       });
   }
 
-  const markTutorialComplete = () => {
-      localStorage.setItem('cubiku_tutorial_complete', 'true');
-      toggleRules();
-  };
-
-  const btnStartTut = document.getElementById('btn-start-tutorial');
-  if (btnStartTut) {
-      btnStartTut.addEventListener('click', () => {
-          markTutorialComplete();
-          startTutorial();
-      });
-  }
-
-  const btnSkipTut = document.getElementById('btn-skip-tutorial');
-  if (btnSkipTut) btnSkipTut.addEventListener('click', markTutorialComplete);
-
-  const btnCloseRules = document.getElementById('btn-close-rules');
-  if (btnCloseRules) btnCloseRules.addEventListener('click', markTutorialComplete);
-
-  const rulesModal = document.getElementById('rules-modal');
-  if (rulesModal) {
-    rulesModal.addEventListener('click', (e) => {
-      if (e.target === rulesModal) markTutorialComplete();
-    });
-  }
-  
   const diffSelect = document.getElementById('difficulty-select');
   if (diffSelect) {
     diffSelect.addEventListener('change', (e) => {
@@ -1532,13 +1490,4 @@ function init() {
 
 document.addEventListener('DOMContentLoaded', () => {
   init();
-
-  const tutorialCompleted = localStorage.getItem('cubiku_tutorial_complete');
-  
-  if (!tutorialCompleted) {
-    const rulesModal = document.getElementById('rules-modal');
-    if (rulesModal) {
-      rulesModal.classList.remove('hidden');
-    }
-  }
 });
