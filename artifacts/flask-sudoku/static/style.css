@@ -274,8 +274,8 @@ h1 {
 
 .btn-icon:active { transform: scale(0.93); }
 
-/* Prevent SVGs from eating clicks */
-.btn-icon *, .key-btn * {
+/* Prevent SVGs and spans from eating clicks */
+.btn-icon *, .key-btn *, .cell * {
   pointer-events: none;
 }
 
@@ -541,7 +541,7 @@ h1 {
   cursor:        default;
 }
 
-/* Pencil Draft Display */
+/* Pencil Draft Display - Restructured to properly use CSS Grid */
 .cell.draft-mode {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -552,28 +552,6 @@ h1 {
   font-weight: 600;
   color: var(--user-color); 
 }
-
-.cell .candidate {
-  position: absolute;
-  font-size: 0.35rem;
-  color: var(--text-muted);
-  display: none;
-  line-height: 1;
-}
-
-.cell.draft-mode .candidate.visible {
-  display: block;
-}
-
-.cand-1 { top: 2px; left: 3px; }
-.cand-2 { top: 2px; left: 50%; transform: translateX(-50%); }
-.cand-3 { top: 2px; right: 3px; }
-.cand-4 { top: 50%; left: 3px; transform: translateY(-50%); }
-.cand-5 { top: 50%; left: 50%; transform: translate(-50%, -50%); }
-.cand-6 { top: 50%; right: 3px; transform: translateY(-50%); }
-.cand-7 { bottom: 2px; left: 3px; }
-.cand-8 { bottom: 2px; left: 50%; transform: translateX(-50%); }
-.cand-9 { bottom: 2px; right: 3px; }
 
 .cell .candidate {
   display: none; 
@@ -609,11 +587,6 @@ h1 {
   background: var(--num-hl) !important;
 }
 
-/* 
-  Because .active-cell is declared AFTER .draft-mode, 
-  it correctly overrides the color to --accent-text,
-  making tiny drafts fully visible on the highlighted cell. 
-*/
 .cell.active-cell {
   background: radial-gradient(
     circle,
