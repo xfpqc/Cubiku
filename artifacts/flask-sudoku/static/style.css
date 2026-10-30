@@ -541,6 +541,7 @@ h1 {
   cursor:        default;
 }
 
+/* VITAL FIX: Draft candidates dynamically map to the Accent theme color */
 .cell.draft-mode {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -549,7 +550,8 @@ h1 {
   justify-items: center;
   font-size: clamp(0.35rem, 1.5vw, 0.5rem);
   font-weight: 600;
-  color: var(--user-color); 
+  color: var(--accent);
+  opacity: 0.9;
 }
 
 .cell .candidate {
@@ -689,7 +691,6 @@ h1 {
   transform: scale(0.95);
 }
 
-/* Hard CSS lock to ensure Pencil is ALWAYS selectable */
 #btn-pencil {
     pointer-events: auto !important;
     cursor: pointer !important;

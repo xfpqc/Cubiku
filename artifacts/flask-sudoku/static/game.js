@@ -739,6 +739,7 @@ function updateKeyboardUI() {
   document.querySelectorAll('.key-btn').forEach(b => {
     const val = b.dataset.val;
     
+    // UI logic correctly toggles active class ONLY if it successfully recognizes data-val="pencil"
     if (val === 'pencil') {
        b.classList.toggle('active', pencilMode);
        return;
@@ -855,7 +856,6 @@ function undoLastAction() {
       drafts[action.z][action.row][action.col] = action.before;
   } else if (action.type === 'value') {
       state[action.z][action.row][action.col] = action.before;
-      // VITAL FIX: Restore any drafts that existed before the value was placed
       if (action.beforeDrafts) {
           drafts[action.z][action.row][action.col] = action.beforeDrafts;
       }
@@ -879,22 +879,18 @@ function removeDraftFromPeers(z, row, col, digit) {
     
     for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
-            // Remove from entire Z slice (same board)
             if ((i !== row || j !== col) && drafts[z][i][j].has(digit)) {
                 affected.push({z, r: i, c: j});
             }
-            // Remove from entire Y slice (same row crossing boards)
             if ((i !== z || j !== col) && drafts[i][row][j].has(digit)) {
                 affected.push({z: i, r: row, c: j});
             }
-            // Remove from entire X slice (same col crossing boards)
             if ((i !== z || j !== row) && drafts[i][j][col].has(digit)) {
                 affected.push({z: i, r: j, c: col});
             }
         }
     }
     
-    // Deduplicate intersection overlaps
     const uniqueAffected = [];
     const seen = new Set();
     for (const cell of affected) {
@@ -957,7 +953,7 @@ function fillCell(z, row, col, digitStr) {
       return;
   }
 
-  // Handle Pencil inputs
+  // Handle Pencil Mode Draft Placement
   if (pencilMode) {
       if (state[z][row][col] !== 0) return; 
       
@@ -974,7 +970,7 @@ function fillCell(z, row, col, digitStr) {
 
   if (beforeVal === digit) return;
 
-  // VITAL FIX: Pass beforeDrafts so that undoing a value placement successfully returns the drafts that were there!
+  // Normal Number Placement completely overrides candidates automatically
   undoStack.push({ type: 'value', z, row, col, before: beforeVal, beforeDrafts: beforeDrafts });
   state[z][row][col] = digit;
   
@@ -1015,7 +1011,6 @@ function updateDepletion() {
 
   document.querySelectorAll('.key-btn').forEach(btn => {
     const valStr = btn.dataset.val;
-    // Explicitly protect pencil, undo, and erase from getting depleted styles
     if (!valStr || ['erase', 'undo', 'pencil'].includes(valStr)) {
        if (btn) {
            btn.style.opacity = '1';
@@ -1062,7 +1057,6 @@ function checkAutoComplete() {
       }
     }
   }
-  
   if (emptyCount === 0) {
     checkSolution(); 
   }
@@ -1215,7 +1209,7 @@ function onCellKeydown(e) {
 }
 
 function handleKeyboardTap(valStr) {
-  if (!valStr) return; 
+  if (!valStr) return; // If data-val is missing, this halts execution here. 
 
   if (valStr === 'undo') {
     undoLastAction();
@@ -1385,7 +1379,6 @@ async function checkSolution() {
 
     if (data.valid) {
       isGameComplete = true; 
-      // End of game lock out
       document.querySelectorAll('.key-btn').forEach(btn => btn.classList.add('control-disabled')); 
 
       stopTimer();
@@ -1422,22 +1415,24 @@ async function checkSolution() {
 }
 
 // BULLETPROOF DOM REPAIR SCRIPT 
-// Ensures the Pencil Button is flawless even if the server serves terrible HTML
 function repairDOM() {
     const pencilBtn = document.getElementById('btn-pencil');
     if (pencilBtn) {
         pencilBtn.removeAttribute('disabled');
         pencilBtn.title = "Toggle Pencil Mode";
         pencilBtn.className = 'key-btn';
-        // Eradicate any rogue CSS overrides
+        
+        // VITAL FIX: Injects data-val to overcome a severely cached HTML file that lacked it.
+        // Without this, the listener reads `undefined` and aborts instantly.
+        pencilBtn.dataset.val = 'pencil';
+        pencilBtn.setAttribute('data-val', 'pencil'); 
+        
         pencilBtn.style.setProperty('pointer-events', 'auto', 'important');
         pencilBtn.style.setProperty('cursor', 'pointer', 'important');
         pencilBtn.style.setProperty('opacity', '1', 'important');
-        // Purge "Coming Soon" text safely
         pencilBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
     }
     
-    // Unlock all other buttons just in case
     document.querySelectorAll('.key-btn').forEach(btn => {
         btn.classList.remove('control-disabled', 'depleted');
         btn.removeAttribute('disabled');
@@ -1445,7 +1440,7 @@ function repairDOM() {
 }
 
 function init() {
-  repairDOM(); // Force execute first
+  repairDOM(); // Force execute first so JS can bind listeners properly
 
   if (navigator.storage && navigator.storage.persist) {
     navigator.storage.persist().then(persistent => {
@@ -1542,6 +1537,7 @@ function init() {
       }
   });
 
+  // Re-bind click events for ALL keys.
   document.querySelectorAll('.key-btn').forEach(btn => {
     btn.addEventListener('click', (e) => handleKeyboardTap(e.currentTarget.dataset.val));
   });
