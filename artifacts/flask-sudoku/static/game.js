@@ -500,7 +500,10 @@ function loadGame() {
     pencilMode = false;
     activeNumber = null;
 
-    document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
+    document.querySelectorAll('.key-btn').forEach(btn => {
+        btn.classList.remove('control-disabled');
+        btn.removeAttribute('disabled');
+    });
     
     const diffSelect = document.getElementById('difficulty-select');
     if (diffSelect) diffSelect.value = currentDifficulty;
@@ -535,7 +538,10 @@ function startTutorial() {
   pencilMode = false;
   activeNumber = null;
 
-  document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
+  document.querySelectorAll('.key-btn').forEach(btn => {
+      btn.classList.remove('control-disabled');
+      btn.removeAttribute('disabled');
+  });
   
   for(let z=0; z<3; z++) {
     for(let r=0; r<3; r++) {
@@ -1000,8 +1006,8 @@ function updateDepletion() {
     document.querySelectorAll('.key-btn').forEach(btn => {
       btn.style.opacity = '1';
       btn.style.textDecoration = 'none';
-      btn.classList.remove('depleted');
-      btn.classList.remove('control-disabled');
+      btn.classList.remove('depleted', 'control-disabled');
+      btn.removeAttribute('disabled');
     });
     return;
   }
@@ -1025,8 +1031,8 @@ function updateDepletion() {
        if (btn) {
            btn.style.opacity = '1';
            btn.style.textDecoration = 'none';
-           btn.classList.remove('depleted');
-           btn.classList.remove('control-disabled'); // extra safety
+           btn.classList.remove('depleted', 'control-disabled');
+           btn.removeAttribute('disabled');
        }
        return; 
     }
@@ -1044,8 +1050,8 @@ function updateDepletion() {
     } else {
       btn.style.opacity = '1';
       btn.style.textDecoration = 'none';
-      btn.classList.remove('depleted');
-      btn.classList.remove('control-disabled');
+      btn.classList.remove('depleted', 'control-disabled');
+      btn.removeAttribute('disabled');
     }
   });
 
@@ -1298,7 +1304,10 @@ async function newGame() {
   activeNumber = null;
   updateKeyboardUI();
 
-  document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
+  document.querySelectorAll('.key-btn').forEach(btn => {
+      btn.classList.remove('control-disabled');
+      btn.removeAttribute('disabled');
+  });
 
   document.querySelectorAll('.cell').forEach(c => {
     c.classList.remove('tutorial-dim', 'tutorial-target');
@@ -1349,7 +1358,10 @@ function loadGameFromSeed(seedStr, difficultyStr) {
     activeNumber = null;
     updateKeyboardUI();
 
-    document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
+    document.querySelectorAll('.key-btn').forEach(btn => {
+        btn.classList.remove('control-disabled');
+        btn.removeAttribute('disabled');
+    });
     currentDifficulty = difficultyStr || 'custom';
     
     let index = 0;
@@ -1437,12 +1449,11 @@ function init() {
     });
   }
 
-  // Safegaurd to rip disabled classes off pencil button in case cache was stubborn
-  const pencilBtn = document.getElementById('btn-pencil');
-  if (pencilBtn) {
-      pencilBtn.classList.remove('control-disabled');
-      pencilBtn.title = "Toggle Pencil Mode";
-  }
+  // FORCE-ENABLE all buttons in case the HTML has hardcoded `disabled` attributes
+  document.querySelectorAll('.key-btn').forEach(btn => {
+      btn.classList.remove('control-disabled', 'depleted');
+      btn.removeAttribute('disabled');
+  });
 
   buildGrids();
   
@@ -1473,7 +1484,10 @@ function init() {
           activeNumber = null;
           updateKeyboardUI();
 
-          document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
+          document.querySelectorAll('.key-btn').forEach(btn => {
+              btn.classList.remove('control-disabled');
+              btn.removeAttribute('disabled');
+          });
           timerSeconds = 0;
           renderState();
           updateDepletion();
