@@ -495,7 +495,7 @@ function loadGame() {
     currentDifficulty = data.difficulty;
     timerSeconds = data.timer;
     undoStack = [];
-    isGameComplete = false;
+    isGameComplete = false; 
     
     pencilMode = false;
     activeNumber = null;
@@ -939,7 +939,10 @@ function fillCell(z, row, col, digitStr) {
       return;
   }
 
-  if (pencilMode && state[z][row][col] === 0) {
+  // FIX: Safely bounce clicks on real numbers, process drafts normally
+  if (pencilMode) {
+      if (state[z][row][col] !== 0) return; 
+      
       undoStack.push({ type: 'draft', z, row, col, before: beforeDrafts });
       if (drafts[z][row][col].has(digit)) {
           drafts[z][row][col].delete(digit);
@@ -951,7 +954,7 @@ function fillCell(z, row, col, digitStr) {
       return;
   }
 
-  if (beforeVal === digit && !pencilMode) return;
+  if (beforeVal === digit) return;
 
   undoStack.push({ type: 'value', z, row, col, before: beforeVal });
   state[z][row][col] = digit;
@@ -1119,7 +1122,8 @@ function onCellPointerDown(e) {
     }
     
     if (activeNumber !== null) {
-      if (!stickyKeysEnabled) {
+      // FIX: Add !pencilMode so active numbers survive consecutive draft taps
+      if (!stickyKeysEnabled && !pencilMode) {
         activeNumber = null;
         clearSelection();
       } else {
