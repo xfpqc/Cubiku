@@ -1002,14 +1002,7 @@ function updateDepletion() {
 
   document.querySelectorAll('.key-btn').forEach(btn => {
     const valStr = btn.dataset.val;
-    
-    // EXPLICIT PROTECTION: Force tool buttons to stay fully active forever
-    if (!valStr || ['erase', 'undo', 'pencil'].includes(valStr)) {
-      btn.style.opacity = '1';
-      btn.style.textDecoration = 'none';
-      btn.classList.remove('depleted');
-      return; 
-    }
+    if (!valStr || valStr === 'erase' || valStr === 'undo' || valStr === 'pencil') return; 
     
     const val = Number(valStr);
     if (counts[val] >= 3) {
@@ -1124,9 +1117,9 @@ function onCellPointerDown(e) {
       fillCell(z, row, col, activeNumber);
     }
     
-    // Deselect if Sticky is OFF. DO NOT touch pencilMode state here.
     if (!stickyKeysEnabled) {
       activeNumber = null;
+      pencilMode = false;
       clearSelection();
     } else {
       selectCell(z, row, col);
@@ -1159,9 +1152,7 @@ function onCellKeydown(e) {
       e.preventDefault();
       fillCell(z, row, col, e.key);
       
-      // Deselect if Sticky is OFF. DO NOT touch pencilMode state.
-      if (!stickyKeysEnabled) {
-        updateKeyboardUI();
+      if (!stickyKeysEnabled && !pencilMode) {
         clearSelection();
       }
     }
@@ -1204,17 +1195,11 @@ function handleKeyboardTap(valStr) {
     undoLastAction();
     return;
   }
-  
-  if (valStr === 'pencil') {
-    pencilMode = !pencilMode;
-    updateKeyboardUI();
-    return; 
-  }
 
   clearHighlights();
   inspectedNumber = null;
 
-  if (valStr !== 'erase') {
+  if (valStr !== 'erase' && valStr !== 'pencil') {
     const btn = document.querySelector(`.key-btn[data-val="${valStr}"]`);
     if (btn && btn.classList.contains('depleted')) return;
   }
@@ -1222,16 +1207,26 @@ function handleKeyboardTap(valStr) {
   if (selected !== null) {
     const { z, row, col } = selected;
 
+    if (valStr === 'pencil') {
+        pencilMode = !pencilMode;
+        updateKeyboardUI();
+        selectCell(z, row, col); 
+        return;
+    }
+
     if (valStr === 'erase') {
       if (!clueSet.has(`${z},${row},${col}`)) fillCell(z, row, col, '');
     } else {
       fillCell(z, row, col, valStr);
     }
     
-    // Deselect if Sticky is OFF. DO NOT touch pencilMode state.
     if (!stickyKeysEnabled) {
-        activeNumber = null;
-        clearSelection(); 
+        if (!pencilMode) {
+            activeNumber = null;
+            clearSelection(); 
+        } else {
+            selectCell(z, row, col); 
+        }
     } else {
         selectCell(z, row, col); 
     }
@@ -1239,7 +1234,9 @@ function handleKeyboardTap(valStr) {
     updateKeyboardUI();
     updateNumberHighlights();
   } else {
-    if (activeNumber === valStr) {
+    if (valStr === 'pencil') {
+      pencilMode = !pencilMode;
+    } else if (activeNumber === valStr) {
       activeNumber = null;
     } else {
       activeNumber = valStr;
