@@ -993,7 +993,15 @@ function updateDepletion() {
 
   document.querySelectorAll('.key-btn').forEach(btn => {
     const valStr = btn.dataset.val;
-    if (!valStr || ['erase', 'undo', 'pencil'].includes(valStr)) return; 
+    // Explicitly protect pencil, undo, and erase from getting depleted styles
+    if (!valStr || ['erase', 'undo', 'pencil'].includes(valStr)) {
+       if (btn) {
+           btn.style.opacity = '1';
+           btn.style.textDecoration = 'none';
+           btn.classList.remove('depleted');
+       }
+       return; 
+    }
     
     const val = Number(valStr);
     if (counts[val] >= 3) {
@@ -1013,7 +1021,6 @@ function updateDepletion() {
   });
 
   if (activeWasDepleted) {
-    // Definitive exhaustion trigger: forcefully shatter the selection
     activeNumber = null;
     updateKeyboardUI();
     clearSelection();
@@ -1111,7 +1118,6 @@ function onCellPointerDown(e) {
       fillCell(z, row, col, placedNumber);
     }
     
-    // Check if placed number caused exhaustion (activeNumber becomes null)
     if (activeNumber !== null) {
       if (!stickyKeysEnabled) {
         activeNumber = null;
@@ -1120,7 +1126,6 @@ function onCellPointerDown(e) {
         selectCell(z, row, col);
       }
     } else {
-      // If it WAS exhausted, strictly ensure selection is dropped
       clearSelection();
     }
     
@@ -1219,7 +1224,6 @@ function handleKeyboardTap(valStr) {
       fillCell(z, row, col, valStr);
     }
     
-    // Check if the number button we just placed is now depleted
     const btn = document.querySelector(`.key-btn[data-val="${valStr}"]`);
     const isNowDepleted = btn && btn.classList.contains('depleted');
 
@@ -1428,6 +1432,11 @@ function init() {
           undoStack = [];
           drafts = emptyDrafts();
           isGameComplete = false; 
+          
+          pencilMode = false;
+          activeNumber = null;
+          updateKeyboardUI();
+
           document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
           timerSeconds = 0;
           renderState();
