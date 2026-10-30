@@ -541,7 +541,6 @@ h1 {
   cursor:        default;
 }
 
-/* VITAL FIX: Draft candidates dynamically map to the Accent theme color */
 .cell.draft-mode {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -588,6 +587,7 @@ h1 {
   background: var(--num-hl) !important;
 }
 
+/* Base Active Cell (Solid Circle) */
 .cell.active-cell {
   background: radial-gradient(
     circle,
@@ -597,7 +597,7 @@ h1 {
   );
   color:         var(--accent-text);
   font-weight: 600;
-  transition:    background 0.05s, color 0.05s;
+  transition:    background 0.05s, color 0.05s, box-shadow 0.05s;
 }
 
 .cell.active-cell.constraint-highlight {
@@ -607,6 +607,20 @@ h1 {
     var(--accent) 42%,
     var(--ch-bg)    43%
   );
+}
+
+/* VITAL FIX: Remove the solid circle when in pencil mode OR when viewing a cell with existing drafts */
+body.pencil-mode-active .cell.active-cell,
+.cell.draft-mode.active-cell {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--accent);
+  color: var(--accent); /* Retain correct draft candidate colors */
+}
+
+body.pencil-mode-active .cell.active-cell.constraint-highlight,
+.cell.draft-mode.active-cell.constraint-highlight {
+  background: var(--ch-bg);
+  box-shadow: inset 0 0 0 2px var(--accent);
 }
 
 .cell.flash-conflict {

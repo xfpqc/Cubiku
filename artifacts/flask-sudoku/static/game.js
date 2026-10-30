@@ -736,10 +736,12 @@ function updateNumberHighlights() {
 }
 
 function updateKeyboardUI() {
+  // VITAL FIX: Let CSS know exactly when Pencil Mode is active so it can toggle target visibility 
+  document.body.classList.toggle('pencil-mode-active', pencilMode);
+
   document.querySelectorAll('.key-btn').forEach(b => {
     const val = b.dataset.val;
     
-    // UI logic correctly toggles active class ONLY if it successfully recognizes data-val="pencil"
     if (val === 'pencil') {
        b.classList.toggle('active', pencilMode);
        return;
@@ -970,7 +972,6 @@ function fillCell(z, row, col, digitStr) {
 
   if (beforeVal === digit) return;
 
-  // Normal Number Placement completely overrides candidates automatically
   undoStack.push({ type: 'value', z, row, col, before: beforeVal, beforeDrafts: beforeDrafts });
   state[z][row][col] = digit;
   
@@ -1209,7 +1210,7 @@ function onCellKeydown(e) {
 }
 
 function handleKeyboardTap(valStr) {
-  if (!valStr) return; // If data-val is missing, this halts execution here. 
+  if (!valStr) return; 
 
   if (valStr === 'undo') {
     undoLastAction();
@@ -1414,7 +1415,6 @@ async function checkSolution() {
   }
 }
 
-// BULLETPROOF DOM REPAIR SCRIPT 
 function repairDOM() {
     const pencilBtn = document.getElementById('btn-pencil');
     if (pencilBtn) {
@@ -1422,8 +1422,6 @@ function repairDOM() {
         pencilBtn.title = "Toggle Pencil Mode";
         pencilBtn.className = 'key-btn';
         
-        // VITAL FIX: Injects data-val to overcome a severely cached HTML file that lacked it.
-        // Without this, the listener reads `undefined` and aborts instantly.
         pencilBtn.dataset.val = 'pencil';
         pencilBtn.setAttribute('data-val', 'pencil'); 
         
@@ -1440,7 +1438,7 @@ function repairDOM() {
 }
 
 function init() {
-  repairDOM(); // Force execute first so JS can bind listeners properly
+  repairDOM(); 
 
   if (navigator.storage && navigator.storage.persist) {
     navigator.storage.persist().then(persistent => {
@@ -1537,7 +1535,6 @@ function init() {
       }
   });
 
-  // Re-bind click events for ALL keys.
   document.querySelectorAll('.key-btn').forEach(btn => {
     btn.addEventListener('click', (e) => handleKeyboardTap(e.currentTarget.dataset.val));
   });
