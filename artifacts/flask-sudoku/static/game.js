@@ -939,7 +939,7 @@ function fillCell(z, row, col, digitStr) {
       return;
   }
 
-  // FIX: Safely bounce clicks on real numbers, process drafts normally
+  // Safely bounce clicks on real numbers, process drafts normally
   if (pencilMode) {
       if (state[z][row][col] !== 0) return; 
       
@@ -1122,7 +1122,6 @@ function onCellPointerDown(e) {
     }
     
     if (activeNumber !== null) {
-      // FIX: Add !pencilMode so active numbers survive consecutive draft taps
       if (!stickyKeysEnabled && !pencilMode) {
         activeNumber = null;
         clearSelection();
@@ -1507,6 +1506,7 @@ function init() {
     btn.addEventListener('click', (e) => handleKeyboardTap(e.currentTarget.dataset.val));
   });
 
+  // Keep 'click' for toggling the settings menu cleanly
   document.addEventListener('click', (e) => {
     const settingsPanel = document.getElementById('settings-panel');
     const btnM = document.getElementById('btn-menu');
@@ -1515,9 +1515,23 @@ function init() {
         settingsPanel.style.display = 'none';
       }
     }
+  });
 
-    if (!e.target.closest('#slices-container') && !e.target.closest('.keyboard-container') && !e.target.closest('.top-action-bar')) {
+  // FIX: Use pointerdown to completely reset the board & keyboard when tapping the background, bypassing the mobile Safari bug
+  document.addEventListener('pointerdown', (e) => {
+    if (!e.target.closest('.slices-container') && 
+        !e.target.closest('.keyboard-container') && 
+        !e.target.closest('.top-action-bar') &&
+        !e.target.closest('.settings-panel') &&
+        !e.target.closest('.modal-overlay')) {
+      
+      activeNumber = null;
+      updateKeyboardUI();
       clearSelection();
+      
+      if (document.activeElement && document.activeElement.classList.contains('cell')) {
+        document.activeElement.blur();
+      }
     }
   });
 
