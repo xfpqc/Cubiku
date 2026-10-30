@@ -753,7 +753,6 @@ function updateNumberHighlights() {
 
 function updateKeyboardUI() {
   document.querySelectorAll('.key-btn').forEach(b => {
-    // CRITICAL FIX: Skip the pencil button so it doesn't lose its highlight state
     if (b.id === 'btn-pencil') return;
 
     if (b.dataset.val === activeNumber) {
@@ -1116,9 +1115,8 @@ function onCellPointerDown(e) {
       fillCell(z, row, col, activeNumber);
     }
     
-    if (activeNumber === null) return;
-
-    if (!stickyKeysEnabled) {
+    // FIX: Keep active number if in pencil mode so they can dot the same number around
+    if (!stickyKeysEnabled && !pencilMode) {
       activeNumber = null;
       updateKeyboardUI();
       clearSelection();
@@ -1201,7 +1199,13 @@ function handleKeyboardTap(valStr) {
     } else {
       fillCell(z, row, col, valStr);
     }
-    clearSelection(); 
+    
+    // FIX: Don't clear selection if we are drafting, so they can add multiple pencil marks
+    if (!pencilMode) {
+        clearSelection(); 
+    } else {
+        selectCell(z, row, col); // Re-apply focus
+    }
     updateNumberHighlights();
   } else {
     if (activeNumber === valStr) {
@@ -1348,7 +1352,6 @@ async function checkSolution() {
 }
 
 function init() {
-  // Request persistent storage to protect against aggressive mobile cache purges
   if (navigator.storage && navigator.storage.persist) {
     navigator.storage.persist().then(persistent => {
       console.log(persistent ? "Storage is persistent." : "Storage is temporary.");
