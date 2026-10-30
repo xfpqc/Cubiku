@@ -1,5 +1,5 @@
 /* =========================================================
-   Cubiku — Midnight Slate & Customizable Themes stylesheet
+   Cubiku v30 — Midnight Slate & Customizable Themes
    ========================================================= */
 
 *, *::before, *::after {
@@ -74,8 +74,6 @@ html, body {
   position:    relative;
 }
 
-/* ── Page wrapper ────────────────────────────────────────── */
-
 .page-wrapper {
   width:         100%;
   max-width:     960px;
@@ -86,7 +84,6 @@ html, body {
   position:      relative;
 }
 
-/* Laptop / Desktop (Viewport Proportional Scaling) */
 @media (min-width: 600px) {
   .page-wrapper {
     justify-content: space-between;
@@ -113,7 +110,6 @@ html, body {
   }
 }
 
-/* Mobile */
 @media (max-width: 599px) {
   .page-wrapper {
     min-height:      100vh;
@@ -160,8 +156,6 @@ html, body {
   }
 }
 
-/* ── Header ─────────────────────────────────────────────── */
-
 header { text-align: center; }
 
 h1 {
@@ -178,8 +172,6 @@ h1 {
   font-weight: 300;
   letter-spacing: 0.3px;
 }
-
-/* ── Top Action Bar ── */
 
 .top-action-bar {
   display: grid;
@@ -281,7 +273,10 @@ h1 {
 
 .btn-icon:active { transform: scale(0.93); }
 
-/* ── Menu Panel Overlay Dropdown ─────────────────────────── */
+/* Prevent SVGs from eating clicks */
+.btn-icon *, .key-btn * {
+  pointer-events: none;
+}
 
 .settings-panel {
   position: absolute;
@@ -554,7 +549,6 @@ h1 {
   justify-items: center;
   font-size: clamp(0.35rem, 1.5vw, 0.5rem);
   font-weight: 600;
-  /* CRITICAL FIX: Brighten pencil marks so they are clearly visible */
   color: var(--user-color); 
 }
 
@@ -564,6 +558,7 @@ h1 {
   justify-content: center;
   width: 100%;
   height: 100%;
+  color: inherit; 
 }
 
 .cell.draft-mode .candidate {
@@ -591,6 +586,11 @@ h1 {
   background: var(--num-hl) !important;
 }
 
+/* 
+  Because .active-cell is declared AFTER .draft-mode, 
+  it correctly overrides the color to --accent-text,
+  making tiny drafts fully visible on the highlighted cell. 
+*/
 .cell.active-cell {
   background: radial-gradient(
     circle,

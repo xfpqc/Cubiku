@@ -557,6 +557,7 @@ function startTutorial() {
   renderState();
   updateDepletion();
   updateTutorialUI();
+  clearSelection();
 }
 
 function updateTutorialUI() {
@@ -736,7 +737,8 @@ function clearSelection() {
 function updateNumberHighlights() {
   document.querySelectorAll('.cell').forEach(el => el.classList.remove('number-highlight'));
   
-  const targetVal = activeNumber !== null && activeNumber !== 'erase' && activeNumber !== 'undo' ? Number(activeNumber) : (inspectedNumber !== null ? Number(inspectedNumber) : null);
+  const targetVal = activeNumber !== null && activeNumber !== 'erase' && activeNumber !== 'undo' && activeNumber !== 'pencil' 
+                    ? Number(activeNumber) : (inspectedNumber !== null ? Number(inspectedNumber) : null);
   if (targetVal === null) return;
 
   for (let z = 0; z < 3; z++) {
@@ -753,9 +755,14 @@ function updateNumberHighlights() {
 
 function updateKeyboardUI() {
   document.querySelectorAll('.key-btn').forEach(b => {
-    if (b.id === 'btn-pencil') return;
+    const val = b.dataset.val;
+    
+    if (val === 'pencil') {
+       b.classList.toggle('active', pencilMode);
+       return;
+    }
 
-    if (b.dataset.val === activeNumber) {
+    if (val === activeNumber) {
       b.classList.add('active');
     } else {
       b.classList.remove('active');
@@ -783,12 +790,10 @@ function buildGrids() {
         cell.tabIndex    = 0;
         cell.setAttribute('aria-label', `Slice z=${z} row ${row + 1} col ${col + 1}`);
 
-        // Main value container
         const mainVal = document.createElement('span');
         mainVal.className = 'main-value';
         cell.appendChild(mainVal);
 
-        // Pencil drafts grid
         for (let i = 1; i <= 9; i++) {
             const cand = document.createElement('span');
             cand.className = `candidate cand-${i}`;
@@ -807,8 +812,6 @@ function buildGrids() {
 }
 
 function renderState() {
-  clearSelection();
-
   for (let z = 0; z < 3; z++) {
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
@@ -820,7 +823,7 @@ function renderState() {
 
         el.tabIndex = isClue ? -1 : 0;
         el.classList.toggle('clue', isClue);
-        el.classList.remove('conflict', 'active-cell', 'constraint-highlight', 'flash-conflict', 'tutorial-dim', 'tutorial-target');
+        el.classList.remove('conflict', 'flash-conflict', 'tutorial-dim', 'tutorial-target');
 
         const mainValSpan = el.querySelector('.main-value');
         
@@ -859,7 +862,6 @@ function undoLastAction() {
       action.cells.forEach(({z: az, r: ar, c: ac}) => {
           drafts[az][ar][ac].add(action.digit);
       });
-      // automatically pop the preceding primary action
       undoLastAction();
       return; 
   }
@@ -1000,7 +1002,14 @@ function updateDepletion() {
 
   document.querySelectorAll('.key-btn').forEach(btn => {
     const valStr = btn.dataset.val;
-    if (!valStr || valStr === 'erase' || valStr === 'undo') return; 
+    
+    // EXPLICIT PROTECTION: Force tool buttons to stay fully active forever
+    if (!valStr || ['erase', 'undo', 'pencil'].includes(valStr)) {
+      btn.style.opacity = '1';
+      btn.style.textDecoration = 'none';
+      btn.classList.remove('depleted');
+      return; 
+    }
     
     const val = Number(valStr);
     if (counts[val] >= 3) {
@@ -1110,19 +1119,20 @@ function onCellPointerDown(e) {
 
   if (activeNumber !== null) {
     if (activeNumber === 'erase') {
-      if (!clueSet.has(`${z},${row},${col}`)) fillCell(z, row, col, '');
+      fillCell(z, row, col, '');
     } else {
       fillCell(z, row, col, activeNumber);
     }
     
-    // FIX: Keep active number if in pencil mode so they can dot the same number around
-    if (!stickyKeysEnabled && !pencilMode) {
+    // Deselect if Sticky is OFF. DO NOT touch pencilMode state here.
+    if (!stickyKeysEnabled) {
       activeNumber = null;
-      updateKeyboardUI();
       clearSelection();
     } else {
       selectCell(z, row, col);
     }
+    
+    updateKeyboardUI();
     updateNumberHighlights();
   } else {
     selectCell(z, row, col);
@@ -1148,8 +1158,21 @@ function onCellKeydown(e) {
     if (!clueSet.has(`${z},${row},${col}`)) {
       e.preventDefault();
       fillCell(z, row, col, e.key);
+      
+      // Deselect if Sticky is OFF. DO NOT touch pencilMode state.
+      if (!stickyKeysEnabled) {
+        updateKeyboardUI();
+        clearSelection();
+      }
     }
     return;
+  }
+
+  if (e.key.toLowerCase() === 'p') {
+      e.preventDefault();
+      pencilMode = !pencilMode;
+      updateKeyboardUI();
+      return;
   }
 
   if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
@@ -1181,6 +1204,12 @@ function handleKeyboardTap(valStr) {
     undoLastAction();
     return;
   }
+  
+  if (valStr === 'pencil') {
+    pencilMode = !pencilMode;
+    updateKeyboardUI();
+    return; 
+  }
 
   clearHighlights();
   inspectedNumber = null;
@@ -1192,20 +1221,22 @@ function handleKeyboardTap(valStr) {
 
   if (selected !== null) {
     const { z, row, col } = selected;
+
     if (valStr === 'erase') {
-      if (!clueSet.has(`${z},${row},${col}`)) {
-        fillCell(z, row, col, '');
-      }
+      if (!clueSet.has(`${z},${row},${col}`)) fillCell(z, row, col, '');
     } else {
       fillCell(z, row, col, valStr);
     }
     
-    // FIX: Don't clear selection if we are drafting, so they can add multiple pencil marks
-    if (!pencilMode) {
+    // Deselect if Sticky is OFF. DO NOT touch pencilMode state.
+    if (!stickyKeysEnabled) {
+        activeNumber = null;
         clearSelection(); 
     } else {
-        selectCell(z, row, col); // Re-apply focus
+        selectCell(z, row, col); 
     }
+    
+    updateKeyboardUI();
     updateNumberHighlights();
   } else {
     if (activeNumber === valStr) {
@@ -1223,6 +1254,7 @@ async function newGame() {
   hideMessage();
   stopTimer();
   clearSave();
+  clearSelection();
   tutorialMode = false;
   isGameComplete = false; 
   document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
@@ -1269,7 +1301,8 @@ function loadGameFromSeed(seedStr, difficultyStr) {
     clueSet = new Set();
     undoStack = [];
     timerSeconds = 0;
-    isGameComplete = false; 
+    isGameComplete = false;
+    clearSelection(); 
     document.querySelectorAll('.key-btn').forEach(btn => btn.classList.remove('control-disabled'));
     currentDifficulty = difficultyStr || 'custom';
     
@@ -1435,14 +1468,6 @@ function init() {
     rulesModal.addEventListener('click', (e) => {
       if (e.target === rulesModal) markTutorialComplete();
     });
-  }
-
-  const btnPencil = document.getElementById('btn-pencil');
-  if (btnPencil) {
-      btnPencil.addEventListener('click', () => {
-          pencilMode = !pencilMode;
-          btnPencil.classList.toggle('active', pencilMode);
-      });
   }
   
   const diffSelect = document.getElementById('difficulty-select');
