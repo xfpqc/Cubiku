@@ -853,7 +853,7 @@ function undoLastAction() {
       action.cells.forEach(({z: az, r: ar, c: ac}) => {
           drafts[az][ar][ac].add(action.digit);
       });
-      undoLastAction();
+      undoLastAction(); // Recursively pop the actual value placement too
       return; 
   }
 
@@ -881,15 +881,38 @@ function undoLastAction() {
 
 function removeDraftFromPeers(z, row, col, digit) {
     const affected = [];
+    
     for (let i = 0; i < 3; i++) {
-        if (i !== col && drafts[z][row][i].has(digit)) affected.push({z, r: row, c: i});
-        if (i !== row && drafts[z][i][col].has(digit)) affected.push({z, r: i, c: col});
-        if (i !== z && drafts[i][row][col].has(digit)) affected.push({z: i, r: row, c: col});
+        for (let j = 0; j < 3; j++) {
+            // Remove from entire Z slice (same board)
+            if ((i !== row || j !== col) && drafts[z][i][j].has(digit)) {
+                affected.push({z, r: i, c: j});
+            }
+            // Remove from entire Y slice (same row crossing boards)
+            if ((i !== z || j !== col) && drafts[i][row][j].has(digit)) {
+                affected.push({z: i, r: row, c: j});
+            }
+            // Remove from entire X slice (same col crossing boards)
+            if ((i !== z || j !== row) && drafts[i][j][col].has(digit)) {
+                affected.push({z: i, r: j, c: col});
+            }
+        }
     }
     
-    if (affected.length > 0) {
-        undoStack.push({ type: 'auto_draft_clear', digit, cells: affected });
-        affected.forEach(({z: az, r: ar, c: ac}) => {
+    // Deduplicate intersection overlaps
+    const uniqueAffected = [];
+    const seen = new Set();
+    for (const cell of affected) {
+        const key = `${cell.z},${cell.r},${cell.c}`;
+        if (!seen.has(key)) {
+            seen.add(key);
+            uniqueAffected.push(cell);
+        }
+    }
+
+    if (uniqueAffected.length > 0) {
+        undoStack.push({ type: 'auto_draft_clear', digit, cells: uniqueAffected });
+        uniqueAffected.forEach(({z: az, r: ar, c: ac}) => {
             drafts[az][ar][ac].delete(digit);
         });
     }
@@ -939,7 +962,7 @@ function fillCell(z, row, col, digitStr) {
       return;
   }
 
-  // Safely bounce clicks on real numbers, process drafts normally
+  // Handle Pencil inputs flawlessly
   if (pencilMode) {
       if (state[z][row][col] !== 0) return; 
       
@@ -978,6 +1001,7 @@ function updateDepletion() {
       btn.style.opacity = '1';
       btn.style.textDecoration = 'none';
       btn.classList.remove('depleted');
+      btn.classList.remove('control-disabled');
     });
     return;
   }
@@ -996,12 +1020,13 @@ function updateDepletion() {
 
   document.querySelectorAll('.key-btn').forEach(btn => {
     const valStr = btn.dataset.val;
-    // Explicitly protect pencil, undo, and erase from getting depleted styles
+    // Explicitly protect pencil, undo, and erase from getting depleted or disabled styles
     if (!valStr || ['erase', 'undo', 'pencil'].includes(valStr)) {
        if (btn) {
            btn.style.opacity = '1';
            btn.style.textDecoration = 'none';
            btn.classList.remove('depleted');
+           btn.classList.remove('control-disabled'); // extra safety
        }
        return; 
     }
@@ -1020,6 +1045,7 @@ function updateDepletion() {
       btn.style.opacity = '1';
       btn.style.textDecoration = 'none';
       btn.classList.remove('depleted');
+      btn.classList.remove('control-disabled');
     }
   });
 
@@ -1411,6 +1437,13 @@ function init() {
     });
   }
 
+  // Safegaurd to rip disabled classes off pencil button in case cache was stubborn
+  const pencilBtn = document.getElementById('btn-pencil');
+  if (pencilBtn) {
+      pencilBtn.classList.remove('control-disabled');
+      pencilBtn.title = "Toggle Pencil Mode";
+  }
+
   buildGrids();
   
   loadPreferences();
@@ -1506,7 +1539,6 @@ function init() {
     btn.addEventListener('click', (e) => handleKeyboardTap(e.currentTarget.dataset.val));
   });
 
-  // Keep 'click' for toggling the settings menu cleanly
   document.addEventListener('click', (e) => {
     const settingsPanel = document.getElementById('settings-panel');
     const btnM = document.getElementById('btn-menu');
@@ -1517,7 +1549,6 @@ function init() {
     }
   });
 
-  // FIX: Use pointerdown to completely reset the board & keyboard when tapping the background, bypassing the mobile Safari bug
   document.addEventListener('pointerdown', (e) => {
     if (!e.target.closest('.slices-container') && 
         !e.target.closest('.keyboard-container') && 
