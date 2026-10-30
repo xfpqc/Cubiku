@@ -541,7 +541,6 @@ h1 {
   cursor:        default;
 }
 
-/* Pencil Draft Display - Restructured to properly use CSS Grid */
 .cell.draft-mode {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -688,6 +687,12 @@ h1 {
 
 .key-btn:active {
   transform: scale(0.95);
+}
+
+/* Hard CSS lock to ensure Pencil is ALWAYS selectable */
+#btn-pencil {
+    pointer-events: auto !important;
+    cursor: pointer !important;
 }
 
 .key-btn.active, #btn-pencil.active {

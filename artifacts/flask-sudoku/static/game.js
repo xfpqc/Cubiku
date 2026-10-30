@@ -499,11 +499,6 @@ function loadGame() {
     
     pencilMode = false;
     activeNumber = null;
-
-    document.querySelectorAll('.key-btn').forEach(btn => {
-        btn.classList.remove('control-disabled');
-        btn.removeAttribute('disabled');
-    });
     
     const diffSelect = document.getElementById('difficulty-select');
     if (diffSelect) diffSelect.value = currentDifficulty;
@@ -538,11 +533,6 @@ function startTutorial() {
   pencilMode = false;
   activeNumber = null;
 
-  document.querySelectorAll('.key-btn').forEach(btn => {
-      btn.classList.remove('control-disabled');
-      btn.removeAttribute('disabled');
-  });
-  
   for(let z=0; z<3; z++) {
     for(let r=0; r<3; r++) {
       for(let c=0; c<3; c++) {
@@ -595,11 +585,6 @@ function updateTutorialUI() {
 
 function endTutorial() {
   document.querySelectorAll('.cell').forEach(c => c.classList.remove('tutorial-dim', 'tutorial-target'));
-  document.querySelectorAll('.key-btn').forEach(btn => {
-    btn.style.opacity = '1';
-    btn.style.textDecoration = 'none';
-    btn.classList.remove('depleted');
-  });
   
   showMessage("Tutorial complete! 🎉", "success");
   
@@ -870,6 +855,10 @@ function undoLastAction() {
       drafts[action.z][action.row][action.col] = action.before;
   } else if (action.type === 'value') {
       state[action.z][action.row][action.col] = action.before;
+      // VITAL FIX: Restore any drafts that existed before the value was placed
+      if (action.beforeDrafts) {
+          drafts[action.z][action.row][action.col] = action.beforeDrafts;
+      }
   } else if (action.type === 'clear') {
       state[action.z][action.row][action.col] = action.beforeVal;
       drafts[action.z][action.row][action.col] = action.beforeDrafts;
@@ -968,7 +957,7 @@ function fillCell(z, row, col, digitStr) {
       return;
   }
 
-  // Handle Pencil inputs flawlessly
+  // Handle Pencil inputs
   if (pencilMode) {
       if (state[z][row][col] !== 0) return; 
       
@@ -985,7 +974,8 @@ function fillCell(z, row, col, digitStr) {
 
   if (beforeVal === digit) return;
 
-  undoStack.push({ type: 'value', z, row, col, before: beforeVal });
+  // VITAL FIX: Pass beforeDrafts so that undoing a value placement successfully returns the drafts that were there!
+  undoStack.push({ type: 'value', z, row, col, before: beforeVal, beforeDrafts: beforeDrafts });
   state[z][row][col] = digit;
   
   if (digit > 0) {
@@ -1006,8 +996,7 @@ function updateDepletion() {
     document.querySelectorAll('.key-btn').forEach(btn => {
       btn.style.opacity = '1';
       btn.style.textDecoration = 'none';
-      btn.classList.remove('depleted', 'control-disabled');
-      btn.removeAttribute('disabled');
+      btn.classList.remove('depleted');
     });
     return;
   }
@@ -1026,13 +1015,12 @@ function updateDepletion() {
 
   document.querySelectorAll('.key-btn').forEach(btn => {
     const valStr = btn.dataset.val;
-    // Explicitly protect pencil, undo, and erase from getting depleted or disabled styles
+    // Explicitly protect pencil, undo, and erase from getting depleted styles
     if (!valStr || ['erase', 'undo', 'pencil'].includes(valStr)) {
        if (btn) {
            btn.style.opacity = '1';
            btn.style.textDecoration = 'none';
-           btn.classList.remove('depleted', 'control-disabled');
-           btn.removeAttribute('disabled');
+           btn.classList.remove('depleted');
        }
        return; 
     }
@@ -1050,8 +1038,7 @@ function updateDepletion() {
     } else {
       btn.style.opacity = '1';
       btn.style.textDecoration = 'none';
-      btn.classList.remove('depleted', 'control-disabled');
-      btn.removeAttribute('disabled');
+      btn.classList.remove('depleted');
     }
   });
 
@@ -1304,11 +1291,6 @@ async function newGame() {
   activeNumber = null;
   updateKeyboardUI();
 
-  document.querySelectorAll('.key-btn').forEach(btn => {
-      btn.classList.remove('control-disabled');
-      btn.removeAttribute('disabled');
-  });
-
   document.querySelectorAll('.cell').forEach(c => {
     c.classList.remove('tutorial-dim', 'tutorial-target');
   });
@@ -1358,10 +1340,6 @@ function loadGameFromSeed(seedStr, difficultyStr) {
     activeNumber = null;
     updateKeyboardUI();
 
-    document.querySelectorAll('.key-btn').forEach(btn => {
-        btn.classList.remove('control-disabled');
-        btn.removeAttribute('disabled');
-    });
     currentDifficulty = difficultyStr || 'custom';
     
     let index = 0;
@@ -1407,6 +1385,7 @@ async function checkSolution() {
 
     if (data.valid) {
       isGameComplete = true; 
+      // End of game lock out
       document.querySelectorAll('.key-btn').forEach(btn => btn.classList.add('control-disabled')); 
 
       stopTimer();
@@ -1442,21 +1421,39 @@ async function checkSolution() {
   }
 }
 
+// BULLETPROOF DOM REPAIR SCRIPT 
+// Ensures the Pencil Button is flawless even if the server serves terrible HTML
+function repairDOM() {
+    const pencilBtn = document.getElementById('btn-pencil');
+    if (pencilBtn) {
+        pencilBtn.removeAttribute('disabled');
+        pencilBtn.title = "Toggle Pencil Mode";
+        pencilBtn.className = 'key-btn';
+        // Eradicate any rogue CSS overrides
+        pencilBtn.style.setProperty('pointer-events', 'auto', 'important');
+        pencilBtn.style.setProperty('cursor', 'pointer', 'important');
+        pencilBtn.style.setProperty('opacity', '1', 'important');
+        // Purge "Coming Soon" text safely
+        pencilBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
+    }
+    
+    // Unlock all other buttons just in case
+    document.querySelectorAll('.key-btn').forEach(btn => {
+        btn.classList.remove('control-disabled', 'depleted');
+        btn.removeAttribute('disabled');
+    });
+}
+
 function init() {
+  repairDOM(); // Force execute first
+
   if (navigator.storage && navigator.storage.persist) {
     navigator.storage.persist().then(persistent => {
       console.log(persistent ? "Storage is persistent." : "Storage is temporary.");
     });
   }
 
-  // FORCE-ENABLE all buttons in case the HTML has hardcoded `disabled` attributes
-  document.querySelectorAll('.key-btn').forEach(btn => {
-      btn.classList.remove('control-disabled', 'depleted');
-      btn.removeAttribute('disabled');
-  });
-
   buildGrids();
-  
   loadPreferences();
   loadStats();
   
@@ -1484,10 +1481,6 @@ function init() {
           activeNumber = null;
           updateKeyboardUI();
 
-          document.querySelectorAll('.key-btn').forEach(btn => {
-              btn.classList.remove('control-disabled');
-              btn.removeAttribute('disabled');
-          });
           timerSeconds = 0;
           renderState();
           updateDepletion();
