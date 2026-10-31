@@ -1,9 +1,9 @@
-const CACHE_NAME = 'cubiku-v50';
+const CACHE_NAME = 'cubiku-v53';
 const ASSETS = [
   '/',
   '/index.html',
-  '/static/style.css?v=50',
-  '/static/game.js?v=50',
+  '/static/style.css?v=53',
+  '/static/game.js?v=53',
   '/static/icon-512.png',
   '/static/manifest.json'
 ];
@@ -25,11 +25,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  // Strict Network-First Strategy to guarantee updates
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Only cache valid 200 responses (prevents caching the Render Loading page)
         if (response.status === 200) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));

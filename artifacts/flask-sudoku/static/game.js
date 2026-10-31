@@ -13,7 +13,6 @@ function shuffleArray(array) {
 }
 
 function isValid(grid, x, y, z, num, n = 3, variant = currentVariant) {
-  // 1. Standard 3D structural constraints
   for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
           if (grid[z][i][j] === num) return false;
@@ -22,7 +21,6 @@ function isValid(grid, x, y, z, num, n = 3, variant = currentVariant) {
       }
   }
 
-  // 2. True 3D Anti-King Constraint (Spatial Corners Only)
   if (variant === '3d-anti-king') {
       const offsets = [-1, 1];
       for (let dz of offsets) {
@@ -305,7 +303,8 @@ function savePreferences() {
   localStorage.setItem('cubiku_prefs', JSON.stringify({
     theme: currentTheme,
     sticky: stickyKeysEnabled,
-    variant: currentVariant
+    variant: currentVariant,
+    difficulty: currentDifficulty
   }));
 }
 
@@ -317,6 +316,7 @@ function loadPreferences() {
       currentTheme = prefs.theme || "cyan";
       stickyKeysEnabled = !!prefs.sticky;
       currentVariant = prefs.variant || "standard";
+      currentDifficulty = prefs.difficulty || "medium";
       
       document.body.setAttribute('data-theme', currentTheme);
       const themeSelect = document.getElementById('theme-select');
@@ -324,9 +324,13 @@ function loadPreferences() {
       
       const stickyToggle = document.getElementById('toggle-sticky-keys');
       if (stickyToggle) stickyToggle.checked = stickyKeysEnabled;
-      
+
       const variantSelect = document.getElementById('variant-select');
       if (variantSelect) variantSelect.value = currentVariant;
+      
+      const diffSelect = document.getElementById('difficulty-select');
+      if (diffSelect) diffSelect.value = currentDifficulty;
+
     } catch(e) {}
   }
 }
@@ -480,7 +484,7 @@ function loadGame() {
     initialGrid = data.initialGrid || emptyGrid();
     solvedGrid = data.solvedGrid || computeSolutionGrid();
     clueSet = new Set(data.clues);
-    currentDifficulty = data.difficulty;
+    currentDifficulty = data.difficulty || "medium";
     currentVariant = data.variant || 'standard';
     timerSeconds = data.timer;
     undoStack = [];
