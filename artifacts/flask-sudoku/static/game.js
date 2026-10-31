@@ -2,6 +2,18 @@
  * Cubiku — 3D Sudoku frontend (100% Client-Side Engine)
  */
 
+let currentVariant = "standard";
+
+// The 24 possible moves for a true 3-dimensional Knight (±2 in one axis, ±1 in another, 0 in the third).
+const knight3DMoves = [
+    [2,1,0], [2,-1,0], [-2,1,0], [-2,-1,0],
+    [2,0,1], [2,0,-1], [-2,0,1], [-2,0,-1],
+    [1,2,0], [1,-2,0], [-1,2,0], [-1,-2,0],
+    [1,0,2], [1,0,-2], [-1,0,2], [-1,0,-2],
+    [0,2,1], [0,2,-1], [0,-2,1], [0,-2,-1],
+    [0,1,2], [0,1,-2], [0,-1,2], [0,-1,-2]
+];
+
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -10,7 +22,8 @@ function shuffleArray(array) {
   return array;
 }
 
-function isValid(grid, x, y, z, num, n = 3) {
+function isValid(grid, x, y, z, num, n = 3, variant = currentVariant) {
+  // 1. Standard 3D structural constraints
   for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
           if (grid[z][i][j] === num) return false;
@@ -18,10 +31,21 @@ function isValid(grid, x, y, z, num, n = 3) {
           if (grid[i][j][x] === num) return false;
       }
   }
+
+  // 2. True 3D Anti-Knight Constraint (Cross-Slice)
+  if (variant === '3d-anti-knight') {
+      for (let [dz, dy, dx] of knight3DMoves) {
+          let nz = z + dz, ny = y + dy, nx = x + dx;
+          if (nz >= 0 && nz < n && ny >= 0 && ny < n && nx >= 0 && nx < n) {
+              if (grid[nz][ny][nx] === num) return false;
+          }
+      }
+  }
+  
   return true;
 }
 
-function solveAndCount(grid, n = 3, count = { val: 0 }) {
+function solveAndCount(grid, n = 3, count = { val: 0 }, variant = currentVariant) {
   if (count.val > 1) return;
 
   for (let z = 0; z < n; z++) {
@@ -29,9 +53,9 @@ function solveAndCount(grid, n = 3, count = { val: 0 }) {
           for (let x = 0; x < n; x++) {
               if (grid[z][y][x] === 0) {
                   for (let num = 1; num <= n * n; num++) {
-                      if (isValid(grid, x, y, z, num, n)) {
+                      if (isValid(grid, x, y, z, num, n, variant)) {
                           grid[z][y][x] = num;
-                          solveAndCount(grid, n, count);
+                          solveAndCount(grid, n, count, variant);
                           grid[z][y][x] = 0;
                       }
                   }
@@ -43,7 +67,7 @@ function solveAndCount(grid, n = 3, count = { val: 0 }) {
   count.val += 1;
 }
 
-function generateSolvedGrid(grid, n = 3) {
+function generateSolvedGrid(grid, n = 3, variant = currentVariant) {
   const cells = [];
   for (let z = 0; z < n; z++) {
       for (let y = 0; y < n; y++) {
@@ -59,9 +83,9 @@ function generateSolvedGrid(grid, n = 3) {
           shuffleArray(nums);
 
           for (const num of nums) {
-              if (isValid(grid, x, y, z, num, n)) {
+              if (isValid(grid, x, y, z, num, n, variant)) {
                   grid[z][y][x] = num;
-                  if (generateSolvedGrid(grid, n)) return true;
+                  if (generateSolvedGrid(grid, n, variant)) return true;
                   grid[z][y][x] = 0;
               }
           }
@@ -71,12 +95,19 @@ function generateSolvedGrid(grid, n = 3) {
   return true;
 }
 
-function generateUniquePuzzle(n = 3, difficulty = 'medium') {
+function generateUniquePuzzle(n = 3, difficulty = 'medium', variant = currentVariant) {
   const grid = Array.from({ length: n }, () =>
       Array.from({ length: n }, () => Array(n).fill(0))
   );
   
-  generateSolvedGrid(grid, n);
+  let generated = false;
+  let safetyLimit = 0;
+  while (!generated && safetyLimit < 10) {
+      safetyLimit++;
+      grid.forEach(z => z.forEach(y => y.fill(0)));
+      generated = generateSolvedGrid(grid, n, variant);
+  }
+
   const solvedCopy = JSON.parse(JSON.stringify(grid));
 
   let cells = [];
@@ -89,7 +120,10 @@ function generateUniquePuzzle(n = 3, difficulty = 'medium') {
   }
   shuffleArray(cells);
 
-  const targetMinClues = difficulty === 'easy' ? 12 : (difficulty === 'medium' ? 10 : 8);
+  // Minimal Clues Drop: 3D Anti-Knight allows incredibly sparse boards. 
+  // Hard mode variants can go down to just 5 clues.
+  const isVariant = variant !== 'standard';
+  const targetMinClues = difficulty === 'easy' ? (isVariant ? 10 : 12) : (difficulty === 'medium' ? (isVariant ? 7 : 10) : (isVariant ? 5 : 8));
   let currentClues = n * n * n;
 
   for (const { z, y, x } of cells) {
@@ -100,7 +134,7 @@ function generateUniquePuzzle(n = 3, difficulty = 'medium') {
 
       const gridCopy = JSON.parse(JSON.stringify(grid));
       const solutions = { val: 0 };
-      solveAndCount(gridCopy, n, solutions);
+      solveAndCount(gridCopy, n, solutions, variant);
 
       if (solutions.val !== 1) {
           grid[z][y][x] = backup; 
@@ -121,72 +155,22 @@ function generateUniquePuzzle(n = 3, difficulty = 'medium') {
   return { grid, clues, solvedGrid: solvedCopy };
 }
 
-function measureHumanDifficulty(grid, n = 3) {
-  const testGrid = JSON.parse(JSON.stringify(grid));
-  let progress = true;
-  const totalCells = n * n * n;
-  let initialEmpty = 0;
-
-  for (let z = 0; z < n; z++) {
-      for (let y = 0; y < n; y++) {
-          for (let x = 0; x < n; x++) {
-              if (testGrid[z][y][x] === 0) initialEmpty++;
-          }
-      }
-  }
-
-  let emptyCount = initialEmpty;
-
-  while (progress && emptyCount > 0) {
-      progress = false;
-      for (let z = 0; z < n; z++) {
-          for (let y = 0; y < n; y++) {
-              for (let x = 0; x < n; x++) {
-                  if (testGrid[z][y][x] === 0) {
-                      const validMoves = [];
-                      for (let num = 1; num <= n * n; num++) {
-                          if (isValid(testGrid, x, y, z, num, n)) {
-                              validMoves.push(num);
-                          }
-                      }
-                      if (validMoves.length === 1) {
-                          testGrid[z][y][x] = validMoves[0];
-                          emptyCount--;
-                          progress = true;
-                      }
-                  }
-              }
-          }
-      }
-  }
-
-  const cluesCount = totalCells - initialEmpty;
-  if (cluesCount >= 11 && emptyCount === 0) return "easy";
-  if (cluesCount >= 9 && emptyCount <= 3) return "medium";
-  return "hard";
-}
-
-function generateGame(difficulty = 'medium') {
+function generateGame(difficulty = 'medium', variant = currentVariant) {
   let attempts = 0;
   let bestClues = null;
   let bestSolved = null;
-  while (attempts < 30) {
+  while (attempts < 15) {
       attempts++;
-      const { grid, clues, solvedGrid: candidateSolved } = generateUniquePuzzle(3, difficulty);
+      const { grid, clues, solvedGrid: candidateSolved } = generateUniquePuzzle(3, difficulty, variant);
       bestClues = clues;
       bestSolved = candidateSolved;
-      const actualDifficulty = measureHumanDifficulty(grid, 3);
-      
-      if (actualDifficulty === difficulty) {
-          solvedGrid = candidateSolved;
-          return clues;
-      }
+      solvedGrid = candidateSolved;
+      return clues; 
   }
-  solvedGrid = bestSolved;
   return bestClues;
 }
 
-function check3SSC(grid, n = 3) {
+function check3SSC(grid, n = 3, variant = currentVariant) {
   const conflicts = new Set();
   const addConflict = (z, y, x) => conflicts.add(`${z},${y},${x}`);
 
@@ -195,11 +179,7 @@ function check3SSC(grid, n = 3) {
           for (let x = 0; x < n; x++) {
               const v = grid[z][y][x];
               if (typeof v !== 'number' || v < 1 || v > 9) {
-                  return {
-                      valid: false,
-                      message: "Some cells are still empty or contain invalid values.",
-                      conflicts: []
-                  };
+                  return { valid: false, message: "Some cells are still empty or contain invalid values.", conflicts: [] };
               }
           }
       }
@@ -215,9 +195,7 @@ function check3SSC(grid, n = 3) {
           }
       }
       for (const num in seen) {
-          if (seen[num].length > 1) {
-              seen[num].forEach(({ y, x }) => addConflict(z, y, x));
-          }
+          if (seen[num].length > 1) seen[num].forEach(({ y, x }) => addConflict(z, y, x));
       }
   }
 
@@ -231,9 +209,7 @@ function check3SSC(grid, n = 3) {
           }
       }
       for (const num in seen) {
-          if (seen[num].length > 1) {
-              seen[num].forEach(({ z, x }) => addConflict(z, y, x));
-          }
+          if (seen[num].length > 1) seen[num].forEach(({ z, x }) => addConflict(z, y, x));
       }
   }
 
@@ -247,8 +223,23 @@ function check3SSC(grid, n = 3) {
           }
       }
       for (const num in seen) {
-          if (seen[num].length > 1) {
-              seen[num].forEach(({ z, y }) => addConflict(z, y, x));
+          if (seen[num].length > 1) seen[num].forEach(({ z, y }) => addConflict(z, y, x));
+      }
+  }
+
+  if (variant === '3d-anti-knight') {
+      for (let z = 0; z < n; z++) {
+          for (let y = 0; y < n; y++) {
+              for (let x = 0; x < n; x++) {
+                  const num = grid[z][y][x];
+                  for (let [dz, dy, dx] of knight3DMoves) {
+                      let nz = z + dz, ny = y + dy, nx = x + dx;
+                      if (nz >= 0 && nz < n && ny >= 0 && ny < n && nx >= 0 && nx < n && grid[nz][ny][nx] === num) {
+                          addConflict(z, y, x);
+                          addConflict(nz, ny, nx);
+                      }
+                  }
+              }
           }
       }
   }
@@ -256,18 +247,11 @@ function check3SSC(grid, n = 3) {
   if (conflicts.size > 0) {
       return {
           valid: false,
-          message: "Some constraints are violated — conflicting cells highlighted.",
-          conflicts: Array.from(conflicts).map(c => {
-              const [z, y, x] = c.split(',').map(Number);
-              return [z, y, x];
-          })
+          message: "Constraints violated — conflicting cells highlighted.",
+          conflicts: Array.from(conflicts).map(c => c.split(',').map(Number))
       };
   }
-  return {
-      valid: true,
-      message: "Puzzle solved correctly! 🎉",
-      conflicts: []
-  };
+  return { valid: true, message: "Puzzle solved correctly! 🎉", conflicts: [] };
 }
 
 function emptyGrid() {
@@ -322,7 +306,8 @@ let stats = {
 function savePreferences() {
   localStorage.setItem('cubiku_prefs', JSON.stringify({
     theme: currentTheme,
-    sticky: stickyKeysEnabled
+    sticky: stickyKeysEnabled,
+    variant: currentVariant
   }));
 }
 
@@ -333,6 +318,7 @@ function loadPreferences() {
       const prefs = JSON.parse(savedPrefs);
       currentTheme = prefs.theme || "cyan";
       stickyKeysEnabled = !!prefs.sticky;
+      currentVariant = prefs.variant || "standard";
       
       document.body.setAttribute('data-theme', currentTheme);
       const themeSelect = document.getElementById('theme-select');
@@ -340,6 +326,9 @@ function loadPreferences() {
       
       const stickyToggle = document.getElementById('toggle-sticky-keys');
       if (stickyToggle) stickyToggle.checked = stickyKeysEnabled;
+      
+      const variantSelect = document.getElementById('variant-select');
+      if (variantSelect) variantSelect.value = currentVariant;
     } catch(e) {}
   }
 }
@@ -428,6 +417,7 @@ function saveGame() {
     solvedGrid,
     clues: Array.from(clueSet),
     difficulty: currentDifficulty,
+    variant: currentVariant,
     timer: timerSeconds
   };
   localStorage.setItem('cubiku_save', JSON.stringify(saveData));
@@ -449,19 +439,19 @@ function computeSolutionGrid() {
     }
   }
   const solved = JSON.parse(JSON.stringify(grid));
-  solveGridHelper(solved, 3);
+  solveGridHelper(solved, 3, currentVariant);
   return solved;
 }
 
-function solveGridHelper(grid, n = 3) {
+function solveGridHelper(grid, n = 3, variant = currentVariant) {
   for (let z = 0; z < n; z++) {
     for (let y = 0; y < n; y++) {
       for (let x = 0; x < n; x++) {
         if (grid[z][y][x] === 0) {
           for (let num = 1; num <= n * n; num++) {
-            if (isValid(grid, x, y, z, num, n)) {
+            if (isValid(grid, x, y, z, num, n, variant)) {
               grid[z][y][x] = num;
-              if (solveGridHelper(grid, n)) return true;
+              if (solveGridHelper(grid, n, variant)) return true;
               grid[z][y][x] = 0;
             }
           }
@@ -493,6 +483,7 @@ function loadGame() {
     solvedGrid = data.solvedGrid || computeSolutionGrid();
     clueSet = new Set(data.clues);
     currentDifficulty = data.difficulty;
+    currentVariant = data.variant || 'standard';
     timerSeconds = data.timer;
     undoStack = [];
     isGameComplete = false; 
@@ -502,6 +493,10 @@ function loadGame() {
     
     const diffSelect = document.getElementById('difficulty-select');
     if (diffSelect) diffSelect.value = currentDifficulty;
+
+    const varSelect = document.getElementById('variant-select');
+    if (varSelect) varSelect.value = currentVariant;
+
     updateStatsUI(); 
     
     renderState();
@@ -596,8 +591,11 @@ function endTutorial() {
     
     setTimeout(() => {
        currentDifficulty = 'easy';
+       currentVariant = 'standard';
        const diffSelect = document.getElementById('difficulty-select');
        if (diffSelect) diffSelect.value = 'easy';
+       const varSelect = document.getElementById('variant-select');
+       if (varSelect) varSelect.value = 'standard';
        updateStatsUI();
        newGame();
     }, 15000); 
@@ -736,7 +734,6 @@ function updateNumberHighlights() {
 }
 
 function updateKeyboardUI() {
-  // VITAL FIX: Let CSS know exactly when Pencil Mode is active so it can toggle target visibility 
   document.body.classList.toggle('pencil-mode-active', pencilMode);
 
   document.querySelectorAll('.key-btn').forEach(b => {
@@ -847,7 +844,7 @@ function undoLastAction() {
       action.cells.forEach(({z: az, r: ar, c: ac}) => {
           drafts[az][ar][ac].add(action.digit);
       });
-      undoLastAction(); // Recursively pop the actual value placement too
+      undoLastAction();
       return; 
   }
 
@@ -889,6 +886,17 @@ function removeDraftFromPeers(z, row, col, digit) {
             }
             if ((i !== z || j !== row) && drafts[i][j][col].has(digit)) {
                 affected.push({z: i, r: j, c: col});
+            }
+        }
+    }
+    
+    if (currentVariant === '3d-anti-knight') {
+        for (let [dz, dy, dx] of knight3DMoves) {
+            let nz = z + dz, ny = row + dy, nx = col + dx;
+            if (nz >= 0 && nz < 3 && ny >= 0 && ny < 3 && nx >= 0 && nx < 3) {
+                if (drafts[nz][ny][nx].has(digit)) {
+                    affected.push({z: nz, r: ny, c: nx});
+                }
             }
         }
     }
@@ -955,7 +963,6 @@ function fillCell(z, row, col, digitStr) {
       return;
   }
 
-  // Handle Pencil Mode Draft Placement
   if (pencilMode) {
       if (state[z][row][col] !== 0) return; 
       
@@ -1075,6 +1082,15 @@ function flashConflicts(z, row, col, value) {
   }
   for (let oz = 0; oz < 3; oz++) {
     if (oz !== z && state[oz][row][col] === value) clashEls.push(getCell(oz, row, col));
+  }
+  
+  if (currentVariant === '3d-anti-knight') {
+      for (let [dz, dy, dx] of knight3DMoves) {
+          let nz = z + dz, ny = row + dy, nx = col + dx;
+          if (nz >= 0 && nz < 3 && ny >= 0 && ny < 3 && nx >= 0 && nx < 3 && state[nz][ny][nx] === value) {
+              clashEls.push(getCell(nz, ny, nx));
+          }
+      }
   }
 
   clashEls.forEach(el => {
@@ -1293,7 +1309,7 @@ async function newGame() {
   await new Promise(resolve => setTimeout(resolve, 50));
 
   try {
-    const clues = generateGame(currentDifficulty);
+    const clues = generateGame(currentDifficulty, currentVariant);
 
     state = emptyGrid();
     drafts = emptyDrafts();
@@ -1312,7 +1328,8 @@ async function newGame() {
     updateDepletion(); 
     startTimer();
     saveGame(); 
-    showMessage('New puzzle loaded. Good luck!', 'info');
+    let variantMsg = currentVariant !== 'standard' ? ` [${currentVariant.replace('-', ' ').toUpperCase()}]` : '';
+    showMessage(`New puzzle loaded${variantMsg}. Good luck!`, 'info');
   } catch (err) {
     showMessage(`Failed to load puzzle: ${err.message}`, 'error');
   } finally {
@@ -1320,7 +1337,7 @@ async function newGame() {
   }
 }
 
-function loadGameFromSeed(seedStr, difficultyStr) {
+function loadGameFromSeed(seedStr, difficultyStr, variantStr) {
     setLoading(true);
     state = emptyGrid();
     drafts = emptyDrafts();
@@ -1336,6 +1353,7 @@ function loadGameFromSeed(seedStr, difficultyStr) {
     updateKeyboardUI();
 
     currentDifficulty = difficultyStr || 'custom';
+    currentVariant = variantStr || 'standard';
     
     let index = 0;
     for (let z = 0; z < 3; z++) {
@@ -1355,6 +1373,10 @@ function loadGameFromSeed(seedStr, difficultyStr) {
     solvedGrid = computeSolutionGrid();
     const diffSelect = document.getElementById('difficulty-select');
     if (diffSelect) diffSelect.value = currentDifficulty;
+
+    const varSelect = document.getElementById('variant-select');
+    if (varSelect) varSelect.value = currentVariant;
+
     updateStatsUI();
     
     renderState();
@@ -1376,7 +1398,7 @@ async function checkSolution() {
   await new Promise(resolve => setTimeout(resolve, 50));
 
   try {
-    const data = check3SSC(state);
+    const data = check3SSC(state, 3, currentVariant);
 
     if (data.valid) {
       isGameComplete = true; 
@@ -1507,6 +1529,15 @@ function init() {
     diffSelect.addEventListener('change', (e) => {
       currentDifficulty = e.target.value;
       updateStatsUI();
+      savePreferences();
+    });
+  }
+
+  const varSelect = document.getElementById('variant-select');
+  if (varSelect) {
+    varSelect.addEventListener('change', (e) => {
+      currentVariant = e.target.value;
+      savePreferences();
     });
   }
 
@@ -1569,9 +1600,10 @@ function init() {
   const urlParams = new URLSearchParams(window.location.search);
   const boardSeed = urlParams.get('b');
   const difficultySeed = urlParams.get('d');
+  const variantSeed = urlParams.get('v');
 
   if (boardSeed && boardSeed.length === 27 && /^\d+$/.test(boardSeed)) {
-      loadGameFromSeed(boardSeed, difficultySeed);
+      loadGameFromSeed(boardSeed, difficultySeed, variantSeed);
       window.history.replaceState({}, document.title, window.location.pathname); 
   } else if (!loadGame()) {
       newGame();
