@@ -513,6 +513,7 @@ function updateTutorialUI() {
     for(let y=0; y<3; y++) {
       for(let x=0; x<3; x++) {
         const el = getCell(z, y, x);
+        if (!el) continue;
         let inPlane = false;
         
         if (tutorialStep === 1 && z === target.z) inPlane = true;
@@ -777,6 +778,10 @@ function renderState() {
     }
   }
   updateNumberHighlights();
+  
+  if (tutorialMode) {
+    updateTutorialUI();
+  }
 }
 
 function setLoading(on) {
