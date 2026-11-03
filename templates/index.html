@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cubiku — 3D Sudoku Puzzle Game</title>
+  <meta name="description" content="A minimalist, offline-capable 3D Sudoku puzzle game built by Trevor Murengu Mulindi." />
+  <meta name="author" content="Trevor Murengu Mulindi" />
+  
+  <meta property="og:title" content="Cubiku — 3D Sudoku Puzzle Game" />
+  <meta property="og:description" content="A minimalist, offline-capable 3D Sudoku puzzle game built by Trevor Murengu Mulindi." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://cubiku.onrender.com/static/icon-512.png" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Cubiku — 3D Sudoku Puzzle Game" />
+  <meta name="twitter:description" content="A minimalist, offline-capable 3D Sudoku puzzle game built by Trevor Murengu Mulindi." />
+  <meta name="twitter:image" content="https://cubiku.onrender.com/static/icon-512.png" />
+
+  <meta name="theme-color" content="#121212" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/static/style.css?v=55" />
+  <link rel="manifest" href="/static/manifest.json" />
+  
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="/static/icon-512.png" />
+  <link rel="icon" type="image/png" href="/static/icon-512.png" />
+</head>
+<body data-theme="cyan">
+  <div class="page-wrapper">
+
+    <header>
+      <h1>Cubiku</h1>
+      <p class="description">3-dimensional Sudoku</p>
+    </header>
+
+    <div class="top-action-bar">
+      <div class="top-left-group">
+        <div class="timer-bar" id="timer-bar">
+          <span id="timer-display">00:00</span>
+        </div>
+        <button id="btn-zen" class="btn-icon" aria-label="Toggle Zen Mode" title="Zen Mode — hide timer">
+          <svg id="icon-eye-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <svg id="icon-eye-closed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="display:none">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="center-action">
+        <button id="btn-new-game" class="btn btn-primary">New Game</button>
+      </div>
+
+      <div class="controls">
+        <button id="btn-restart" class="btn-icon" aria-label="Restart Puzzle" title="Restart Puzzle">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <polyline points="3 3 3 8 8 8"></polyline>
+          </svg>
+        </button>
+        <button id="btn-menu" class="btn-icon" aria-label="Menu" title="Menu">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+
+        <div id="settings-panel" class="settings-panel" style="display: none;">
+          <div class="setting-item action-item" id="btn-settings-tutorial">
+            <span>Tutorial</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color: var(--accent);">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="10 8 16 12 10 16 10 8"></polygon>
+            </svg>
+          </div>
+          <div class="setting-item action-item" id="btn-settings-reset-stats">
+            <span>Reset Stats</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color: var(--error-color);">
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </div>
+          
+          <div class="setting-divider"></div>
+          
+          <div class="setting-item">
+            <span>Difficulty</span>
+            <div class="select-wrapper">
+              <select id="difficulty-select">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="setting-item">
+            <span>Accent</span>
+            <div class="select-wrapper">
+              <select id="theme-select">
+                <option value="cyan" selected>Cyan</option>
+                <option value="lavender">Lavender</option>
+                <option value="rose">Rose</option>
+                <option value="gold">Gold</option>
+                <option value="silver">Silver</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="setting-item">
+            <span>Sticky Keys</span>
+            <label class="switch">
+              <input type="checkbox" id="toggle-sticky-keys">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="message-bar" class="message-bar hidden"></div>
+
+    <div class="slices-container" id="slices-container">
+      <div class="slice-wrapper">
+        <p class="slice-label">z = 0</p>
+        <div class="grid" id="grid-z0"></div>
+      </div>
+      <div class="slice-wrapper">
+        <p class="slice-label">z = 1</p>
+        <div class="grid" id="grid-z1"></div>
+      </div>
+      <div class="slice-wrapper">
+        <p class="slice-label">z = 2</p>
+        <div class="grid" id="grid-z2"></div>
+      </div>
+    </div>
+
+    <div id="onscreen-keyboard" class="keyboard-container">
+      <button class="key-btn" data-val="1">1</button>
+      <button class="key-btn" data-val="2">2</button>
+      <button class="key-btn" data-val="3">3</button>
+      <button class="key-btn" data-val="4">4</button>
+      <button class="key-btn" data-val="5">5</button>
+      <button class="key-btn" data-val="6">6</button>
+      
+      <button class="key-btn" data-val="7">7</button>
+      <button class="key-btn" data-val="8">8</button>
+      <button class="key-btn" data-val="9">9</button>
+      <button class="key-btn" data-val="erase" title="Erase" aria-label="Erase">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+          <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+          <line x1="18" y1="9" x2="12" y2="15"></line>
+          <line x1="12" y1="9" x2="18" y2="15"></line>
+        </svg>
+      </button>
+      <button class="key-btn" data-val="undo" title="Undo" aria-label="Undo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+          <path d="M3 7v6h6"></path>
+          <path d="M3 13a9 9 0 0 1 15-6.7L21 10"></path>
+        </svg>
+      </button>
+      <button class="key-btn" id="btn-pencil" data-val="pencil" title="Toggle Pencil Mode" aria-label="Pencil Mode">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+          <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="stats-container">
+      <div class="stat-box">
+        <span class="stat-label">Wins</span>
+        <span id="stat-wins" class="stat-value">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">Best Time</span>
+        <span id="stat-best" class="stat-value">--:--</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">Avg Time</span>
+        <span id="stat-avg" class="stat-value">--:--</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">Last Time</span>
+        <span id="stat-last" class="stat-value">--:--</span>
+      </div>
+    </div>
+
+    <footer>
+      <p style="font-size: 0.9em; opacity: 0.8;">&copy; 2026 Murengu Mulindi</p>
+    </footer>
+
+  </div>
+
+  <div id="rules-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Welcome to Cubiku!</h2>
+        <button id="btn-close-rules" class="btn-icon" aria-label="Close rules">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <p style="margin-bottom: 1.5rem; color: var(--text-muted);">
+          Instead of a flat 9x9 grid, you are solving a 3x3x3 cube that has been sliced into three flat boards. The rules of Sudoku apply, but across three dimensions.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; margin-top: 1rem;">
+          <button id="btn-start-tutorial" class="btn btn-primary" style="width: 100%; max-width: 250px;">Play Quick Tutorial (1 Min)</button>
+          <button id="btn-skip-tutorial" class="btn" style="width: 100%; max-width: 250px; background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--grid-line);">Skip to Puzzle</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .catch((err) => console.log('SW setup failed:', err));
+      });
+    }
+  </script>
+  
+  <script src="/static/game.js?v=55"></script>
+</body>
+</html>
