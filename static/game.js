@@ -226,7 +226,7 @@ let state        = emptyGrid();
 let drafts       = emptyDrafts();
 let initialGrid  = emptyGrid(); 
 let solvedGrid   = null;
-let clueSet      = new Set();        
+let clueSet      = new Set();         
 let selected     = null;            
 let undoStack    = [];
 
@@ -510,19 +510,19 @@ function updateTutorialUI() {
   });
   
   for(let z=0; z<3; z++) {
-    for(let r=0; r<3; r++) {
-      for(let c=0; c<3; c++) {
-        const el = getCell(z,r,c);
+    for(let y=0; y<3; y++) {
+      for(let x=0; x<3; x++) {
+        const el = getCell(z, y, x);
         let inPlane = false;
         
         if (tutorialStep === 1 && z === target.z) inPlane = true;
-        if (tutorialStep === 2 && r === target.r) inPlane = true;
-        if (tutorialStep === 3 && c === target.c) inPlane = true;
+        if (tutorialStep === 2 && y === target.r) inPlane = true;
+        if (tutorialStep === 3 && x === target.c) inPlane = true;
         
         if (!inPlane) {
           el.classList.add('tutorial-dim');
         }
-        if (z === target.z && r === target.r && c === target.c) {
+        if (z === target.z && y === target.r && x === target.c) {
           el.classList.add('tutorial-target');
         }
       }
@@ -713,7 +713,7 @@ function buildGrids() {
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
         const cell = document.createElement('div');
-        cell.id          = cellId(z, row, col);
+        cell.id         = cellId(z, row, col);
         cell.className   = 'cell';
         cell.dataset.z   = z;
         cell.dataset.row = row;
