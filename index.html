@@ -9,12 +9,12 @@
   <meta property="og:title" content="Cubiku — 3D Sudoku Puzzle Game" />
   <meta property="og:description" content="A minimalist, offline-capable 3D Sudoku puzzle game built by Trevor Murengu Mulindi." />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://cubiku.onrender.com/static/icon-512.png" />
+  <meta property="og:image" content="https://xfpqc.github.io/Cubiku/static/icon-512.png" />
 
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="Cubiku — 3D Sudoku Puzzle Game" />
   <meta name="twitter:description" content="A minimalist, offline-capable 3D Sudoku puzzle game built by Trevor Murengu Mulindi." />
-  <meta name="twitter:image" content="https://cubiku.onrender.com/static/icon-512.png" />
+  <meta name="twitter:image" content="https://xfpqc.github.io/Cubiku/static/icon-512.png" />
 
   <meta name="theme-color" content="#121212" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -23,13 +23,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="/static/style.css?v=55" />
-  <link rel="manifest" href="/static/manifest.json" />
+  <link rel="stylesheet" href="./static/style.css?v=56" />
+  <link rel="manifest" href="./static/manifest.json" />
   
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="apple-touch-icon" href="/static/icon-512.png" />
-  <link rel="icon" type="image/png" href="/static/icon-512.png" />
+  <link rel="apple-touch-icon" href="./static/icon-512.png" />
+  <link rel="icon" type="image/png" href="./static/icon-512.png" />
 </head>
 <body data-theme="cyan">
   <div class="page-wrapper">
@@ -223,12 +223,12 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.register('./sw.js')
           .catch((err) => console.log('SW setup failed:', err));
       });
     }
   </script>
   
-  <script src="/static/game.js?v=55"></script>
+  <script src="./static/game.js?v=56"></script>
 </body>
 </html>
