@@ -759,6 +759,16 @@ function renderState() {
 
         const mainValSpan = el.querySelector('.main-value');
         
+        // --- NUCLEAR RESET FOR CANDIDATES ---
+        // Force-hide and strip visibility on all candidate nodes before evaluating state
+        for (let i = 1; i <= 9; i++) {
+            const cand = el.querySelector(`.cand-${i}`);
+            if (cand) {
+                cand.style.display = 'none';
+                cand.classList.remove('visible');
+            }
+        }
+
         if (val > 0) {
             el.classList.remove('draft-mode');
             if (mainValSpan) mainValSpan.textContent = val;
@@ -766,16 +776,11 @@ function renderState() {
             if (mainValSpan) mainValSpan.textContent = '';
             if (cellDrafts && cellDrafts.size > 0) {
                 el.classList.add('draft-mode');
-                for (let i = 1; i <= 9; i++) {
-                    const cand = el.querySelector(`.cand-${i}`);
+                for (const digit of cellDrafts) {
+                    const cand = el.querySelector(`.cand-${digit}`);
                     if (cand) {
-                        if (cellDrafts.has(i)) {
-                            cand.classList.add('visible');
-                            cand.style.display = 'block';
-                        } else {
-                            cand.classList.remove('visible');
-                            cand.style.display = 'none';
-                        }
+                        cand.style.display = 'block';
+                        cand.classList.add('visible');
                     }
                 }
             } else {
