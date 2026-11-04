@@ -551,33 +551,30 @@ h1 {
 }
 
 .cell.draft-mode {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  align-items: center;
-  justify-items: center;
-  font-size: clamp(0.35rem, 1.5vw, 0.5rem);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  font-size: clamp(0.4rem, 1.6vw, 0.55rem);
   font-weight: 600;
   color: var(--accent);
-  opacity: 0.9;
+  opacity: 1; 
 }
 
 .cell .candidate {
-  display: none; 
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
+  display: none;
   color: inherit; 
 }
 
 .cell.draft-mode .candidate {
-  display: flex; 
-  visibility: hidden;
+  display: none; 
+  width: 32%;
+  text-align: center;
+  line-height: 1.2;
 }
 
 .cell.draft-mode .candidate.visible {
-  visibility: visible;
+  display: block; 
 }
 
 .cell .main-value {
@@ -596,39 +593,24 @@ h1 {
   background: var(--num-hl) !important;
 }
 
-/* Base Active Cell (Solid Circle) */
-.cell.active-cell {
-  background: radial-gradient(
-    circle,
-    var(--accent) 0%,
-    var(--accent) 42%,
-    transparent    43%
-  );
-  color:         var(--accent-text);
-  font-weight: 600;
-  transition:    background 0.05s, color 0.05s, box-shadow 0.05s;
+/* Base Active Cell (Square Highlight) */
+.cell.active-cell { 
+  background-image: none !important; 
+  box-shadow: inset 0 0 0 3px var(--accent) !important; 
+  filter: brightness(1.5); 
+  font-weight: 700; 
 }
 
-.cell.active-cell.constraint-highlight {
-  background: radial-gradient(
-    circle,
-    var(--accent) 0%,
-    var(--accent) 42%,
-    var(--ch-bg)    43%
-  );
+.cell.active-cell.constraint-highlight { 
+  background-image: none !important; 
+  box-shadow: inset 0 0 0 3px var(--accent) !important; 
 }
 
-body.pencil-mode-active .cell.active-cell,
-.cell.draft-mode.active-cell {
-  background: transparent;
-  box-shadow: inset 0 0 0 2px var(--accent);
-  color: var(--accent);
-}
-
-body.pencil-mode-active .cell.active-cell.constraint-highlight,
-.cell.draft-mode.active-cell.constraint-highlight {
-  background: var(--ch-bg);
-  box-shadow: inset 0 0 0 2px var(--accent);
+body.pencil-mode-active .cell.active-cell, 
+.cell.draft-mode.active-cell { 
+  background-image: none !important; 
+  box-shadow: inset 0 0 0 3px var(--accent) !important; 
+  color: var(--accent); 
 }
 
 .cell.flash-conflict {

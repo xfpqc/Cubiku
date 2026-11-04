@@ -768,7 +768,16 @@ function renderState() {
                 el.classList.add('draft-mode');
                 for (let i = 1; i <= 9; i++) {
                     const cand = el.querySelector(`.cand-${i}`);
-                    if (cand) cand.classList.toggle('visible', cellDrafts.has(i));
+                    if (cand) {
+                        // REPLACED VISIBILITY TOGGLE WITH DISPLAY TOGGLE FOR FLEXBOX SUPPORT
+                        if (cellDrafts.has(i)) {
+                            cand.classList.add('visible');
+                            cand.style.display = 'block';
+                        } else {
+                            cand.classList.remove('visible');
+                            cand.style.display = 'none';
+                        }
+                    }
                 }
             } else {
                 el.classList.remove('draft-mode');
