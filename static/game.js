@@ -1275,7 +1275,7 @@ async function newGame() {
     }
 
     renderState();
-    updateDepletion(); 
+    updateDepletion(); // <--- Force re-evaluation of keypad depletion state here
     startTimer();
     saveGame(); 
     showMessage(`New puzzle loaded. Good luck!`, 'info');
