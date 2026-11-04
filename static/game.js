@@ -769,7 +769,6 @@ function renderState() {
                 for (let i = 1; i <= 9; i++) {
                     const cand = el.querySelector(`.cand-${i}`);
                     if (cand) {
-                        // REPLACED VISIBILITY TOGGLE WITH DISPLAY TOGGLE FOR FLEXBOX SUPPORT
                         if (cellDrafts.has(i)) {
                             cand.classList.add('visible');
                             cand.style.display = 'block';
@@ -1245,6 +1244,9 @@ async function newGame() {
   activeNumber = null;
   updateKeyboardUI();
 
+  // Explicitly wipe drafts clean on new game invocation
+  drafts = emptyDrafts();
+
   document.querySelectorAll('.cell').forEach(c => {
     c.classList.remove('tutorial-dim', 'tutorial-target');
   });
@@ -1255,7 +1257,7 @@ async function newGame() {
     const clues = generateGame(currentDifficulty);
 
     state = emptyGrid();
-    drafts = emptyDrafts();
+    drafts = emptyDrafts(); // double safe reset
     initialGrid = emptyGrid();
     clueSet = new Set();
     undoStack = [];
