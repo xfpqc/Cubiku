@@ -445,6 +445,10 @@ function loadGame() {
     
     pencilMode = false;
     activeNumber = null;
+
+    document.querySelectorAll('.key-btn').forEach(btn => {
+      btn.classList.remove('control-disabled');
+    });
     
     const diffSelect = document.getElementById('difficulty-select');
     if (diffSelect) diffSelect.value = currentDifficulty;
@@ -479,6 +483,10 @@ function startTutorial() {
   
   pencilMode = false;
   activeNumber = null;
+
+  document.querySelectorAll('.key-btn').forEach(btn => {
+    btn.classList.remove('control-disabled');
+  });
 
   for(let z=0; z<3; z++) {
     for(let r=0; r<3; r++) {
@@ -1247,6 +1255,11 @@ async function newGame() {
   
   pencilMode = false;
   activeNumber = null;
+  
+  document.querySelectorAll('.key-btn').forEach(btn => {
+    btn.classList.remove('control-disabled');
+  });
+  
   updateKeyboardUI();
 
   // Explicitly wipe drafts clean on new game invocation
@@ -1299,6 +1312,11 @@ function loadGameFromSeed(seedStr, difficultyStr) {
     
     pencilMode = false;
     activeNumber = null;
+
+    document.querySelectorAll('.key-btn').forEach(btn => {
+      btn.classList.remove('control-disabled');
+    });
+
     updateKeyboardUI();
 
     currentDifficulty = difficultyStr || 'custom';
@@ -1439,6 +1457,11 @@ function init() {
           
           pencilMode = false;
           activeNumber = null;
+
+          document.querySelectorAll('.key-btn').forEach(btn => {
+            btn.classList.remove('control-disabled');
+          });
+
           updateKeyboardUI();
 
           timerSeconds = 0;
