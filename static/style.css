@@ -1,5 +1,5 @@
 /* =========================================================
-   Cubiku v56 — Midnight Slate & Customizable Themes
+   Cubiku v57 — Midnight Slate & Paper Light Mode + Themes
    ========================================================= */
 
 *, *::before, *::after {
@@ -13,51 +13,119 @@
 }
 
 :root {
-  --bg:            #121212;
-  --grid-line:     #2A2A2A;
-  --accent-text:   #121212;
-  --user-color:    #B0B0B0;
+  --bg:               #121212;
+  --grid-line:        #2A2A2A;
+  --grid-border:      #444444;
+  --border-hover:     #555555;
+  --accent-text:      #121212;
+  --user-color:       #B0B0B0;
 
-  --text-primary:  #E0E0E0;
-  --text-muted:    #4A4A4A;
+  --text-primary:     #E0E0E0;
+  --text-muted:       #6E6E6E;
 
-  --success-color: #6FCFA3;
-  --error-color:   #E07070;
-  --flash-color:   #FF6F61;
+  --surface-subtle:   rgba(255, 255, 255, 0.04);
+  --surface-hover:    rgba(255, 255, 255, 0.09);
+  --surface-border:   rgba(255, 255, 255, 0.12);
+  --panel-bg:         rgba(22, 22, 22, 0.94);
+  --panel-shadow:     0 16px 40px rgba(0, 0, 0, 0.6);
+  --option-bg:        #1a1a1a;
 
-  --radius:        6px;
+  --success-color:    #6FCFA3;
+  --error-color:      #E07070;
+  --conflict-bg:      rgba(224, 112, 112, 0.10);
+  --flash-color:      #FF6F61;
+
+  --radius:           6px;
 }
 
-/* ── Theme Definitions (Curated 5-Color Palette) ────────── */
+/* ── Light Mode Surface & Semantic Overrides ────────────── */
+
+body[data-mode="light"] {
+  --bg:               #FFFFFF;
+  --grid-line:        #D1D5DB;
+  --grid-border:      #1F2937;
+  --border-hover:     #6B7280;
+  --accent-text:      #FFFFFF;
+  --user-color:       #374151;
+
+  --text-primary:     #111827;
+  --text-muted:       #6B7280;
+
+  --surface-subtle:   rgba(17, 24, 39, 0.04);
+  --surface-hover:    rgba(17, 24, 39, 0.08);
+  --surface-border:   rgba(17, 24, 39, 0.14);
+  --panel-bg:         rgba(255, 255, 255, 0.96);
+  --panel-shadow:     0 16px 40px rgba(17, 24, 39, 0.14);
+  --option-bg:        #FFFFFF;
+
+  --success-color:    #059669;
+  --error-color:      #DC2626;
+  --conflict-bg:      rgba(220, 38, 38, 0.09);
+  --flash-color:      #E11D48;
+}
+
+/* ── Dark Mode Theme Definitions (Curated 5-Color Palette) ─ */
 
 body[data-theme="cyan"] {
   --accent:        #A8DADC;
-  --ch-bg:         rgba(168, 218, 220, 0.03);
-  --num-hl:        rgba(168, 218, 220, 0.15);
+  --ch-bg:         rgba(168, 218, 220, 0.04);
+  --num-hl:        rgba(168, 218, 220, 0.16);
 }
 
 body[data-theme="lavender"] {
   --accent:        #D7BDE2;
-  --ch-bg:         rgba(215, 189, 226, 0.03);
-  --num-hl:        rgba(215, 189, 226, 0.15);
+  --ch-bg:         rgba(215, 189, 226, 0.04);
+  --num-hl:        rgba(215, 189, 226, 0.16);
 }
 
 body[data-theme="rose"] {
   --accent:        #F5B7B1;
-  --ch-bg:         rgba(245, 183, 177, 0.03);
-  --num-hl:        rgba(245, 183, 177, 0.15);
+  --ch-bg:         rgba(245, 183, 177, 0.04);
+  --num-hl:        rgba(245, 183, 177, 0.16);
 }
 
 body[data-theme="gold"] {
   --accent:        #E4C59E;
-  --ch-bg:         rgba(228, 197, 158, 0.03);
-  --num-hl:        rgba(228, 197, 158, 0.15);
+  --ch-bg:         rgba(228, 197, 158, 0.04);
+  --num-hl:        rgba(228, 197, 158, 0.16);
 }
 
 body[data-theme="silver"] {
   --accent:        #9CA3AF;
-  --ch-bg:         rgba(156, 163, 175, 0.04);
-  --num-hl:        rgba(156, 163, 175, 0.15);
+  --ch-bg:         rgba(156, 163, 175, 0.05);
+  --num-hl:        rgba(156, 163, 175, 0.16);
+}
+
+/* ── Light Mode Theme Definitions (High-Contrast Ink Pairs) ─ */
+
+body[data-mode="light"][data-theme="cyan"] {
+  --accent:        #0E7490;
+  --ch-bg:         rgba(14, 116, 144, 0.07);
+  --num-hl:        rgba(14, 116, 144, 0.18);
+}
+
+body[data-mode="light"][data-theme="lavender"] {
+  --accent:        #6D28D9;
+  --ch-bg:         rgba(109, 40, 217, 0.06);
+  --num-hl:        rgba(109, 40, 217, 0.16);
+}
+
+body[data-mode="light"][data-theme="rose"] {
+  --accent:        #BE123C;
+  --ch-bg:         rgba(190, 18, 60, 0.06);
+  --num-hl:        rgba(190, 18, 60, 0.16);
+}
+
+body[data-mode="light"][data-theme="gold"] {
+  --accent:        #B45309;
+  --ch-bg:         rgba(180, 83, 9, 0.07);
+  --num-hl:        rgba(180, 83, 9, 0.18);
+}
+
+body[data-mode="light"][data-theme="silver"] {
+  --accent:        #1F2937;
+  --ch-bg:         rgba(31, 41, 55, 0.06);
+  --num-hl:        rgba(31, 41, 55, 0.15);
 }
 
 :root {
@@ -73,6 +141,7 @@ html, body {
   touch-action: manipulation;
   -webkit-font-smoothing: antialiased;
   position:    relative;
+  transition:  background-color 0.2s ease, color 0.2s ease;
 }
 
 .page-wrapper {
@@ -237,7 +306,7 @@ h1 {
   border:          none;
   border-radius:   100px;
   cursor:          pointer;
-  transition:      opacity 0.15s, transform 0.1s;
+  transition:      opacity 0.15s, transform 0.1s, background-color 0.2s;
   touch-action:    manipulation;
   white-space:     nowrap;
 }
@@ -249,6 +318,15 @@ h1 {
   color:      var(--accent-text);
 }
 .btn-primary:hover { opacity: 0.88; }
+
+.btn-secondary {
+  background: var(--surface-subtle);
+  color:      var(--text-primary);
+  border:     1px solid var(--grid-line);
+}
+.btn-secondary:hover {
+  background: var(--surface-hover);
+}
 
 .btn-icon {
   width:         40px;
@@ -268,7 +346,7 @@ h1 {
 }
 
 .btn-icon:hover {
-  border-color: #555;
+  border-color: var(--border-hover);
   color:        var(--text-primary);
 }
 
@@ -283,32 +361,32 @@ h1 {
   top: calc(100% + 10px);
   right: 0;
   z-index: 200;
-  background: rgba(22, 22, 22, 0.92);
+  background: var(--panel-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--surface-border);
   padding: 0.5rem 0;
   border-radius: 14px;
   display: flex;
   flex-direction: column;
-  width: 220px;
-  max-height: 65vh;
+  width: 225px;
+  max-height: 70vh;
   overflow-y: auto;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--panel-shadow);
 }
 
 .settings-panel::-webkit-scrollbar { 
   width: 4px; 
 }
 .settings-panel::-webkit-scrollbar-thumb { 
-  background: rgba(255, 255, 255, 0.2); 
+  background: var(--surface-border); 
   border-radius: 4px; 
 }
 
 @media (max-width: 599px) {
   .settings-panel {
     right: -10px;
-    width: 230px;
+    width: 235px;
   }
 }
 
@@ -319,7 +397,7 @@ h1 {
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--text-primary);
-  padding: 0.65rem 1.25rem;
+  padding: 0.62rem 1.25rem;
   transition: background 0.15s;
 }
 
@@ -328,12 +406,12 @@ h1 {
 }
 
 .setting-item.action-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-subtle);
 }
 
 .setting-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--surface-border);
   margin: 0.2rem 0;
 }
 
@@ -347,8 +425,8 @@ h1 {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--surface-subtle);
+  border: 1px solid var(--surface-border);
   color: var(--accent);
   font-family: inherit;
   font-weight: 600;
@@ -366,13 +444,12 @@ h1 {
 }
 
 .select-wrapper select:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
 }
 
 .select-wrapper select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
 }
 
 .select-wrapper::after {
@@ -391,7 +468,7 @@ h1 {
 }
 
 .select-wrapper select option {
-  background: #1a1a1a;
+  background: var(--option-bg);
   color: var(--text-primary);
   text-align: center;
   text-transform: capitalize;
@@ -431,9 +508,13 @@ h1 {
   width: 14px;
   left: 3px;
   bottom: 3px;
-  background-color: var(--text-primary);
+  background-color: var(--bg);
   transition: transform 0.2s ease, background-color 0.2s ease;
   border-radius: 50%;
+}
+
+body[data-mode="dark"] .slider::before {
+  background-color: var(--text-primary);
 }
 
 .switch input:checked + .slider {
@@ -494,8 +575,8 @@ h1 {
 
 .slice-label {
   font-size:    clamp(0.6rem, 1.9vw, 0.78rem);
-  font-weight:  300;
-  color:         var(--text-muted);
+  font-weight:  400;
+  color:        var(--text-muted);
   letter-spacing: 0.5px;
 }
 
@@ -505,12 +586,12 @@ h1 {
   grid-template-rows:    repeat(3, 1fr);
   gap:        2px;
   background: var(--grid-line);
-  border:        3px solid #444;
+  border:        3px solid var(--grid-border);
   border-radius: 6px;
   padding:    0;
   width:      100%;
   aspect-ratio: 1;
-  overflow:    hidden;
+  overflow:   hidden;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -528,7 +609,7 @@ h1 {
   font-weight:   400;
   color:         var(--user-color);
   cursor:        pointer;
-  transition:    background 0.1s, color 0.6s;
+  transition:    background-color 0.1s, color 0.3s;
   touch-action:  manipulation;
   
   display: flex;
@@ -601,6 +682,11 @@ h1 {
   font-weight: 700; 
 }
 
+body[data-mode="light"] .cell.active-cell {
+  filter: none;
+  background-color: var(--num-hl);
+}
+
 .cell.active-cell.constraint-highlight { 
   background-image: none !important; 
   box-shadow: inset 0 0 0 3px var(--accent) !important; 
@@ -619,7 +705,7 @@ body.pencil-mode-active .cell.active-cell,
 }
 
 .cell.conflict {
-  background: rgba(224, 112, 112, 0.10);
+  background: var(--conflict-bg);
   color:         var(--error-color);
 }
 
@@ -669,7 +755,7 @@ body.pencil-mode-active .cell.active-cell,
   justify-content: center;
   align-items: center;
   width: 100%;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-subtle);
   border: 1px solid var(--grid-line);
   color: var(--text-primary);
   font-family: inherit;
@@ -687,8 +773,8 @@ body.pencil-mode-active .cell.active-cell,
 }
 
 .key-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #555;
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
 }
 
 .key-btn:active {
@@ -696,13 +782,13 @@ body.pencil-mode-active .cell.active-cell,
 }
 
 #btn-pencil {
-    pointer-events: auto !important;
-    cursor: pointer !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
 }
 
 .key-btn.active, #btn-pencil.active {
   background-color: var(--accent);
-  color: var(--bg); 
+  color: var(--accent-text); 
   border-color: var(--accent);
 }
 
@@ -764,9 +850,9 @@ body.pencil-mode-active .cell.active-cell,
 
 footer {
   color:         var(--text-muted);
-  font-size:       clamp(0.68rem, 2vw, 0.78rem);
+  font-size:     clamp(0.68rem, 2vw, 0.78rem);
   font-weight:     300;
-  text-align:      center;
+  text-align:     center;
   letter-spacing: 0.3px;
 }
 
@@ -859,7 +945,7 @@ footer {
 }
 
 .rules-list li {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface-subtle);
   padding: 0.75rem 1rem;
   border-radius: var(--radius);
   border-left: 3px solid var(--accent);

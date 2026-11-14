@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Cubiku </title>
+  <title>Cubiku</title>
   <meta name="description" content="A minimalist, offline-capable 3D Sudoku puzzle." />
   <meta name="author" content="Trevor Murengu Mulindi" />
   
@@ -16,14 +16,14 @@
   <meta name="twitter:description" content="A minimalist, offline-capable 3D Sudoku puzzle." />
   <meta name="twitter:image" content="https://xfpqc.github.io/Cubiku/static/og-image.png" />
 
-  <meta name="theme-color" content="#121212" />
+  <meta name="theme-color" id="meta-theme-color" content="#121212" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="./static/style.css?v=66" />
+  <link rel="stylesheet" href="./static/style.css?v=67" />
   <link rel="manifest" href="./static/manifest.json" />
   
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -31,7 +31,7 @@
   <link rel="apple-touch-icon" href="./static/icon-512.png" />
   <link rel="icon" type="image/png" href="./static/icon-512.png" />
 </head>
-<body data-theme="cyan">
+<body data-theme="cyan" data-mode="dark">
   <div class="page-wrapper">
 
     <header>
@@ -116,6 +116,14 @@
                 <option value="silver">Silver</option>
               </select>
             </div>
+          </div>
+
+          <div class="setting-item">
+            <span>Light Mode</span>
+            <label class="switch">
+              <input type="checkbox" id="toggle-light-mode">
+              <span class="slider"></span>
+            </label>
           </div>
           
           <div class="setting-item">
@@ -214,13 +222,37 @@
         </p>
         <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; margin-top: 1rem;">
           <button id="btn-start-tutorial" class="btn btn-primary" style="width: 100%; max-width: 250px;">Play Quick Tutorial (1 Min)</button>
-          <button id="btn-skip-tutorial" class="btn" style="width: 100%; max-width: 250px; background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--grid-line);">Skip to Puzzle</button>
+          <button id="btn-skip-tutorial" class="btn btn-secondary" style="width: 100%; max-width: 250px;">Skip to Puzzle</button>
         </div>
       </div>
     </div>
   </div>
 
   <script>
+    (function () {
+      const STORAGE_KEY = 'cubiku-color-mode';
+      const toggle = document.getElementById('toggle-light-mode');
+      const metaTheme = document.getElementById('meta-theme-color');
+
+      function applyColorMode(mode) {
+        const isLight = mode === 'light';
+        document.body.setAttribute('data-mode', isLight ? 'light' : 'dark');
+        if (toggle) toggle.checked = isLight;
+        if (metaTheme) metaTheme.setAttribute('content', isLight ? '#FFFFFF' : '#121212');
+      }
+
+      const savedMode = localStorage.getItem(STORAGE_KEY) || 'dark';
+      applyColorMode(savedMode);
+
+      if (toggle) {
+        toggle.addEventListener('change', function () {
+          const nextMode = toggle.checked ? 'light' : 'dark';
+          localStorage.setItem(STORAGE_KEY, nextMode);
+          applyColorMode(nextMode);
+        });
+      }
+    })();
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
@@ -229,6 +261,6 @@
     }
   </script>
   
-  <script src="./static/game.js?v=66"></script>
+  <script src="./static/game.js?v=67"></script>
 </body>
 </html>
