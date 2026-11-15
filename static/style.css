@@ -1,5 +1,5 @@
 /* =========================================================
-   Cubiku v69 — Midnight Slate & Paper Light Mode + Themes
+   Cubiku v70 — Midnight Slate & Paper Light Mode + Themes
    ========================================================= */
 
 *, *::before, *::after {
@@ -70,31 +70,31 @@ body[data-mode="light"] {
 
 body[data-theme="cyan"] {
   --accent:        #A8DADC;
-  --ch-bg:         rgba(168, 218, 220, 0.04);
+  --ch-bg:         rgba(168, 218, 220, 0.02);
   --num-hl:        rgba(168, 218, 220, 0.16);
 }
 
 body[data-theme="lavender"] {
   --accent:        #D7BDE2;
-  --ch-bg:         rgba(215, 189, 226, 0.04);
+  --ch-bg:         rgba(215, 189, 226, 0.02);
   --num-hl:        rgba(215, 189, 226, 0.16);
 }
 
 body[data-theme="rose"] {
   --accent:        #F5ADC5;
-  --ch-bg:         rgba(245, 173, 197, 0.04);
+  --ch-bg:         rgba(245, 173, 197, 0.02);
   --num-hl:        rgba(245, 173, 197, 0.16);
 }
 
 body[data-theme="gold"] {
-  --accent:        #F2CC7A;
-  --ch-bg:         rgba(242, 204, 122, 0.04);
-  --num-hl:        rgba(242, 204, 122, 0.16);
+  --accent:        #E4C59E;
+  --ch-bg:         rgba(228, 197, 158, 0.02);
+  --num-hl:        rgba(228, 197, 158, 0.16);
 }
 
 body[data-theme="silver"] {
   --accent:        #9CA3AF;
-  --ch-bg:         rgba(156, 163, 175, 0.05);
+  --ch-bg:         rgba(156, 163, 175, 0.025);
   --num-hl:        rgba(156, 163, 175, 0.16);
 }
 
@@ -677,37 +677,18 @@ body[data-mode="dark"] .slider::before {
 }
 
 /* Base Active Cell (Square Highlight) */
-.cell.active-cell { 
-  background-image: none !important; 
-  box-shadow: inset 0 0 0 3px var(--accent) !important; 
-  filter: brightness(1.5); 
-  font-weight: 700; 
-}
-
-body[data-mode="light"] .cell.active-cell {
-  filter: none;
+.cell.active-cell,
+.cell.active-cell.constraint-highlight,
+body.pencil-mode-active .cell.active-cell,
+.cell.draft-mode.active-cell {
   background: linear-gradient(var(--num-hl), var(--num-hl)), var(--bg) !important;
+  box-shadow: inset 0 0 0 2px var(--accent) !important;
+  font-weight: 700;
 }
 
-.cell.active-cell.constraint-highlight { 
-  background-image: none !important; 
-  box-shadow: inset 0 0 0 3px var(--accent) !important; 
-}
-
-body[data-mode="light"] .cell.active-cell.constraint-highlight {
-  background: linear-gradient(var(--num-hl), var(--num-hl)), var(--bg) !important;
-}
-
-body.pencil-mode-active .cell.active-cell, 
-.cell.draft-mode.active-cell { 
-  background-image: none !important; 
-  box-shadow: inset 0 0 0 3px var(--accent) !important; 
-  color: var(--accent); 
-}
-
-body[data-mode="light"].pencil-mode-active .cell.active-cell,
-body[data-mode="light"] .cell.draft-mode.active-cell {
-  background: linear-gradient(var(--num-hl), var(--num-hl)), var(--bg) !important;
+body.pencil-mode-active .cell.active-cell,
+.cell.draft-mode.active-cell {
+  color: var(--accent);
 }
 
 .cell.flash-conflict {
