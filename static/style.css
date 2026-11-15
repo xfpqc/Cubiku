@@ -70,31 +70,31 @@ body[data-mode="light"] {
 
 body[data-theme="cyan"] {
   --accent:        #A8DADC;
-  --ch-bg:         rgba(168, 218, 220, 0.04);
+  --ch-bg:         rgba(168, 218, 220, 0.08);
   --num-hl:        rgba(168, 218, 220, 0.16);
 }
 
 body[data-theme="lavender"] {
   --accent:        #D7BDE2;
-  --ch-bg:         rgba(215, 189, 226, 0.04);
+  --ch-bg:         rgba(215, 189, 226, 0.08);
   --num-hl:        rgba(215, 189, 226, 0.16);
 }
 
 body[data-theme="rose"] {
   --accent:        #F5ADC5;
-  --ch-bg:         rgba(245, 173, 197, 0.04);
+  --ch-bg:         rgba(245, 173, 197, 0.08);
   --num-hl:        rgba(245, 173, 197, 0.16);
 }
 
 body[data-theme="gold"] {
   --accent:        #E4C59E;
-  --ch-bg:         rgba(228, 197, 158, 0.04);
+  --ch-bg:         rgba(228, 197, 158, 0.08);
   --num-hl:        rgba(228, 197, 158, 0.16);
 }
 
 body[data-theme="silver"] {
   --accent:        #9CA3AF;
-  --ch-bg:         rgba(156, 163, 175, 0.05);
+  --ch-bg:         rgba(156, 163, 175, 0.09);
   --num-hl:        rgba(156, 163, 175, 0.16);
 }
 
