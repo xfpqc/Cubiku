@@ -681,7 +681,7 @@ body[data-mode="dark"] .slider::before {
 .cell.active-cell.constraint-highlight,
 body.pencil-mode-active .cell.active-cell,
 .cell.draft-mode.active-cell {
-  background: linear-gradient(var(--num-hl), var(--num-hl)), var(--bg) !important;
+  background: linear-gradient(var(--ch-bg), var(--ch-bg)), var(--bg) !important;
   box-shadow: inset 0 0 0 2px var(--accent) !important;
   font-weight: 700;
 }
