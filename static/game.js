@@ -253,11 +253,53 @@ const TUT_HOLES = [
   { z: 2, r: 0, c: 2, val: 6, msg: "Rule 3: Vertical columns cross the cube! Check the highlighted right-most column across all slices. Place the final number." }
 ];
 
-let stats = {
-  easy:   { wins: 0, bestTime: null, totalTime: 0, lastTime: null },
-  medium: { wins: 0, bestTime: null, totalTime: 0, lastTime: null },
-  hard:   { wins: 0, bestTime: null, totalTime: 0, lastTime: null }
-};
+const STATS_STORAGE_KEY = 'cubiku_stats_v2';
+const STATS_BACKUP_KEY  = 'cubiku_stats_backup';
+const DIFFICULTY_KEYS   = ['easy', 'medium', 'hard'];
+
+function createDefaultStats() {
+  return {
+    easy:   { wins: 0, bestTime: null, totalTime: 0, lastTime: null },
+    medium: { wins: 0, bestTime: null, totalTime: 0, lastTime: null },
+    hard:   { wins: 0, bestTime: null, totalTime: 0, lastTime: null }
+  };
+}
+
+let stats = createDefaultStats();
+
+function normalizeStats(raw) {
+  const normalized = createDefaultStats();
+  if (!raw || typeof raw !== 'object') return normalized;
+
+  DIFFICULTY_KEYS.forEach(diff => {
+    const src = raw[diff];
+    if (src && typeof src === 'object') {
+      const wins = Number(src.wins);
+      const totalTime = Number(src.totalTime);
+      normalized[diff] = {
+        wins: Number.isFinite(wins) && wins >= 0 ? Math.floor(wins) : 0,
+        bestTime: Number.isFinite(src.bestTime) && src.bestTime >= 0 ? src.bestTime : null,
+        totalTime: Number.isFinite(totalTime) && totalTime >= 0 ? totalTime : 0,
+        lastTime: Number.isFinite(src.lastTime) && src.lastTime >= 0 ? src.lastTime : null
+      };
+    }
+  });
+
+  return normalized;
+}
+
+function hasAnyRecordedStats(obj) {
+  return DIFFICULTY_KEYS.some(diff => {
+    const entry = obj && obj[diff];
+    return entry && (entry.wins > 0 || entry.bestTime !== null || entry.lastTime !== null);
+  });
+}
+
+function syncThemeLabels() {
+  if (typeof window.updateThemeLabels === 'function') {
+    window.updateThemeLabels(document.body.getAttribute('data-mode') || 'dark');
+  }
+}
 
 function savePreferences() {
   localStorage.setItem('cubiku_prefs', JSON.stringify({
@@ -288,37 +330,61 @@ function loadPreferences() {
 
     } catch(e) {}
   }
+  syncThemeLabels();
 }
 
 function saveStats() {
-  localStorage.setItem('cubiku_stats_v2', JSON.stringify(stats));
+  const serialized = JSON.stringify(stats);
+  localStorage.setItem(STATS_STORAGE_KEY, serialized);
+  localStorage.setItem(STATS_BACKUP_KEY, serialized);
   updateStatsUI();
 }
 
 function loadStats() {
-  const savedStatsV2 = localStorage.getItem('cubiku_stats_v2');
-  if (savedStatsV2) {
+  let loaded = false;
+
+  const candidateKeys = [STATS_STORAGE_KEY, STATS_BACKUP_KEY];
+  for (const key of candidateKeys) {
+    const rawStr = localStorage.getItem(key);
+    if (!rawStr) continue;
     try {
-      stats = JSON.parse(savedStatsV2);
-    } catch(e) {}
-  } else {
+      const parsed = JSON.parse(rawStr);
+      const normalized = normalizeStats(parsed);
+      if (hasAnyRecordedStats(normalized) || key === STATS_STORAGE_KEY) {
+        stats = normalized;
+        loaded = true;
+        break;
+      }
+    } catch (e) {}
+  }
+
+  if (!loaded) {
     const savedStatsV1 = localStorage.getItem('cubiku_stats');
     if (savedStatsV1) {
       try {
         const parsed = JSON.parse(savedStatsV1);
-        if (parsed.bestTimes) {
-          ['easy', 'medium', 'hard'].forEach(diff => {
-            if (parsed.bestTimes[diff] !== null) {
-              stats[diff].bestTime = parsed.bestTimes[diff];
-              stats[diff].lastTime = parsed.bestTimes[diff];
+        if (parsed && parsed.bestTimes) {
+          DIFFICULTY_KEYS.forEach(diff => {
+            const bt = parsed.bestTimes[diff];
+            if (Number.isFinite(bt) && bt >= 0) {
+              stats[diff].bestTime = bt;
+              stats[diff].lastTime = bt;
               stats[diff].wins = 1;
-              stats[diff].totalTime = parsed.bestTimes[diff];
+              stats[diff].totalTime = bt;
             }
           });
+          loaded = true;
         }
-      } catch(e) {}
+      } catch (e) {}
     }
   }
+
+  if (loaded && hasAnyRecordedStats(stats)) {
+    const serialized = JSON.stringify(stats);
+    localStorage.setItem(STATS_STORAGE_KEY, serialized);
+    localStorage.setItem(STATS_BACKUP_KEY, serialized);
+  }
+
   updateStatsUI();
 }
 
@@ -586,7 +652,7 @@ function updateTimerDisplay() {
   const display = document.getElementById('timer-display');
   if (!display) return;
   const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
-  const s = String(timerSeconds % 60).padStart(2, '0');
+  const s = String(Math.floor(timerSeconds % 60)).padStart(2, '0');
   display.textContent = `${m}:${s}`;
 }
 
@@ -722,7 +788,7 @@ function buildGrids() {
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
         const cell = document.createElement('div');
-        cell.id         = cellId(z, row, col);
+        cell.id          = cellId(z, row, col);
         cell.className   = 'cell';
         cell.dataset.z   = z;
         cell.dataset.row = row;
@@ -1434,6 +1500,12 @@ function init() {
   buildGrids();
   loadPreferences();
   loadStats();
+
+  window.addEventListener('storage', (e) => {
+    if (e.key === STATS_STORAGE_KEY || e.key === STATS_BACKUP_KEY) {
+      loadStats();
+    }
+  });
   
   const btnNew = document.getElementById('btn-new-game');
   if (btnNew) btnNew.addEventListener('click', newGame);

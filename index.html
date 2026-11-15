@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="./static/style.css?v=68" />
+  <link rel="stylesheet" href="./static/style.css?v=69" />
   <link rel="manifest" href="./static/manifest.json" />
   
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -234,11 +234,46 @@
       const toggle = document.getElementById('toggle-light-mode');
       const metaTheme = document.getElementById('meta-theme-color');
 
+      const THEME_LABELS = {
+        dark: {
+          cyan: 'Cyan',
+          lavender: 'Lavender',
+          rose: 'Rose',
+          gold: 'Gold',
+          silver: 'Silver'
+        },
+        light: {
+          cyan: 'Teal',
+          lavender: 'Violet',
+          rose: 'Crimson',
+          gold: 'Amber',
+          silver: 'Slate'
+        }
+      };
+
+      function updateThemeLabels(mode) {
+        const activeMode = mode || document.body.getAttribute('data-mode') || 'dark';
+        const labels = THEME_LABELS[activeMode] || THEME_LABELS.dark;
+        const themeSelect = document.getElementById('theme-select');
+        if (!themeSelect) return;
+
+        Array.from(themeSelect.options).forEach(opt => {
+          if (labels[opt.value]) {
+            opt.textContent = labels[opt.value];
+          }
+        });
+      }
+
+      window.THEME_LABELS = THEME_LABELS;
+      window.updateThemeLabels = updateThemeLabels;
+
       function applyColorMode(mode) {
         const isLight = mode === 'light';
-        document.body.setAttribute('data-mode', isLight ? 'light' : 'dark');
+        const resolvedMode = isLight ? 'light' : 'dark';
+        document.body.setAttribute('data-mode', resolvedMode);
         if (toggle) toggle.checked = isLight;
         if (metaTheme) metaTheme.setAttribute('content', isLight ? '#FFFFFF' : '#121212');
+        updateThemeLabels(resolvedMode);
       }
 
       const savedMode = localStorage.getItem(STORAGE_KEY) || 'dark';
@@ -261,6 +296,6 @@
     }
   </script>
   
-  <script src="./static/game.js?v=68"></script>
+  <script src="./static/game.js?v=69"></script>
 </body>
 </html>

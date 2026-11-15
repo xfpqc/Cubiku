@@ -1,5 +1,5 @@
 /* =========================================================
-   Cubiku v57 — Midnight Slate & Paper Light Mode + Themes
+   Cubiku v69 — Midnight Slate & Paper Light Mode + Themes
    ========================================================= */
 
 *, *::before, *::after {
@@ -81,15 +81,15 @@ body[data-theme="lavender"] {
 }
 
 body[data-theme="rose"] {
-  --accent:        #F5B7B1;
-  --ch-bg:         rgba(245, 183, 177, 0.04);
-  --num-hl:        rgba(245, 183, 177, 0.16);
+  --accent:        #F5ADC5;
+  --ch-bg:         rgba(245, 173, 197, 0.04);
+  --num-hl:        rgba(245, 173, 197, 0.16);
 }
 
 body[data-theme="gold"] {
-  --accent:        #E4C59E;
-  --ch-bg:         rgba(228, 197, 158, 0.04);
-  --num-hl:        rgba(228, 197, 158, 0.16);
+  --accent:        #F2CC7A;
+  --ch-bg:         rgba(242, 204, 122, 0.04);
+  --num-hl:        rgba(242, 204, 122, 0.16);
 }
 
 body[data-theme="silver"] {
@@ -102,32 +102,32 @@ body[data-theme="silver"] {
 
 body[data-mode="light"][data-theme="cyan"] {
   --accent:        #0E7490;
-  --ch-bg:         rgba(14, 116, 144, 0.07);
-  --num-hl:        rgba(14, 116, 144, 0.18);
+  --ch-bg:         rgba(14, 116, 144, 0.12);
+  --num-hl:        rgba(14, 116, 144, 0.24);
 }
 
 body[data-mode="light"][data-theme="lavender"] {
   --accent:        #6D28D9;
-  --ch-bg:         rgba(109, 40, 217, 0.06);
-  --num-hl:        rgba(109, 40, 217, 0.16);
+  --ch-bg:         rgba(109, 40, 217, 0.11);
+  --num-hl:        rgba(109, 40, 217, 0.22);
 }
 
 body[data-mode="light"][data-theme="rose"] {
   --accent:        #BE123C;
-  --ch-bg:         rgba(190, 18, 60, 0.06);
-  --num-hl:        rgba(190, 18, 60, 0.16);
+  --ch-bg:         rgba(190, 18, 60, 0.11);
+  --num-hl:        rgba(190, 18, 60, 0.22);
 }
 
 body[data-mode="light"][data-theme="gold"] {
   --accent:        #B45309;
-  --ch-bg:         rgba(180, 83, 9, 0.07);
-  --num-hl:        rgba(180, 83, 9, 0.18);
+  --ch-bg:         rgba(180, 83, 9, 0.12);
+  --num-hl:        rgba(180, 83, 9, 0.24);
 }
 
 body[data-mode="light"][data-theme="silver"] {
   --accent:        #1F2937;
-  --ch-bg:         rgba(31, 41, 55, 0.06);
-  --num-hl:        rgba(31, 41, 55, 0.15);
+  --ch-bg:         rgba(31, 41, 55, 0.11);
+  --num-hl:        rgba(31, 41, 55, 0.21);
 }
 
 :root {
@@ -184,8 +184,8 @@ html, body {
 
 @media (max-width: 599px) {
   .page-wrapper {
-    min-height:      100vh;
-    min-height:      100dvh;
+    min-height:     100vh;
+    min-height:     100dvh;
     justify-content: flex-start;
     padding:         3.6rem 0.5rem 1.5rem;
     gap:             0;
@@ -567,12 +567,12 @@ body[data-mode="dark"] .slider::before {
 }
 
 .slice-wrapper {
-  flex:           1 1 0;
-  min-width:      0;
-  display:        flex;
-  flex-direction: column;
-  align-items:    center;
-  gap:            0.3rem;
+  flex:            1 1 0;
+  min-width:       0;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  gap:             0.3rem;
 }
 
 .slice-label {
@@ -583,36 +583,36 @@ body[data-mode="dark"] .slider::before {
 }
 
 .grid {
-  display:       grid;
+  display:        grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows:    repeat(3, 1fr);
-  gap:           2px;
-  background:    var(--grid-inner);
-  border:        3px solid var(--grid-border);
-  border-radius: 6px;
-  padding:       0;
-  width:         100%;
-  aspect-ratio:  1;
-  overflow:      hidden;
-  user-select:   none;
+  gap:            2px;
+  background:     var(--grid-inner);
+  border:         3px solid var(--grid-border);
+  border-radius:  6px;
+  padding:        0;
+  width:          100%;
+  aspect-ratio:   1;
+  overflow:       hidden;
+  user-select:    none;
   -webkit-user-select: none;
 }
 
 .cell {
-  width:         100%;
-  height:        100%;
-  aspect-ratio:  1;
-  background:    var(--bg);
-  border:        none;
-  outline:       none;
-  box-shadow:    none;
-  font-family:   inherit;
-  font-size:     clamp(0.78rem, 3.4vw, 1.35rem);
-  font-weight:   400;
-  color:         var(--user-color);
-  cursor:        pointer;
-  transition:    background-color 0.1s, color 0.3s;
-  touch-action:  manipulation;
+  width:          100%;
+  height:         100%;
+  aspect-ratio:   1;
+  background:     var(--bg);
+  border:         none;
+  outline:        none;
+  box-shadow:     none;
+  font-family:    inherit;
+  font-size:      clamp(0.78rem, 3.4vw, 1.35rem);
+  font-weight:    400;
+  color:          var(--user-color);
+  cursor:         pointer;
+  transition:     background-color 0.1s, color 0.3s;
+  touch-action:   manipulation;
   
   display: flex;
   align-items: center;
@@ -628,9 +628,9 @@ body[data-mode="dark"] .slider::before {
 .cell:focus { outline: none; }
 
 .cell.clue {
-  color:         var(--clue-color);
-  font-weight:   700;
-  cursor:        default;
+  color:          var(--clue-color);
+  font-weight:    700;
+  cursor:         default;
 }
 
 .cell.draft-mode {
@@ -686,12 +686,16 @@ body[data-mode="dark"] .slider::before {
 
 body[data-mode="light"] .cell.active-cell {
   filter: none;
-  background: linear-gradient(var(--num-hl), var(--num-hl)), var(--bg);
+  background: linear-gradient(var(--num-hl), var(--num-hl)), var(--bg) !important;
 }
 
 .cell.active-cell.constraint-highlight { 
   background-image: none !important; 
   box-shadow: inset 0 0 0 3px var(--accent) !important; 
+}
+
+body[data-mode="light"] .cell.active-cell.constraint-highlight {
+  background: linear-gradient(var(--num-hl), var(--num-hl)), var(--bg) !important;
 }
 
 body.pencil-mode-active .cell.active-cell, 
@@ -701,14 +705,19 @@ body.pencil-mode-active .cell.active-cell,
   color: var(--accent); 
 }
 
+body[data-mode="light"].pencil-mode-active .cell.active-cell,
+body[data-mode="light"] .cell.draft-mode.active-cell {
+  background: linear-gradient(var(--num-hl), var(--num-hl)), var(--bg) !important;
+}
+
 .cell.flash-conflict {
-  color:         var(--flash-color) !important;
-  transition:    color 0s;
+  color:          var(--flash-color) !important;
+  transition:     color 0s;
 }
 
 .cell.conflict {
-  background:    linear-gradient(var(--conflict-bg), var(--conflict-bg)), var(--bg);
-  color:         var(--error-color);
+  background:     linear-gradient(var(--conflict-bg), var(--conflict-bg)), var(--bg);
+  color:          var(--error-color);
 }
 
 .cell.clue.conflict { color: var(--error-color); }
