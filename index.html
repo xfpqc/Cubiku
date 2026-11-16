@@ -16,14 +16,14 @@
   <meta name="twitter:description" content="A minimalist, offline-capable 3D Sudoku puzzle." />
   <meta name="twitter:image" content="https://xfpqc.github.io/Cubiku/static/og-image.png" />
 
-  <meta name="theme-color" id="meta-theme-color" content="#121212" />
+  <meta name="theme-color" id="meta-theme-color" content="#FFFFFF" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="./static/style.css?v=73" />
+  <link rel="stylesheet" href="./static/style.css?v=74" />
   <link rel="manifest" href="./static/manifest.json" />
   
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -31,7 +31,7 @@
   <link rel="apple-touch-icon" href="./static/icon-512.png" />
   <link rel="icon" type="image/png" href="./static/icon-512.png" />
 </head>
-<body data-theme="cyan" data-mode="dark">
+<body data-theme="cyan" data-mode="light">
   <div class="page-wrapper">
 
     <header>
@@ -119,9 +119,9 @@
           </div>
 
           <div class="setting-item">
-            <span>Light Mode</span>
+            <span>Dark Mode</span>
             <label class="switch">
-              <input type="checkbox" id="toggle-light-mode">
+              <input type="checkbox" id="toggle-dark-mode">
               <span class="slider"></span>
             </label>
           </div>
@@ -229,65 +229,6 @@
   </div>
 
   <script>
-    (function () {
-      const STORAGE_KEY = 'cubiku-color-mode';
-      const toggle = document.getElementById('toggle-light-mode');
-      const metaTheme = document.getElementById('meta-theme-color');
-
-      const THEME_LABELS = {
-        dark: {
-          cyan: 'Cyan',
-          lavender: 'Lavender',
-          rose: 'Rose',
-          gold: 'Gold',
-          silver: 'Silver'
-        },
-        light: {
-          cyan: 'Teal',
-          lavender: 'Violet',
-          rose: 'Crimson',
-          gold: 'Amber',
-          silver: 'Slate'
-        }
-      };
-
-      function updateThemeLabels(mode) {
-        const activeMode = mode || document.body.getAttribute('data-mode') || 'dark';
-        const labels = THEME_LABELS[activeMode] || THEME_LABELS.dark;
-        const themeSelect = document.getElementById('theme-select');
-        if (!themeSelect) return;
-
-        Array.from(themeSelect.options).forEach(opt => {
-          if (labels[opt.value]) {
-            opt.textContent = labels[opt.value];
-          }
-        });
-      }
-
-      window.THEME_LABELS = THEME_LABELS;
-      window.updateThemeLabels = updateThemeLabels;
-
-      function applyColorMode(mode) {
-        const isLight = mode === 'light';
-        const resolvedMode = isLight ? 'light' : 'dark';
-        document.body.setAttribute('data-mode', resolvedMode);
-        if (toggle) toggle.checked = isLight;
-        if (metaTheme) metaTheme.setAttribute('content', isLight ? '#FFFFFF' : '#121212');
-        updateThemeLabels(resolvedMode);
-      }
-
-      const savedMode = localStorage.getItem(STORAGE_KEY) || 'dark';
-      applyColorMode(savedMode);
-
-      if (toggle) {
-        toggle.addEventListener('change', function () {
-          const nextMode = toggle.checked ? 'light' : 'dark';
-          localStorage.setItem(STORAGE_KEY, nextMode);
-          applyColorMode(nextMode);
-        });
-      }
-    })();
-
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
@@ -296,6 +237,6 @@
     }
   </script>
   
-  <script src="./static/game.js?v=73"></script>
+  <script src="./static/game.js?v=74"></script>
 </body>
 </html>

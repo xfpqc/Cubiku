@@ -1,10 +1,10 @@
-const CACHE_NAME = 'cubiku-v73';
+const CACHE_NAME = 'cubiku-v74';
 
 const ASSETS = [
   './',
   './index.html',
-  './static/style.css?v=73',
-  './static/game.js?v=73',
+  './static/style.css?v=74',
+  './static/game.js?v=74',
   './static/icon-512.png',
   './static/manifest.json'
 ];
@@ -34,7 +34,6 @@ self.addEventListener('fetch', (event) => {
   // 1. Strict Cache-First for Navigation (HTML page)
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      // Explicitly match the cached index.html or root to prevent URL-mismatch misses
       caches.match('./index.html').then((cachedHtml) => {
         return cachedHtml || caches.match('./').then((cachedRoot) => {
           return cachedRoot || fetch(event.request);
@@ -48,8 +47,6 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Return instantly. DO NOT fetch in the background. 
-        // This prevents Render's loading screen from poisoning the cache.
         return cachedResponse;
       }
       

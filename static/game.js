@@ -1,5 +1,5 @@
 /**
- * Cubiku Base Game — 3D Sudoku frontend (100% Client-Side Engine)
+ * Cubiku Base Game v74 — 3D Sudoku frontend (Multi-Cell Selection + Default Light Mode)
  */
 
 function shuffleArray(array) {
@@ -222,18 +222,22 @@ function emptyDrafts() {
   );
 }
 
-let state        = emptyGrid();  
-let drafts       = emptyDrafts();
-let initialGrid  = emptyGrid(); 
-let solvedGrid   = null;
-let clueSet      = new Set();         
-let selected     = null;            
-let undoStack    = [];
+let state           = emptyGrid();  
+let drafts          = emptyDrafts();
+let initialGrid     = emptyGrid(); 
+let solvedGrid      = null;
+let clueSet         = new Set();         
+let selected        = null;
+let selectedCells   = new Set();
+let isDragSelecting = false;
+let dragStartKey    = null;
+let undoStack       = [];
 
 let activeNumber = null;
 let inspectedNumber = null;
 let currentDifficulty = "medium"; 
 let currentTheme = "cyan";
+let currentColorMode = "light";
 let stickyKeysEnabled = false; 
 let pencilMode = false;
 let isGameComplete = false; 
@@ -295,15 +299,39 @@ function hasAnyRecordedStats(obj) {
   });
 }
 
+const THEME_LABELS = {
+  dark:  { cyan: 'Cyan', lavender: 'Lavender', rose: 'Rose',    gold: 'Gold',  silver: 'Silver' },
+  light: { cyan: 'Teal', lavender: 'Violet',   rose: 'Crimson', gold: 'Amber', silver: 'Slate' }
+};
+
 function syncThemeLabels() {
-  if (typeof window.updateThemeLabels === 'function') {
-    window.updateThemeLabels(document.body.getAttribute('data-mode') || 'dark');
+  const themeSelect = document.getElementById('theme-select');
+  if (!themeSelect) return;
+  const labels = THEME_LABELS[currentColorMode] || THEME_LABELS.dark;
+  Array.from(themeSelect.options).forEach(opt => {
+    if (labels[opt.value]) opt.textContent = labels[opt.value];
+  });
+}
+
+function applyColorMode(mode) {
+  currentColorMode = mode === 'dark' ? 'dark' : 'light';
+  document.body.setAttribute('data-mode', currentColorMode);
+
+  const metaTheme = document.getElementById('meta-theme-color') || document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) {
+    metaTheme.setAttribute('content', currentColorMode === 'light' ? '#FFFFFF' : '#121212');
   }
+
+  const darkToggle = document.getElementById('toggle-dark-mode');
+  if (darkToggle) darkToggle.checked = currentColorMode === 'dark';
+
+  syncThemeLabels();
 }
 
 function savePreferences() {
   localStorage.setItem('cubiku_prefs', JSON.stringify({
     theme: currentTheme,
+    mode: currentColorMode,
     sticky: stickyKeysEnabled,
     difficulty: currentDifficulty
   }));
@@ -315,6 +343,7 @@ function loadPreferences() {
     try {
       const prefs = JSON.parse(savedPrefs);
       currentTheme = prefs.theme || "cyan";
+      currentColorMode = prefs.mode || "light";
       stickyKeysEnabled = !!prefs.sticky;
       currentDifficulty = prefs.difficulty || "medium";
       
@@ -327,10 +356,9 @@ function loadPreferences() {
       
       const diffSelect = document.getElementById('difficulty-select');
       if (diffSelect) diffSelect.value = currentDifficulty;
-
     } catch(e) {}
   }
-  syncThemeLabels();
+  applyColorMode(currentColorMode);
 }
 
 function saveStats() {
@@ -697,11 +725,22 @@ function hideMessage() {
 }
 
 function clearHighlights() {
-  document.querySelectorAll('.cell.active-cell, .cell.constraint-highlight')
-    .forEach(el => el.classList.remove('active-cell', 'constraint-highlight'));
+  document.querySelectorAll('.cell.active-cell, .cell.multi-selected, .cell.constraint-highlight')
+    .forEach(el => el.classList.remove('active-cell', 'multi-selected', 'constraint-highlight'));
 }
 
 function applyCrosshair(selZ, selRow, selCol) {
+  if (selectedCells.size > 1) {
+    const activeEl = getCell(selZ, selRow, selCol);
+    if (activeEl) activeEl.classList.add('active-cell');
+    for (const key of selectedCells) {
+      const [mz, mr, mc] = key.split(',').map(Number);
+      const el = getCell(mz, mr, mc);
+      if (el) el.classList.add('multi-selected');
+    }
+    return;
+  }
+
   for (let z = 0; z < 3; z++) {
     for (let r = 0; r < 3; r++) {
       for (let c = 0; c < 3; c++) {
@@ -718,22 +757,87 @@ function applyCrosshair(selZ, selRow, selCol) {
   }
 }
 
+function renderSelection() {
+  clearHighlights();
+  if (!selected) return;
+  applyCrosshair(selected.z, selected.row, selected.col);
+  updateNumberHighlights();
+}
+
 function selectCell(z, row, col) {
   if (tutorialMode) {
     const target = TUT_HOLES[tutorialStep - 1];
     if (z !== target.z || row !== target.r || col !== target.c) return;
   }
 
-  clearHighlights();
   inspectedNumber = null;
-  selected = clueSet.has(`${z},${row},${col}`) ? null : { z, row, col };
-  applyCrosshair(z, row, col);
-  updateNumberHighlights();
+  selectedCells.clear();
+  if (clueSet.has(`${z},${row},${col}`)) {
+    selected = null;
+    clearHighlights();
+    applyCrosshair(z, row, col);
+    updateNumberHighlights();
+  } else {
+    selected = { z, row, col };
+    selectedCells.add(`${z},${row},${col}`);
+    renderSelection();
+  }
+}
+
+function toggleCellSelection(z, row, col) {
+  if (tutorialMode || clueSet.has(`${z},${row},${col}`)) return;
+  inspectedNumber = null;
+  const key = `${z},${row},${col}`;
+
+  if (selectedCells.has(key)) {
+    selectedCells.delete(key);
+    if (selectedCells.size === 0) {
+      selected = null;
+      clearHighlights();
+      updateNumberHighlights();
+      return;
+    }
+    if (selected && selected.z === z && selected.row === row && selected.col === col) {
+      const lastKey = Array.from(selectedCells).pop();
+      const [lz, lr, lc] = lastKey.split(',').map(Number);
+      selected = { z: lz, row: lr, col: lc };
+    }
+  } else {
+    selectedCells.add(key);
+    selected = { z, row, col };
+  }
+  renderSelection();
+}
+
+function selectRangeTo(z, row, col) {
+  if (tutorialMode) return;
+  inspectedNumber = null;
+  if (!selected) {
+    selectCell(z, row, col);
+    return;
+  }
+  const zMin = Math.min(selected.z, z), zMax = Math.max(selected.z, z);
+  const rMin = Math.min(selected.row, row), rMax = Math.max(selected.row, row);
+  const cMin = Math.min(selected.col, col), cMax = Math.max(selected.col, col);
+
+  for (let iz = zMin; iz <= zMax; iz++) {
+    for (let ir = rMin; ir <= rMax; ir++) {
+      for (let ic = cMin; ic <= cMax; ic++) {
+        const key = `${iz},${ir},${ic}`;
+        if (!clueSet.has(key)) selectedCells.add(key);
+      }
+    }
+  }
+  if (!clueSet.has(`${z},${row},${col}`)) {
+    selected = { z, row, col };
+  }
+  renderSelection();
 }
 
 function clearSelection() {
   clearHighlights();
   selected = null;
+  selectedCells.clear();
   inspectedNumber = null;
   updateNumberHighlights();
 }
@@ -833,8 +937,6 @@ function renderState() {
 
         const mainValSpan = el.querySelector('.main-value');
         
-        // --- NUCLEAR RESET FOR CANDIDATES ---
-        // Force-hide and strip visibility on all candidate nodes before evaluating state
         for (let i = 1; i <= 9; i++) {
             const cand = el.querySelector(`.cand-${i}`);
             if (cand) {
@@ -889,6 +991,28 @@ function undoLastAction() {
       return; 
   }
 
+  if (action.type === 'batch') {
+      for (let i = action.items.length - 1; i >= 0; i--) {
+          const item = action.items[i];
+          const el = getCell(item.z, item.row, item.col);
+          if (item.type === 'draft') drafts[item.z][item.row][item.col] = item.before;
+          else if (item.type === 'value') {
+              state[item.z][item.row][item.col] = item.before;
+              if (item.beforeDrafts) drafts[item.z][item.row][item.col] = item.beforeDrafts;
+          } else if (item.type === 'clear') {
+              state[item.z][item.row][item.col] = item.beforeVal;
+              drafts[item.z][item.row][item.col] = item.beforeDrafts;
+          }
+          if (el) el.classList.remove('conflict', 'flash-conflict');
+      }
+      updateDepletion();
+      saveGame();
+      renderState();
+      renderSelection();
+      checkAutoComplete();
+      return;
+  }
+
   const el = getCell(action.z, action.row, action.col);
   if (!el) return;
 
@@ -911,6 +1035,7 @@ function undoLastAction() {
   updateDepletion();
   saveGame();
   renderState();
+  renderSelection();
   checkAutoComplete();
 }
 
@@ -1025,6 +1150,70 @@ function fillCell(z, row, col, digitStr) {
   checkAutoComplete();
 }
 
+function applyToSelection(digitStr) {
+  if (isGameComplete || selectedCells.size === 0) return;
+
+  const targets = Array.from(selectedCells)
+    .map(k => k.split(',').map(Number))
+    .filter(([z, row, col]) => !clueSet.has(`${z},${row},${col}`));
+
+  if (targets.length === 0) return;
+
+  if (targets.length === 1) {
+    const [z, row, col] = targets[0];
+    fillCell(z, row, col, digitStr);
+    return;
+  }
+
+  const batchItems = [];
+
+  if (digitStr === '') {
+    for (const [z, row, col] of targets) {
+      const beforeVal = state[z][row][col];
+      const beforeDrafts = new Set(drafts[z][row][col]);
+      if (beforeVal !== 0 || beforeDrafts.size > 0) {
+        batchItems.push({ type: 'clear', z, row, col, beforeVal, beforeDrafts });
+        state[z][row][col] = 0;
+        drafts[z][row][col].clear();
+      }
+    }
+    if (batchItems.length > 0) {
+      undoStack.push({ type: 'batch', items: batchItems });
+      hideMessage();
+      updateDepletion();
+      saveGame();
+      renderState();
+    }
+    return;
+  }
+
+  if (!pencilMode) {
+    showMessage("Enable Pencil Mode to enter candidates across multiple cells.", "info");
+    return;
+  }
+
+  const digit = Number(digitStr);
+  const emptyTargets = targets.filter(([z, row, col]) => state[z][row][col] === 0);
+  if (emptyTargets.length === 0) return;
+  const allHaveDigit = emptyTargets.every(([z, row, col]) => drafts[z][row][col].has(digit));
+
+  for (const [z, row, col] of emptyTargets) {
+    const beforeDrafts = new Set(drafts[z][row][col]);
+    if (allHaveDigit) {
+      drafts[z][row][col].delete(digit);
+      batchItems.push({ type: 'draft', z, row, col, before: beforeDrafts });
+    } else if (!drafts[z][row][col].has(digit)) {
+      drafts[z][row][col].add(digit);
+      batchItems.push({ type: 'draft', z, row, col, before: beforeDrafts });
+    }
+  }
+  if (batchItems.length > 0) {
+    undoStack.push({ type: 'batch', items: batchItems });
+    saveGame();
+    renderState();
+  }
+}
+
 function updateDepletion() {
   if (tutorialMode) {
     document.querySelectorAll('.key-btn').forEach(btn => {
@@ -1124,6 +1313,7 @@ function flashConflicts(z, row, col, value) {
 }
 
 function onCellFocus(e) {
+  if (isDragSelecting) return;
   const el = e.currentTarget;
   const z = Number(el.dataset.z);
   const row = Number(el.dataset.row);
@@ -1146,20 +1336,22 @@ function onCellPointerDown(e) {
   const z = Number(el.dataset.z);
   const row = Number(el.dataset.row);
   const col = Number(el.dataset.col);
+  const key = `${z},${row},${col}`;
   
   if (inspectedNumber !== null) {
     inspectedNumber = null;
     clearHighlights();
   }
 
-  if (clueSet.has(`${z},${row},${col}`)) {
+  if (clueSet.has(key)) {
     inspectedNumber = String(state[z][row][col]);
-    activeNumber = null; 
+    activeNumber = null;
+    selected = null;
+    selectedCells.clear();
     updateKeyboardUI();
     updateNumberHighlights();
     clearHighlights();
     applyCrosshair(z, row, col);
-    selected = null;
     return;
   }
 
@@ -1185,10 +1377,53 @@ function onCellPointerDown(e) {
     
     updateKeyboardUI();
     updateNumberHighlights();
-  } else {
-    selectCell(z, row, col);
-    el.focus();
+    return;
   }
+
+  if (e.shiftKey && selected) {
+    selectRangeTo(z, row, col);
+    el.focus();
+    return;
+  }
+
+  if (e.ctrlKey || e.metaKey) {
+    toggleCellSelection(z, row, col);
+    el.focus();
+    return;
+  }
+
+  if (!tutorialMode) {
+    isDragSelecting = true;
+    dragStartKey = key;
+  }
+  selectCell(z, row, col);
+  el.focus();
+}
+
+function handleGlobalPointerMove(e) {
+  if (!isDragSelecting || tutorialMode) return;
+  const target = document.elementFromPoint(e.clientX, e.clientY);
+  const cellEl = target ? target.closest('.cell') : null;
+  if (!cellEl) return;
+
+  const z = Number(cellEl.dataset.z);
+  const row = Number(cellEl.dataset.row);
+  const col = Number(cellEl.dataset.col);
+  const key = `${z},${row},${col}`;
+
+  if (clueSet.has(key)) return;
+
+  if (!selectedCells.has(key)) {
+    selectedCells.add(key);
+    selected = { z, row, col };
+    renderSelection();
+  }
+}
+
+function handleGlobalPointerUp() {
+  if (!isDragSelecting) return;
+  isDragSelecting = false;
+  dragStartKey = null;
 }
 
 function onCellKeydown(e) {
@@ -1198,18 +1433,27 @@ function onCellKeydown(e) {
   const col = Number(el.dataset.col);
 
   if (e.key === 'Backspace' || e.key === 'Delete') {
-    if (!clueSet.has(`${z},${row},${col}`)) {
-      e.preventDefault();
+    e.preventDefault();
+    if (selectedCells.size > 0) {
+      applyToSelection('');
+      renderSelection();
+    } else if (!clueSet.has(`${z},${row},${col}`)) {
       fillCell(z, row, col, '');
     }
     return;
   }
 
   if (/^[1-9]$/.test(e.key)) {
-    if (!clueSet.has(`${z},${row},${col}`)) {
-      e.preventDefault();
+    e.preventDefault();
+    if (selectedCells.size > 0) {
+      applyToSelection(e.key);
+      if (!stickyKeysEnabled && !pencilMode && selectedCells.size === 1) {
+        clearSelection();
+      } else {
+        renderSelection();
+      }
+    } else if (!clueSet.has(`${z},${row},${col}`)) {
       fillCell(z, row, col, e.key);
-      
       if (!stickyKeysEnabled && !pencilMode) {
         clearSelection();
       }
@@ -1242,7 +1486,8 @@ function onCellKeydown(e) {
     e.preventDefault();
     const [nz, nr, nc] = moves[e.key];
     getCell(nz, nr, nc)?.focus();
-    selectCell(nz, nr, nc);
+    if (e.shiftKey && selected) selectRangeTo(nz, nr, nc);
+    else selectCell(nz, nr, nc);
   }
 }
 
@@ -1254,7 +1499,6 @@ function handleKeyboardTap(valStr) {
     return;
   }
 
-  clearHighlights();
   inspectedNumber = null;
 
   if (valStr !== 'erase' && valStr !== 'pencil') {
@@ -1262,20 +1506,19 @@ function handleKeyboardTap(valStr) {
     if (btn && btn.classList.contains('depleted')) return;
   }
 
-  if (selected !== null) {
-    const { z, row, col } = selected;
-
+  if (selectedCells.size > 0 && selected !== null) {
     if (valStr === 'pencil') {
         pencilMode = !pencilMode;
         updateKeyboardUI();
-        selectCell(z, row, col); 
+        renderSelection();
         return;
     }
 
+    const wasMulti = selectedCells.size > 1;
     if (valStr === 'erase') {
-      if (!clueSet.has(`${z},${row},${col}`)) fillCell(z, row, col, '');
+      applyToSelection('');
     } else {
-      fillCell(z, row, col, valStr);
+      applyToSelection(valStr);
     }
     
     const btn = document.querySelector(`.key-btn[data-val="${valStr}"]`);
@@ -1285,19 +1528,20 @@ function handleKeyboardTap(valStr) {
         activeNumber = null;
         clearSelection();
     } else if (!stickyKeysEnabled) {
-        if (!pencilMode) {
+        if (!pencilMode && !wasMulti) {
             activeNumber = null;
             clearSelection(); 
         } else {
-            selectCell(z, row, col); 
+            renderSelection(); 
         }
     } else {
-        selectCell(z, row, col); 
+        renderSelection(); 
     }
     
     updateKeyboardUI();
     updateNumberHighlights();
   } else {
+    clearHighlights();
     if (valStr === 'pencil') {
       pencilMode = !pencilMode;
     } else if (activeNumber === valStr) {
@@ -1328,7 +1572,6 @@ async function newGame() {
   
   updateKeyboardUI();
 
-  // Explicitly wipe drafts clean on new game invocation
   drafts = emptyDrafts();
 
   document.querySelectorAll('.cell').forEach(c => {
@@ -1341,7 +1584,7 @@ async function newGame() {
     const clues = generateGame(currentDifficulty);
 
     state = emptyGrid();
-    drafts = emptyDrafts(); // double safe reset
+    drafts = emptyDrafts();
     initialGrid = emptyGrid();
     clueSet = new Set();
     undoStack = [];
@@ -1354,7 +1597,7 @@ async function newGame() {
     }
 
     renderState();
-    updateDepletion(); // <--- Force re-evaluation of keypad depletion state here
+    updateDepletion();
     startTimer();
     saveGame(); 
     showMessage(`New puzzle loaded. Good luck!`, 'info');
@@ -1526,6 +1769,7 @@ function init() {
           undoStack = [];
           drafts = emptyDrafts();
           isGameComplete = false; 
+          clearSelection();
           
           pencilMode = false;
           activeNumber = null;
@@ -1583,6 +1827,14 @@ function init() {
     });
   }
 
+  const toggleDark = document.getElementById('toggle-dark-mode');
+  if (toggleDark) {
+    toggleDark.addEventListener('change', (e) => {
+      applyColorMode(e.target.checked ? 'dark' : 'light');
+      savePreferences();
+    });
+  }
+
   const toggleSticky = document.getElementById('toggle-sticky-keys');
   if (toggleSticky) {
     toggleSticky.addEventListener('change', (e) => {
@@ -1611,6 +1863,10 @@ function init() {
       }
     }
   });
+
+  document.addEventListener('pointermove', handleGlobalPointerMove);
+  document.addEventListener('pointerup', handleGlobalPointerUp);
+  document.addEventListener('pointercancel', handleGlobalPointerUp);
 
   document.addEventListener('pointerdown', (e) => {
     if (!e.target.closest('.slices-container') && 

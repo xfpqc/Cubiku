@@ -1,5 +1,5 @@
 /* =========================================================
-   Cubiku v70 — Midnight Slate & Paper Light Mode + Themes
+   Cubiku v75 — Midnight Slate & Paper Light Mode + Multi-Select
    ========================================================= */
 
 *, *::before, *::after {
@@ -107,15 +107,15 @@ body[data-mode="light"][data-theme="cyan"] {
 }
 
 body[data-mode="light"][data-theme="lavender"] {
-  --accent:        #6D28D9;
-  --ch-bg:         rgba(109, 40, 217, 0.11);
-  --num-hl:        rgba(109, 40, 217, 0.22);
+  --accent:        #7C3AED;
+  --ch-bg:         rgba(124, 58, 237, 0.08);
+  --num-hl:        rgba(124, 58, 237, 0.16);
 }
 
 body[data-mode="light"][data-theme="rose"] {
-  --accent:        #BE123C;
-  --ch-bg:         rgba(190, 18, 60, 0.11);
-  --num-hl:        rgba(190, 18, 60, 0.22);
+  --accent:        #C83256;
+  --ch-bg:         rgba(200, 50, 86, 0.08);
+  --num-hl:        rgba(200, 50, 86, 0.16);
 }
 
 body[data-mode="light"][data-theme="gold"] {
@@ -564,6 +564,7 @@ body[data-mode="dark"] .slider::before {
   max-width:       600px;
   justify-content: center;
   align-items:     flex-start;
+  touch-action:    none;
 }
 
 .slice-wrapper {
@@ -612,7 +613,7 @@ body[data-mode="dark"] .slider::before {
   color:          var(--user-color);
   cursor:         pointer;
   transition:     background-color 0.1s, color 0.3s;
-  touch-action:   manipulation;
+  touch-action:   none;
   
   display: flex;
   align-items: center;
@@ -674,6 +675,14 @@ body[data-mode="dark"] .slider::before {
 
 .cell.number-highlight {
   background: linear-gradient(var(--num-hl), var(--num-hl)), var(--bg) !important;
+}
+
+/* Multi-cell selection highlight */
+.cell.multi-selected,
+body.pencil-mode-active .cell.multi-selected,
+.cell.draft-mode.multi-selected {
+  background: linear-gradient(var(--ch-bg), var(--ch-bg)), var(--bg) !important;
+  box-shadow: inset 0 0 0 2px var(--accent) !important;
 }
 
 /* Base Active Cell (Square Highlight) */
