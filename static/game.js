@@ -1188,7 +1188,7 @@ function applyToSelection(digitStr) {
   }
 
   if (!pencilMode) {
-    showMessage("Enable Pencil Mode to enter candidates across multiple cells.", "info");
+    showMessage("Enable Pencil to enter candidates.", "info");
     return;
   }
 
