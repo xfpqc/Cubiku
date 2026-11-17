@@ -1,5 +1,5 @@
 /**
- * Cubiku Base Game v74 — 3D Sudoku frontend (Multi-Cell Selection + Default Light Mode)
+ * Cubiku Base Game v76 — 3D Sudoku frontend (Multi-Cell Selection + First-Visit Rules Modal)
  */
 
 function shuffleArray(array) {
@@ -1731,7 +1731,33 @@ function repairDOM() {
     });
 }
 
-function init() {
+const WELCOME_SEEN_KEY = 'cubiku_welcome_seen_v1';
+let isFirstVisitModalOpen = false;
+
+function openRulesModal(isFirstVisit = false) {
+  const modal = document.getElementById('rules-modal');
+  if (!modal) return;
+  isFirstVisitModalOpen = isFirstVisit;
+  stopTimer();
+  modal.classList.remove('hidden');
+}
+
+function closeRulesModal() {
+  const modal = document.getElementById('rules-modal');
+  if (!modal || modal.classList.contains('hidden')) return;
+  modal.classList.add('hidden');
+  localStorage.setItem(WELCOME_SEEN_KEY, 'true');
+
+  if (!tutorialMode && !isGameComplete) {
+    if (isFirstVisitModalOpen) {
+      timerSeconds = 0;
+      isFirstVisitModalOpen = false;
+    }
+    startTimer();
+  }
+}
+
+async function init() {
   repairDOM(); 
 
   if (navigator.storage && navigator.storage.persist) {
@@ -1791,12 +1817,41 @@ function init() {
 
   const btnZen = document.getElementById('btn-zen');
   if (btnZen) btnZen.addEventListener('click', toggleZen);
+
+  const btnSettingsRules = document.getElementById('btn-settings-rules');
+  if (btnSettingsRules) {
+      btnSettingsRules.addEventListener('click', () => {
+          document.getElementById('settings-panel').style.display = 'none';
+          openRulesModal(false);
+      });
+  }
   
   const btnSettingsTut = document.getElementById('btn-settings-tutorial');
   if (btnSettingsTut) {
       btnSettingsTut.addEventListener('click', () => {
           document.getElementById('settings-panel').style.display = 'none';
           startTutorial();
+      });
+  }
+
+  const rulesModal = document.getElementById('rules-modal');
+  const btnCloseRules = document.getElementById('btn-close-rules');
+  const btnStartTut = document.getElementById('btn-start-tutorial');
+  const btnSkipTut = document.getElementById('btn-skip-tutorial');
+
+  if (btnCloseRules) btnCloseRules.addEventListener('click', closeRulesModal);
+  if (btnSkipTut) btnSkipTut.addEventListener('click', closeRulesModal);
+  if (btnStartTut) {
+      btnStartTut.addEventListener('click', () => {
+          isFirstVisitModalOpen = false;
+          localStorage.setItem(WELCOME_SEEN_KEY, 'true');
+          if (rulesModal) rulesModal.classList.add('hidden');
+          startTutorial();
+      });
+  }
+  if (rulesModal) {
+      rulesModal.addEventListener('click', (e) => {
+          if (e.target === rulesModal) closeRulesModal();
       });
   }
 
@@ -1844,6 +1899,13 @@ function init() {
   }
 
   document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+          const modal = document.getElementById('rules-modal');
+          if (modal && !modal.classList.contains('hidden')) {
+              closeRulesModal();
+              return;
+          }
+      }
       if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
           e.preventDefault();
           undoLastAction();
@@ -1891,9 +1953,15 @@ function init() {
 
   if (boardSeed && boardSeed.length === 27 && /^\d+$/.test(boardSeed)) {
       loadGameFromSeed(boardSeed, difficultySeed);
-      window.history.replaceState({}, document.title, window.location.pathname); 
+      window.history.replaceState({}, document.title, window.location.pathname);
+      if (!localStorage.getItem(WELCOME_SEEN_KEY) && !localStorage.getItem('cubiku_tutorial_complete')) {
+          openRulesModal(true);
+      }
   } else if (!loadGame()) {
-      newGame();
+      await newGame();
+      if (!localStorage.getItem(WELCOME_SEEN_KEY) && !localStorage.getItem('cubiku_tutorial_complete')) {
+          openRulesModal(true);
+      }
   }
 }
 

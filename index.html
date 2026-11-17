@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="./static/style.css?v=75" />
+  <link rel="stylesheet" href="./static/style.css?v=76" />
   <link rel="manifest" href="./static/manifest.json" />
   
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -77,6 +77,14 @@
         </button>
 
         <div id="settings-panel" class="settings-panel" style="display: none;">
+          <div class="setting-item action-item" id="btn-settings-rules">
+            <span>How to Play</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color: var(--accent);">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+          </div>
           <div class="setting-item action-item" id="btn-settings-tutorial">
             <span>Tutorial</span>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color: var(--accent);">
@@ -210,19 +218,24 @@
 
   </div>
 
-  <div id="rules-modal" class="modal-overlay hidden">
+  <div id="rules-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="rules-modal-title">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Welcome to Cubiku!</h2>
+        <h2 id="rules-modal-title">Welcome to Cubiku!</h2>
         <button id="btn-close-rules" class="btn-icon" aria-label="Close rules">&times;</button>
       </div>
-      <div class="modal-body" style="text-align: center;">
-        <p style="margin-bottom: 1.5rem; color: var(--text-muted);">
-          Instead of a flat 9x9 grid, you are solving a 3x3x3 cube that has been sliced into three flat boards. The rules of Sudoku apply, but across three dimensions.
+      <div class="modal-body">
+        <p style="margin-bottom: 1rem; color: var(--text-muted); text-align: center;">
+          Solve a <strong>3&times;3&times;3 cube</strong> sliced into three flat boards (<code>z = 0, 1, 2</code>). Place digits <strong>1–9</strong> with no repeats in:
         </p>
-        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; margin-top: 1rem;">
-          <button id="btn-start-tutorial" class="btn btn-primary" style="width: 100%; max-width: 250px;">Play Quick Tutorial (1 Min)</button>
-          <button id="btn-skip-tutorial" class="btn btn-secondary" style="width: 100%; max-width: 250px;">Skip to Puzzle</button>
+        <ul class="rules-list" style="margin-bottom: 1.25rem;">
+          <li><strong>Each 3&times;3 Slice:</strong> Every flat board contains <strong>1–9</strong> once.</li>
+          <li><strong>Horizontal Rows:</strong> Every row spanning across all three boards contains <strong>1–9</strong> once.</li>
+          <li><strong>Vertical Columns:</strong> Every column spanning across all three boards contains <strong>1–9</strong> once.</li>
+        </ul>
+        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center;">
+          <button id="btn-start-tutorial" class="btn btn-primary" style="width: 100%; max-width: 260px;">Play Quick Tutorial (1 Min)</button>
+          <button id="btn-skip-tutorial" class="btn btn-secondary" style="width: 100%; max-width: 260px;">Skip to Puzzle</button>
         </div>
       </div>
     </div>
@@ -237,6 +250,6 @@
     }
   </script>
   
-  <script src="./static/game.js?v=75"></script>
+  <script src="./static/game.js?v=76"></script>
 </body>
 </html>
