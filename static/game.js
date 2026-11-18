@@ -1,6 +1,49 @@
 /**
- * Cubiku Base Game v76 — 3D Sudoku frontend (Multi-Cell Selection + First-Visit Rules Modal)
+ * Cubiku Base Game v78 — 3D Sudoku frontend (Base64URL Sharing + Tap-to-Hide Timer + Variant Link)
  */
+
+const B64URL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+
+function encodeCubikuBoard(grid) {
+  let digits = '';
+  for (let z = 0; z < 3; z++) {
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        digits += String(grid[z][r][c] || 0);
+      }
+    }
+  }
+  let n = BigInt(digits);
+  let out = '';
+  for (let i = 0; i < 15; i++) {
+    out = B64URL[Number(n & 63n)] + out;
+    n >>= 6n;
+  }
+  return out;
+}
+
+function decodeCubikuBoard(code) {
+  if (!code || !/^[A-Za-z0-9_-]{15}$/.test(code)) return null;
+  let n = 0n;
+  for (const ch of code) {
+    const idx = B64URL.indexOf(ch);
+    if (idx < 0) return null;
+    n = (n << 6n) | BigInt(idx);
+  }
+  const digits = n.toString().padStart(27, '0');
+  if (digits.length !== 27 || !/^\d{27}$/.test(digits)) return null;
+  return digits;
+}
+
+function inferDifficultyFromDigits(digits) {
+  let clues = 0;
+  for (let i = 0; i < digits.length; i++) {
+    if (digits[i] !== '0') clues++;
+  }
+  if (clues >= 12) return 'easy';
+  if (clues >= 10) return 'medium';
+  return 'hard';
+}
 
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -131,12 +174,10 @@ function generateUniquePuzzle(n = 3, difficulty = 'medium') {
 function generateGame(difficulty = 'medium') {
   let attempts = 0;
   let bestClues = null;
-  let bestSolved = null;
   while (attempts < 15) {
       attempts++;
-      const { grid, clues, solvedGrid: candidateSolved } = generateUniquePuzzle(3, difficulty);
+      const { clues, solvedGrid: candidateSolved } = generateUniquePuzzle(3, difficulty);
       bestClues = clues;
-      bestSolved = candidateSolved;
       solvedGrid = candidateSolved;
       return clues; 
   }
@@ -239,6 +280,7 @@ let currentDifficulty = "medium";
 let currentTheme = "cyan";
 let currentColorMode = "light";
 let stickyKeysEnabled = false; 
+let timerHidden = false;
 let pencilMode = false;
 let isGameComplete = false; 
 
@@ -333,7 +375,8 @@ function savePreferences() {
     theme: currentTheme,
     mode: currentColorMode,
     sticky: stickyKeysEnabled,
-    difficulty: currentDifficulty
+    difficulty: currentDifficulty,
+    timerHidden: timerHidden
   }));
 }
 
@@ -346,6 +389,7 @@ function loadPreferences() {
       currentColorMode = prefs.mode || "light";
       stickyKeysEnabled = !!prefs.sticky;
       currentDifficulty = prefs.difficulty || "medium";
+      timerHidden = !!prefs.timerHidden;
       
       document.body.setAttribute('data-theme', currentTheme);
       const themeSelect = document.getElementById('theme-select');
@@ -359,6 +403,8 @@ function loadPreferences() {
     } catch(e) {}
   }
   applyColorMode(currentColorMode);
+  syncTimerBarMeta();
+  updateTimerDisplay();
 }
 
 function saveStats() {
@@ -570,6 +616,7 @@ function startTutorial() {
   clearSave(); 
   
   state = emptyGrid();
+  initialGrid = emptyGrid();
   drafts = emptyDrafts();
   clueSet = new Set();
   undoStack = [];
@@ -586,6 +633,7 @@ function startTutorial() {
     for(let r=0; r<3; r++) {
       for(let c=0; c<3; c++) {
         state[z][r][c] = TUT_GRID[z][r][c];
+        initialGrid[z][r][c] = TUT_GRID[z][r][c];
         clueSet.add(`${z},${r},${c}`);
       }
     }
@@ -593,6 +641,7 @@ function startTutorial() {
   
   TUT_HOLES.forEach(hole => {
     state[hole.z][hole.r][hole.c] = 0;
+    initialGrid[hole.z][hole.r][hole.c] = 0;
     clueSet.delete(`${hole.z},${hole.r},${hole.c}`);
   });
   
@@ -676,30 +725,81 @@ function stopTimer() {
   }
 }
 
+function syncTimerBarMeta() {
+  const timerBar = document.getElementById('timer-bar');
+  if (!timerBar) return;
+  timerBar.title = timerHidden ? 'Timer hidden — click to show' : 'Click to hide timer';
+  timerBar.setAttribute('aria-pressed', String(timerHidden));
+}
+
 function updateTimerDisplay() {
   const display = document.getElementById('timer-display');
   if (!display) return;
+  if (timerHidden) {
+    display.textContent = '--:--';
+    return;
+  }
   const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
   const s = String(Math.floor(timerSeconds % 60)).padStart(2, '0');
   display.textContent = `${m}:${s}`;
 }
 
-let zenMode = false;
+function toggleTimerVisibility() {
+  timerHidden = !timerHidden;
+  syncTimerBarMeta();
+  updateTimerDisplay();
+  savePreferences();
+}
 
-function toggleZen() {
-  zenMode = !zenMode;
-  const timerBar = document.getElementById('timer-bar');
-  if (timerBar) timerBar.classList.toggle('zen', zenMode);
-  
-  const eyeOpen = document.getElementById('icon-eye-open');
-  const eyeClosed = document.getElementById('icon-eye-closed');
-  if (eyeOpen) eyeOpen.style.display = zenMode ? 'none' : '';
-  if (eyeClosed) eyeClosed.style.display = zenMode ? '' : 'none';
-  
-  const btnZen = document.getElementById('btn-zen');
-  if (btnZen) {
-    btnZen.title = zenMode ? 'Zen Mode — show timer' : 'Zen Mode — hide timer';
+let shareResetTimeout = null;
+
+function copyTextFallback(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+  } finally {
+    document.body.removeChild(ta);
   }
+}
+
+async function sharePuzzle() {
+  const code = encodeCubikuBoard(initialGrid);
+  const shareUrl = `${window.location.origin}${window.location.pathname}?p=${code}`;
+
+  window.history.replaceState({}, document.title, `?p=${code}`);
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(shareUrl);
+    } else {
+      copyTextFallback(shareUrl);
+    }
+  } catch (e) {
+    copyTextFallback(shareUrl);
+  }
+
+  const btnShare = document.getElementById('btn-share');
+  const iconShare = document.getElementById('icon-share');
+  const iconCheck = document.getElementById('icon-share-check');
+  if (btnShare && iconShare && iconCheck) {
+    btnShare.classList.add('copied');
+    iconShare.style.display = 'none';
+    iconCheck.style.display = '';
+    if (shareResetTimeout) clearTimeout(shareResetTimeout);
+    shareResetTimeout = setTimeout(() => {
+      btnShare.classList.remove('copied');
+      iconShare.style.display = '';
+      iconCheck.style.display = 'none';
+    }, 1600);
+  }
+
+  showMessage('Puzzle link copied!', 'info');
 }
 
 function toggleMenu() {
@@ -1562,6 +1662,10 @@ async function newGame() {
   clearSelection();
   tutorialMode = false;
   isGameComplete = false; 
+
+  if (window.location.search) {
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
   
   pencilMode = false;
   activeNumber = null;
@@ -1628,7 +1732,9 @@ function loadGameFromSeed(seedStr, difficultyStr) {
 
     updateKeyboardUI();
 
-    currentDifficulty = difficultyStr || 'custom';
+    currentDifficulty = (difficultyStr && DIFFICULTY_KEYS.includes(difficultyStr))
+      ? difficultyStr
+      : inferDifficultyFromDigits(seedStr);
     
     let index = 0;
     for (let z = 0; z < 3; z++) {
@@ -1815,8 +1921,19 @@ async function init() {
       }
   });
 
-  const btnZen = document.getElementById('btn-zen');
-  if (btnZen) btnZen.addEventListener('click', toggleZen);
+  const timerBar = document.getElementById('timer-bar');
+  if (timerBar) {
+    timerBar.addEventListener('click', toggleTimerVisibility);
+    timerBar.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleTimerVisibility();
+      }
+    });
+  }
+
+  const btnShare = document.getElementById('btn-share');
+  if (btnShare) btnShare.addEventListener('click', sharePuzzle);
 
   const btnSettingsRules = document.getElementById('btn-settings-rules');
   if (btnSettingsRules) {
@@ -1948,15 +2065,16 @@ async function init() {
   });
 
   const urlParams = new URLSearchParams(window.location.search);
-  const boardSeed = urlParams.get('b');
+  const packedSeed = urlParams.get('p');
+  const legacySeed = urlParams.get('b');
   const difficultySeed = urlParams.get('d');
+  const decodedDigits = decodeCubikuBoard(packedSeed) ||
+    (legacySeed && legacySeed.length === 27 && /^\d{27}$/.test(legacySeed) ? legacySeed : null);
 
-  if (boardSeed && boardSeed.length === 27 && /^\d+$/.test(boardSeed)) {
-      loadGameFromSeed(boardSeed, difficultySeed);
-      window.history.replaceState({}, document.title, window.location.pathname);
-      if (!localStorage.getItem(WELCOME_SEEN_KEY) && !localStorage.getItem('cubiku_tutorial_complete')) {
-          openRulesModal(true);
-      }
+  if (decodedDigits) {
+      loadGameFromSeed(decodedDigits, difficultySeed);
+      const canonicalCode = encodeCubikuBoard(initialGrid);
+      window.history.replaceState({}, document.title, `?p=${canonicalCode}`);
   } else if (!loadGame()) {
       await newGame();
       if (!localStorage.getItem(WELCOME_SEEN_KEY) && !localStorage.getItem('cubiku_tutorial_complete')) {

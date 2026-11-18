@@ -9,6 +9,7 @@
   <meta property="og:title" content="Cubiku" />
   <meta property="og:description" content="A minimalist, offline-capable 3D Sudoku puzzle." />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://xfpqc.github.io/Cubiku/" />
   <meta property="og:image" content="https://xfpqc.github.io/Cubiku/static/og-image.png" />
 
   <meta name="twitter:card" content="summary_large_image" />
@@ -23,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="./static/style.css?v=77" />
+  <link rel="stylesheet" href="./static/style.css?v=78" />
   <link rel="manifest" href="./static/manifest.json" />
   
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -41,18 +42,19 @@
 
     <div class="top-action-bar">
       <div class="top-left-group">
-        <div class="timer-bar" id="timer-bar">
+        <div class="timer-bar" id="timer-bar" role="button" tabindex="0" aria-label="Toggle timer visibility" title="Click to hide timer">
           <span id="timer-display">00:00</span>
         </div>
-        <button id="btn-zen" class="btn-icon" aria-label="Toggle Zen Mode" title="Zen Mode — hide timer">
-          <svg id="icon-eye-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
+        <button id="btn-share" class="btn-icon" aria-label="Share Puzzle" title="Copy puzzle link">
+          <svg id="icon-share" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
           </svg>
-          <svg id="icon-eye-closed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="display:none">
-            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-            <line x1="1" y1="1" x2="23" y2="23"/>
+          <svg id="icon-share-check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="display: none;">
+            <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
         </button>
       </div>
@@ -101,6 +103,14 @@
           </div>
           
           <div class="setting-divider"></div>
+
+          <div class="setting-item">
+            <span>Variant</span>
+            <div class="variant-switch" role="group" aria-label="Puzzle variant">
+              <span class="variant-pill active" aria-current="page">Standard</span>
+              <a href="https://xfpqc.github.io/KillerCubiku/" class="variant-pill">Killer</a>
+            </div>
+          </div>
           
           <div class="setting-item">
             <span>Difficulty</span>
@@ -250,7 +260,7 @@
     }
   </script>
   
-  <script src="./static/game.js?v=77"></script>
+  <script src="./static/game.js?v=78"></script>
 
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "f395c849e3db4f80aed2070def3fae1e"}'></script><!-- End Cloudflare Web Analytics -->
 </body>

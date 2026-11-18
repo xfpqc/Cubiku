@@ -1,10 +1,10 @@
-const CACHE_NAME = 'cubiku-v77';
+const CACHE_NAME = 'cubiku-v78';
 
 const ASSETS = [
   './',
   './index.html',
-  './static/style.css?v=77',
-  './static/game.js?v=77',
+  './static/style.css?v=78',
+  './static/game.js?v=78',
   './static/icon-512.png',
   './static/manifest.json'
 ];
@@ -31,11 +31,11 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  // 1. Strict Cache-First for Navigation (HTML page)
+  // 1. Strict Cache-First for Navigation (supports ?p= shared links offline)
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      caches.match('./index.html').then((cachedHtml) => {
-        return cachedHtml || caches.match('./').then((cachedRoot) => {
+      caches.match('./index.html', { ignoreSearch: true }).then((cachedHtml) => {
+        return cachedHtml || caches.match('./', { ignoreSearch: true }).then((cachedRoot) => {
           return cachedRoot || fetch(event.request);
         });
       })

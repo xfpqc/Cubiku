@@ -1,5 +1,5 @@
 /* =========================================================
-   Cubiku v75 — Midnight Slate & Paper Light Mode + Multi-Select
+   Cubiku v78 — Midnight Slate & Paper Light Mode + Share & Variant Switch
    ========================================================= */
 
 *, *::before, *::after {
@@ -266,6 +266,18 @@ h1 {
 .timer-bar {
   display: flex;
   align-items: center;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.timer-bar:hover #timer-display {
+  color: var(--text-primary);
+}
+
+.timer-bar:active {
+  transform: scale(0.96);
 }
 
 #timer-display {
@@ -276,10 +288,7 @@ h1 {
   font-variant-numeric: tabular-nums;
   min-width:      3.8ch;
   text-align:     center;
-}
-
-.timer-bar.zen #timer-display {
-  visibility: hidden;
+  transition:     color 0.15s;
 }
 
 .center-action {
@@ -352,6 +361,11 @@ h1 {
   color:        var(--text-primary);
 }
 
+.btn-icon.copied {
+  border-color: var(--accent);
+  color:        var(--accent);
+}
+
 .btn-icon:active { transform: scale(0.93); }
 
 .btn-icon *, .key-btn *, .cell * {
@@ -371,8 +385,8 @@ h1 {
   border-radius: 14px;
   display: flex;
   flex-direction: column;
-  width: 225px;
-  max-height: 70vh;
+  width: 230px;
+  max-height: 75vh;
   overflow-y: auto;
   box-shadow: var(--panel-shadow);
 }
@@ -388,7 +402,7 @@ h1 {
 @media (max-width: 599px) {
   .settings-panel {
     right: -10px;
-    width: 235px;
+    width: 240px;
   }
 }
 
@@ -415,6 +429,44 @@ h1 {
   height: 1px;
   background: var(--surface-border);
   margin: 0.2rem 0;
+}
+
+/* ── Variant Segmented Control ──────────────────────────── */
+
+.variant-switch {
+  display: inline-flex;
+  align-items: center;
+  width: 110px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.variant-pill {
+  flex: 1 1 0;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 0.28rem 0.2rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--text-muted);
+  transition: background-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+a.variant-pill:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+.variant-pill.active {
+  background: var(--accent);
+  color: var(--accent-text);
+  cursor: default;
 }
 
 .select-wrapper {
