@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="./static/style.css?v=78" />
+  <link rel="stylesheet" href="./static/style.css?v=79" />
   <link rel="manifest" href="./static/manifest.json" />
   
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -87,13 +87,6 @@
               <line x1="12" y1="8" x2="12.01" y2="8"></line>
             </svg>
           </div>
-          <div class="setting-item action-item" id="btn-settings-tutorial">
-            <span>Tutorial</span>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color: var(--accent);">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polygon points="10 8 16 12 10 16 10 8"></polygon>
-            </svg>
-          </div>
           <div class="setting-item action-item" id="btn-settings-reset-stats">
             <span>Reset Stats</span>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color: var(--error-color);">
@@ -103,14 +96,6 @@
           </div>
           
           <div class="setting-divider"></div>
-
-          <div class="setting-item">
-            <span>Variant</span>
-            <div class="variant-switch" role="group" aria-label="Puzzle variant">
-              <span class="variant-pill active" aria-current="page">Standard</span>
-              <a href="https://xfpqc.github.io/KillerCubiku/" class="variant-pill">Killer</a>
-            </div>
-          </div>
           
           <div class="setting-item">
             <span>Difficulty</span>
@@ -132,6 +117,16 @@
                 <option value="rose">Rose</option>
                 <option value="gold">Gold</option>
                 <option value="silver">Silver</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <span>Variant</span>
+            <div class="select-wrapper">
+              <select id="variant-select">
+                <option value="standard" selected>Standard</option>
+                <option value="killer">Killer</option>
               </select>
             </div>
           </div>
@@ -254,13 +249,13 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
+        navigator.serviceWorker.register('./sw.js?v=79')
           .catch((err) => console.log('SW setup failed:', err));
       });
     }
   </script>
   
-  <script src="./static/game.js?v=78"></script>
+  <script src="./static/game.js?v=79"></script>
 
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "f395c849e3db4f80aed2070def3fae1e"}'></script><!-- End Cloudflare Web Analytics -->
 </body>

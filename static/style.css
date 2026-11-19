@@ -1,5 +1,5 @@
 /* =========================================================
-   Cubiku v78 — Midnight Slate & Paper Light Mode + Share & Variant Switch
+   Cubiku v79 — Midnight Slate & Paper Light Mode + Share & Variant Select
    ========================================================= */
 
 *, *::before, *::after {
@@ -429,44 +429,6 @@ h1 {
   height: 1px;
   background: var(--surface-border);
   margin: 0.2rem 0;
-}
-
-/* ── Variant Segmented Control ──────────────────────────── */
-
-.variant-switch {
-  display: inline-flex;
-  align-items: center;
-  width: 110px;
-  background: var(--surface-subtle);
-  border: 1px solid var(--surface-border);
-  border-radius: 8px;
-  padding: 2px;
-  gap: 2px;
-}
-
-.variant-pill {
-  flex: 1 1 0;
-  text-align: center;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-  padding: 0.28rem 0.2rem;
-  border-radius: 6px;
-  text-decoration: none;
-  color: var(--text-muted);
-  transition: background-color 0.15s, color 0.15s;
-  white-space: nowrap;
-}
-
-a.variant-pill:hover {
-  color: var(--text-primary);
-  background: var(--surface-hover);
-}
-
-.variant-pill.active {
-  background: var(--accent);
-  color: var(--accent-text);
-  cursor: default;
 }
 
 .select-wrapper {

@@ -1,5 +1,5 @@
 /**
- * Cubiku Base Game v78 — 3D Sudoku frontend (Base64URL Sharing + Tap-to-Hide Timer + Variant Link)
+ * Cubiku Base Game v79 — 3D Sudoku frontend (Base64URL Sharing + Tap-to-Hide Timer + Variant Select)
  */
 
 const B64URL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
@@ -1942,14 +1942,6 @@ async function init() {
           openRulesModal(false);
       });
   }
-  
-  const btnSettingsTut = document.getElementById('btn-settings-tutorial');
-  if (btnSettingsTut) {
-      btnSettingsTut.addEventListener('click', () => {
-          document.getElementById('settings-panel').style.display = 'none';
-          startTutorial();
-      });
-  }
 
   const rulesModal = document.getElementById('rules-modal');
   const btnCloseRules = document.getElementById('btn-close-rules');
@@ -1996,6 +1988,32 @@ async function init() {
       document.body.setAttribute('data-theme', currentTheme);
       updateNumberHighlights();
       savePreferences();
+    });
+  }
+
+  const variantSelect = document.getElementById('variant-select');
+  if (variantSelect) {
+    variantSelect.value = 'standard';
+    variantSelect.addEventListener('change', (e) => {
+      if (e.target.value === 'killer') {
+        savePreferences();
+        try {
+          const killerPrefsRaw = localStorage.getItem('killer_cubiku_prefs');
+          const killerPrefs = killerPrefsRaw ? JSON.parse(killerPrefsRaw) : {};
+          localStorage.setItem('killer_cubiku_prefs', JSON.stringify({
+            ...killerPrefs,
+            theme: currentTheme,
+            mode: currentColorMode,
+            sticky: stickyKeysEnabled,
+            difficulty: currentDifficulty,
+            timerHidden: timerHidden
+          }));
+        } catch (err) {}
+        window.location.href = 'https://xfpqc.github.io/KillerCubiku/';
+      }
+    });
+    window.addEventListener('pageshow', () => {
+      variantSelect.value = 'standard';
     });
   }
 
